@@ -1,0 +1,3 @@
+[submodule "Dewpsi/vendor/spdlog"]
+	path = Dewpsi/vendor/spdlog
+	url = https://github.com/gabime/spdlog

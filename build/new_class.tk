@@ -1,0 +1,12 @@
+#!/bin/bash
+# execute using wish \
+exec wish8.6 "$0" "$@"
+
+wm title . "New Class"
+
+grid [ttk::label .lb1 -text "Name:"] [ttk::entry .en1] -sticky w
+grid [ttk::label .lb2 -text "H File:"] [ttk::entry .en2] -sticky w
+grid [ttk::label .lb3 -text "S File:"] [ttk::entry .en3] -sticky w
+
+.en1 
+
