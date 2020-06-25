@@ -1,7 +1,5 @@
-#include "base.h"
 #include "log.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace Dewpsi {
 

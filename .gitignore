@@ -1,3 +1,8 @@
+# subdirectories
+Dewpsi/vendor
+Sandbox/vendor
+Sandbox/src/dewpsi-include
+
 # Make files
 *.make
 Makefile
