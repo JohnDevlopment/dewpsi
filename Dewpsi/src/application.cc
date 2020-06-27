@@ -2,6 +2,8 @@
 #include "timer.h"
 #include "debug.h"
 
+#include "applicationevent.h"
+
 namespace Dewpsi {
 
 Application* Application::s_instance = nullptr;
@@ -10,6 +12,8 @@ void Application::Run()
 {
     PD_PROFILE_FUNCTION();
     
+    WindowCloseEvent e;
+    PD_CORE_TRACE(e);
     Timer::Sleep(3000U);
 }
 
