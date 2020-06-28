@@ -1,0 +1,48 @@
+.TH "Dewpsi::Event" 3 "Fri Jun 26 2020" "Dewpsi" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Dewpsi::Event \- Base event class -- defines every event\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <event\&.h>\fP
+.PP
+Inherited by Dewpsi::WindowCloseEvent, and Dewpsi::WindowResizeEvent\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "virtual EventType \fBGetEventType\fP () const =0"
+.br
+.RI "Returns the type of event\&. "
+.ti -1c
+.RI "virtual const char * \fBGetName\fP () const =0"
+.br
+.RI "Returns the name of the event as a string\&. "
+.ti -1c
+.RI "virtual int \fBGetCategoryFlags\fP () const =0"
+.br
+.RI "Returns the event categories as a bit field\&. "
+.ti -1c
+.RI "virtual std::string \fBToString\fP () const"
+.br
+.RI "Returns\&. "
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "bool \fBm_handled\fP"
+.br
+.RI "Indicates whether the event was handled by the application\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Base event class -- defines every event\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Dewpsi from the source code\&.
