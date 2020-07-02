@@ -1,4 +1,11 @@
-#include "dewpsi.h"
+#include <csignal>
+#include <iostream>
+#include <log.h>
+#include <whichos.h>
+#include <window.h>
+#include <application.h>
+
+extern "C" void forcequit(int);
 
 class Sandbox : public Dewpsi::Application {
 public:
@@ -8,24 +15,46 @@ public:
     {  }
 };
 
+static Dewpsi::Application* App = nullptr;
+
 int main (int argc, char const* argv[])
 {
-    Dewpsi::Application* ptr = Dewpsi::NewApplication();
-    Dewpsi::Application::s_instance = ptr;
+    // calls a specific function when the user Control-C's the console
+    std::signal(2, forcequit);
     
-    // initialize logger
+    // initialize the logging system
     ::Dewpsi::Log::Init();
-    PD_CORE_INFO("Starting Dewpsi engine.");
-    PD_INFO("Starting sandbox application.");
     
-    ptr->Run();
+    {
+        Dewpsi::WindowProps props;
+        props.title = "Client Dewpsi Application";
+        props.width = 640;
+        props.height = 480;
+        props.flags[1] = SDL_RENDERER_ACCELERATED;
+        props.flags[2] = -1;
+        Dewpsi::SetWindowProps(props);
+    }
     
-    delete ptr;
+    // start client application
+    App = Dewpsi::NewApplication();
+    PD_INFO("Started sandbox application");
+    
+    // run main loop
+    App->Run();
+    
+    delete App;
     return 0;
 }
 
 Dewpsi::Application* Dewpsi::NewApplication()
 {
     return new Sandbox();
+}
+
+void forcequit(int sig)
+{
+    std::cout << "Application received signal 11 (SIGINT)...exiting program" << std::endl;
+    delete App;
+    std::exit(0);
 }
 

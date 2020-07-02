@@ -1,7 +1,17 @@
 # subdirectories
+doc/
+bin/
+bin-int/
 Dewpsi/vendor
 Sandbox/vendor
 Sandbox/src/dewpsi-include
+vendor/lua
+.internal
+
+# specific files
+Dewpsi/src/platform/sdl/SDL_*.h
+Dewpsi/src/platform/sdl/begin_code.h
+Dewpsi/src/platform/sdl/close_code.h
 
 # Make files
 *.make
@@ -39,3 +49,5 @@ Makefile
 *.exe
 *.out
 *.app
+sandbox
+premake5

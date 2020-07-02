@@ -11,8 +11,7 @@
 #include <stdexcept>
 #include <csignal>
 #include <spdlog/spdlog.h>
-
-#include "log.h"
+#include <log.h>
 
 #endif /* PDPCH_H */
 
