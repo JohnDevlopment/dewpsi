@@ -49,6 +49,23 @@ void Application::OnEvent(Event& e)
     EventDispatcher dispatcher(e);
     PD_CORE_INFO("{0} event detected", e);
     dispatcher.Dispatch<WindowCloseEvent>(PD_BIND_EVENT_FN(Application::OnWindowClosed));
+    
+    for (auto itr = m_layerStack.rbegin(); itr != m_layerStack.rend(); ++itr)
+    {
+        if (e.m_handled)
+            break;
+        (*itr)->OnEvent(e);
+    }
+}
+
+void Application::PushLayer(Layer* layer)
+{
+    m_layerStack.PushLayer(layer);
+}
+
+void Application::PushOverlay(Layer* overlay)
+{
+    m_layerStack.PushOverlay(overlay);
 }
 
 void Application::Run()
@@ -57,6 +74,7 @@ void Application::Run()
     
     while (m_bRunning)
     {
+        PD_PROFILE_SCOPE("RunLoop");
         m_window->Update();
     }
 }

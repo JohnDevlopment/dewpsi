@@ -10,6 +10,7 @@
 #include <string>
 #include <window.h>
 #include <core.h>
+#include <DewpsiLayerStack.h>
 
 int main(int argc, const char** argv);
 
@@ -26,9 +27,16 @@ namespace Dewpsi {
         /// Processes an event.
         void OnEvent(Event& e);
         
+        /// Pushes a layer onto the layer stack.
+        void PushLayer(Layer* layer);
+        
+        /// Pushes a layer on top of the other layers in the layer stack.
+        void PushOverlay(Layer* overlay);
+        
     private:
         static Application* s_instance;
         bool m_bRunning;
+        LayerStack m_layerStack;
         
         Scope<Window> m_window;
         
