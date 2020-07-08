@@ -13,16 +13,6 @@ static WindowProps _WindowProperties;
 
 Application* Application::s_instance = nullptr;
 
-void Application::Run()
-{
-    PD_PROFILE_FUNCTION();
-    
-    while (m_bRunning)
-    {
-        m_window->Update();
-    }
-}
-
 Application::Application(const std::string& sName)
     : m_bRunning(true), m_window()
 {
@@ -36,7 +26,7 @@ Application::Application(const std::string& sName)
     s_instance = this;
     
     // initialize SDL2 video
-    PD_CORE_TRACE("Initializing SDL2 library with SDL_Init(), flags: SDL_INIT_VIDEO");
+    PD_CORE_INFO("Initializing SDL2 library with SDL_Init(), flags: SDL_INIT_VIDEO");
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         PD_CORE_CRITICAL("Failed to initialize SDL, {}", SDL_GetError());
@@ -45,12 +35,36 @@ Application::Application(const std::string& sName)
     
     // create the window
     m_window = Window::Create(_WindowProperties);
+    m_window->SetEventCallback(PD_BIND_EVENT_FN(Application::OnEvent));
 }
 
 Application::~Application()
 {
     PD_PROFILE_FUNCTION();
     SDL_Quit();
+}
+
+void Application::OnEvent(Event& e)
+{
+    EventDispatcher dispatcher(e);
+    PD_CORE_INFO("{0} event detected", e);
+    dispatcher.Dispatch<WindowCloseEvent>(PD_BIND_EVENT_FN(Application::OnWindowClosed));
+}
+
+void Application::Run()
+{
+    PD_PROFILE_FUNCTION();
+    
+    while (m_bRunning)
+    {
+        m_window->Update();
+    }
+}
+
+bool Application::OnWindowClosed(WindowCloseEvent& e)
+{
+    m_bRunning = false;
+    return true;
 }
 
 // =================================================

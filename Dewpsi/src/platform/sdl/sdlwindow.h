@@ -49,6 +49,8 @@ namespace Dewpsi {
         virtual void Init(const WindowProps& props);
         virtual void Shutdown();
         
+        static int OnEvent(void* udata, SDL_Event* event);
+        
         struct WindowData {
             std::string title;
             unsigned int width, height;

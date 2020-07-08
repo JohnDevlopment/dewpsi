@@ -30,8 +30,8 @@ int main (int argc, char const* argv[])
         props.title = "Client Dewpsi Application";
         props.width = 640;
         props.height = 480;
-        props.flags[1] = SDL_RENDERER_ACCELERATED;
-        props.flags[2] = -1;
+        props.flags[1] = 0;
+        props.flags[2] = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
         Dewpsi::SetWindowProps(props);
     }
     
