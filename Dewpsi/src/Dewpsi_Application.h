@@ -1,16 +1,16 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#ifndef DEWPSI_APPLICATION_H
+#define DEWPSI_APPLICATION_H
 
 /**
-*   @file       application.h
+*   @file       Dewpsi_Application.h
 *   @brief      A header for the Dewpsi engine.
 *   @ingroup    core
 */
 
 #include <string>
-#include <window.h>
-#include <core.h>
-#include <DewpsiLayerStack.h>
+#include <Dewpsi_Window.h>
+#include <Dewpsi_Core.h>
+#include <Dewpsi_LayerStack.h>
 
 int main(int argc, const char** argv);
 
@@ -52,9 +52,8 @@ namespace Dewpsi {
     /// Implemented by the client to create an instance of Application.
     Application* NewApplication();
     
-    /// Set the window properties prior to the window creation.
+    /// Set the window properties prior to the window creation
     PD_CALL void SetWindowProps(const WindowProps&);
 }
 
-#endif /* APPLICATION_H */
-
+#endif /* DEWPSI_APPLICATION_H */

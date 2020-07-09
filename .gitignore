@@ -12,6 +12,7 @@ vendor/lua
 Dewpsi/src/platform/sdl/SDL_*.h
 Dewpsi/src/platform/sdl/begin_code.h
 Dewpsi/src/platform/sdl/close_code.h
+index.html
 
 # Make files
 *.make

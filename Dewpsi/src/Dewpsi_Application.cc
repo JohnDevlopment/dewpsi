@@ -1,8 +1,8 @@
-#include "application.h"
-#include "timer.h"
-#include "debug.h"
-#include "window.h"
-#include "applicationevent.h"
+#include "Dewpsi_Application.h"
+#include "Dewpsi_Application.h"
+#include "Dewpsi_Debug.h"
+#include "Dewpsi_Window.h"
+#include "Dewpsi_ApplicationEvent.h"
 
 #include <SDL.h>
 #include <stdexcept>
@@ -47,7 +47,6 @@ Application::~Application()
 void Application::OnEvent(Event& e)
 {
     EventDispatcher dispatcher(e);
-    PD_CORE_INFO("{0} event detected", e);
     dispatcher.Dispatch<WindowCloseEvent>(PD_BIND_EVENT_FN(Application::OnWindowClosed));
     
     for (auto itr = m_layerStack.rbegin(); itr != m_layerStack.rend(); ++itr)
@@ -93,4 +92,3 @@ void SetWindowProps(const WindowProps& props)
 }
 
 }
-

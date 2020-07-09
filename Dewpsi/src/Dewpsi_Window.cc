@@ -1,4 +1,4 @@
-#include "sdlwindow.h"
+#include "Dewpsi_SDLWindow.h"
 
 namespace Dewpsi {
 

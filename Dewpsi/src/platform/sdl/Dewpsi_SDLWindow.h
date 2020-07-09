@@ -1,10 +1,10 @@
 #ifndef SDLWINDOW_H
 #define SDLWINDOW_H
 
-#include <core.h>
-#include <event.h>
+#include <Dewpsi_Core.h>
+#include <Dewpsi_Event.h>
+#include <Dewpsi_Window.h>
 #include <SDL.h>
-#include <window.h>
 
 namespace Dewpsi {
     class SDL2Window : public Window {

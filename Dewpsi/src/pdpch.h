@@ -10,9 +10,10 @@
 #include <functional>
 #include <stdexcept>
 #include <csignal>
+#include <type_traits>
 #include <spdlog/spdlog.h>
 
-#include "log.h"
+#include "Dewpsi_Log.h"
 
 #endif /* PDPCH_H */
 

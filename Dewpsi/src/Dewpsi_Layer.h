@@ -1,8 +1,8 @@
-#ifndef DEWPSILAYER_H
-#define DEWPSILAYER_H
+#ifndef DEWPSI_LAYER_H
+#define DEWPSI_LAYER_H
 
 /**
-*   @file   DewpsiLayer.h
+*   @file   Dewpsi_Layer.h
 *   @brief  A header for the Dewpsi engine.
 *
 *   Defines an abstract interface to a layer.
@@ -11,16 +11,16 @@
 *   Contains classes that represent layers and layer stacks.
 *
 *   @ingroup    core
-*
-*   @{
 */
 
-#include <core.h>
-#include <event.h>
+#include <Dewpsi_Core.h>
+#include <Dewpsi_Event.h>
 
+/// @ingroup layers
 namespace Dewpsi {
     /** A layer.
     *   It can accept events.
+    *   @ingroup layers
     */
     class Layer {
     public:
@@ -57,4 +57,3 @@ namespace Dewpsi {
 /// @}
 
 #endif /* DEWPSILAYER_H */
-

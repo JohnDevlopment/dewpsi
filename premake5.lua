@@ -18,12 +18,13 @@ srcdir = "%{prj.location}/src"
 IncludeDir = {}
 IncludeDir["spdlog"] = "Dewpsi/vendor/spdlog/include"
 
+-- Main engine project --
 project "dewpsi"
     location "Dewpsi"
     kind "SharedLib"
     language "C++"
     cppdialect "C++14"
-    staticruntime "On"
+--    staticruntime "On"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -61,6 +62,7 @@ project "dewpsi"
         ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include")
     }
     
+-- Linux
 filter "system:linux"
     defines {
         "PD_PLATFORM_LINUX",
@@ -72,12 +74,13 @@ filter "system:linux"
     links {
         "dl"
     }
-    files (srcdir .. "/platform/sdl/sdlwindow.cc")
+    files (srcdir .. "/platform/sdl/Dewpsi_SDLWindow.cc")
     
     postbuildcommands {
         ("{COPY} " .. srcdir .. "/platform/sdl/*.h ../Sandbox/src/dewpsi-include")
     }
 
+-- GCC compiler
 filter "toolset:gcc"
     linkoptions {
         "-Wl,--enable-new-dtags",
@@ -89,6 +92,7 @@ filter "toolset:gcc"
         "-z undefs"
     }
 
+-- different configurations
 filter "configurations:Debug"
     defines {
         "PD_DEBUG",
@@ -112,17 +116,9 @@ filter "configurations:Dist"
     }
     optimize "On"
     runtime "Release"
+---------------------------
 
---filter "system:windows"
---    cppdialect "C++17"
---    systemversion "latest"
---    defines {
---        "PD_PLATFORM_WINDOWS",
---        "PD_BUILD_DLL",
---        "_WINDLL"
---    }
-
-
+-- project sandbox
 project "sandbox"
     location "Sandbox"
     kind "ConsoleApp"
@@ -149,14 +145,11 @@ project "sandbox"
     
     defines "SPDLOG_COMPILED_LIB"
     
+-- Linux build
 filter "system:linux"
     defines "PD_PLATFORM_LINUX"
-    
---filter "system:windows"
---    cppdialect "C++17"
---    systemversion "latest"
---    defines "PD_PLATFORM_WINDOWS"
 
+-- different configurations    
 filter "configurations:Debug"
     defines {
         "PD_DEBUG",
@@ -180,8 +173,9 @@ filter "configurations:Dist"
     }
     optimize "On"
     runtime "Release"
+---------------------------
 
-
+-- project spdlog, vendor, external static library
 project "spdlog"
     location "Dewpsi/vendor/spdlog"
     kind "StaticLib"

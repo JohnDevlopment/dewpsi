@@ -4,7 +4,7 @@
 #include <type_traits>
 
 /**
-*   @file       core.h
+*   @file       Dewpsi_Core.h
 *   @brief      A header for the Dewpsi engine. Contains preprocessor macros.
 *
 *   @defgroup   core Core
@@ -12,6 +12,12 @@
 *
 *   @{
 */
+
+#if defined(__cplusplus) && __cplusplus >= 201103L
+    #define PD_CONSTEXPR    constexpr
+#else
+    #define PD_CONSTEXPR
+#endif
 
 /**
 *   @def        PD_CALL
@@ -83,8 +89,11 @@
 /// Creates a 32 bit value from two words.
 #define PD_CREATEWORD(lo, hi)   (((uint16_t) hi << 16) | (uint16_t)(lo))
 
-/// Namespace Dewpsi
+/// Dewpsi Namespace: contains all relevent Dewpsi functions, classes, and other types.
 namespace Dewpsi {
+    /// @addtogroup core
+    /// @{
+    
     template<typename T>
     using Scope = std::unique_ptr<T>;
     
@@ -112,6 +121,8 @@ namespace Dewpsi {
     {
         return (val) ? 1 : 0;
     }
+    
+    /// @}
 }
 
 /// @}

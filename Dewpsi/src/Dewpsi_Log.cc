@@ -1,4 +1,4 @@
-#include "log.h"
+#include "Dewpsi_Log.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace Dewpsi {
@@ -22,4 +22,3 @@ void Log::Init()
 }
 
 }
-

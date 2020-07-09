@@ -1,18 +1,16 @@
-#ifndef DEWPSILAYERSTACK_H
-#define DEWPSILAYERSTACK_H
+#ifndef DEWPSI_LAYERSTACK_H
+#define DEWPSI_LAYERSTACK_H
 
 /**
-*   @file   DewpsiLayerStack.h
+*   @file   Dewpsi_LayerStack.h
 *   @brief  A header for the Dewpsi engine.
-*
 *   Handles layer stacks.
 */
 
-#include <core.h>
-#include <DewpsiLayer.h>
+#include <Dewpsi_Core.h>
+#include <Dewpsi_Layer.h>
 #include <vector>
 
-/// @ingroup layers
 namespace Dewpsi {
     /** A layer stack.
     *   @ingroup layers
@@ -64,5 +62,4 @@ namespace Dewpsi {
 
 /// @}
 
-#endif /* DEWPSILAYERSTACK_H */
-
+#endif /* DEWPSI_LAYERSTACK_H */

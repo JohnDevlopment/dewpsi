@@ -1,0 +1,89 @@
+#ifndef DEWPSI_MOUSEEVENT_H
+#define DEWPSI_MOUSEEVENT_H
+
+/**
+*   @file       Dewpsi_MouseEvent.h
+*   @brief      A header for the Dewpsi engine.
+*   Contains mouse events.
+*
+*   @defgroup   mouse   Mouse events
+*   Mouse moved events.
+*   @ingroup    events
+*/
+
+#include <Dewpsi_Event.h>
+
+namespace Dewpsi {
+    /// @addtogroup mouse
+    /// @{
+    
+    /// Mouse moved event.
+    /// This event signifies that the mouse has moved to a new location.
+    class MouseMovedEvent : public Event {
+    public:
+        /// Creates an event with the specified new location.
+        MouseMovedEvent(float x, float y)
+            : m_fX(x), m_fY(y)
+        {  }
+        
+        /// Return the X offset
+        float GetX() const
+        { return m_fX; }
+        
+        /// Return the y offset
+        float GetY() const
+        { return m_fY; }
+        
+        // Returns a string with the new location of the mouse pointer.
+        virtual std::string ToString() const override
+        {
+            std::stringstream ss;
+            ss << "mouse moved to (" << m_fX << ',' << m_fY << "), " << GetName();
+            return ss.str();
+        }
+        
+        EVENT_CLASS_TYPE(ET_MouseMoved)
+        EVENT_CLASS_CATEGORY(EC_Mouse | EC_Input)
+        
+    private:
+        float m_fX;
+        float m_fY;
+    };
+    
+    /// Mouse scrolled event.
+    /// This event signifies that the mouse has been scrolled.
+    class MouseScrolledEvent : public Event {
+    public:
+        /// Creates an event with the specified new location.
+        MouseScrolledEvent(float xoffset, float yoffset)
+            : m_fXOffset(xoffset), m_fYOffset(yoffset)
+        {  }
+        
+        /// Return the X offset
+        float GetXOffset() const
+        { return m_fXOffset; }
+        
+        /// Return the y offset
+        float GetYOffset() const
+        { return m_fYOffset; }
+        
+        // Returns a string with the new location of the mouse pointer.
+        virtual std::string ToString() const override
+        {
+            std::stringstream ss;
+            ss << "mouse scrolled by (" << m_fXOffset << ',' << m_fYOffset << "), " << GetName();
+            return ss.str();
+        }
+        
+        EVENT_CLASS_TYPE(ET_MouseScrolled)
+        EVENT_CLASS_CATEGORY(EC_Mouse | EC_Input)
+        
+    private:
+        float m_fXOffset;
+        float m_fYOffset;
+    };
+    
+    /// @}
+}
+
+#endif /* DEWPSI_MOUSEEVENT_H */

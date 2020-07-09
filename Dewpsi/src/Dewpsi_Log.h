@@ -1,13 +1,13 @@
-#ifndef LOG_H
-#define LOG_H
+#ifndef DEWPSI_LOG_H
+#define DEWPSI_LOG_H
 
 /**
-*   @file       log.h
+*   @file       Dewpsi_Log.h
 *   @brief      A header for the Dewpsi engine. It contains
 *               functions and macros for logging text based on
 *               log-level.
 *
-*   @defgroup   logging Logging functions
+*   @defgroup   logging Logging
 *   @ingroup    core
 *   @{
 */
@@ -49,6 +49,42 @@ namespace Dewpsi {
         
         static bool s_Initted;
     };
+    
+    /** Just a class that holds an arbitrary integral value.
+    *   Can be passed to std::cout or any other ostream as well
+    *   as the logger.
+    *   @ingroup logging
+    */
+    template<typename T>
+    class LogHex {
+    public:
+        /// Constructs a LogHex with an integral value.
+        LogHex(T val) : m_value(val)
+        {  }
+        
+        /// Returns the value.
+        T get() const { return m_value; }
+        
+    private:
+        T m_value;
+    };
+    
+    /** Constructs a @c LogHex with the given value.
+    *   @param  val Any integer value.
+    *   @return     A @c LogHex with @a value in it.
+    */
+    template<typename T>
+    inline typename std::enable_if<std::is_arithmetic<T>::value, LogHex<T>>::type
+    MakeLogHex(T val)
+    {
+        return LogHex<T>(val);
+    }
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const Dewpsi::LogHex<T>& obj)
+{
+    os << std::hex << obj.get() << std::dec;
 }
 
 /// Logs trace messages.
@@ -75,4 +111,4 @@ namespace Dewpsi {
 
 /// @}
 
-#endif /* LOG_H */
+#endif /* DEWPSI_LOG_H */
