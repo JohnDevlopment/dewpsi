@@ -17,6 +17,13 @@ srcdir = "%{prj.location}/src"
 
 IncludeDir = {}
 IncludeDir["spdlog"] = "Dewpsi/vendor/spdlog/include"
+IncludeDir["imgui"] = "Dewpsi/vendor/imgui"
+IncludeDir["glad"] = "Dewpsi/vendor/glad/include"
+
+group "Dependencies"
+    include "Dewpsi/vendor/imgui"
+    include "Dewpsi/vendor/glad"
+group ""
 
 -- Main engine project --
 project "dewpsi"
@@ -30,7 +37,7 @@ project "dewpsi"
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
     files {
         (srcdir .. "/**.cc"),
-        (srcdir .. "/**.h")
+        (srcdir .. "/**.h"),
     }
     pchheader "pdpch.h"
     pchsource "Dewpsi/src/pdpch.cpp"
@@ -42,6 +49,8 @@ project "dewpsi"
     
     includedirs {
         "%{IncludeDir.spdlog}",
+        "%{IncludeDir.imgui}",
+        "%{IncludeDir.glad}",
         (srcdir),
         (srcdir .. "/events"),
         (srcdir .. "/os")
@@ -53,7 +62,9 @@ project "dewpsi"
     links {
         "spdlog",
         "sndio",
-        "m"
+        "m",
+        "ImGui",
+        "Glad"
     }
     
     postbuildcommands {
@@ -74,7 +85,12 @@ filter "system:linux"
     links {
         "dl"
     }
-    files (srcdir .. "/platform/sdl/Dewpsi_SDLWindow.cc")
+    files {
+        (srcdir .. "/platform/sdl/Dewpsi_SDLWindow.cc"),
+        (srcdir .. "/platform/sdl/Dewpsi_SDLWindow.h"),
+        (srcdir .. "/platform/sdl/Dewpsi_ImGui_SDL.cpp"),
+        (srcdir .. "/platform/sdl/Dewpsi_ImGui_SDL.h")
+    }
     
     postbuildcommands {
         ("{COPY} " .. srcdir .. "/platform/sdl/*.h ../Sandbox/src/dewpsi-include")
@@ -136,6 +152,7 @@ project "sandbox"
     }
     includedirs {
         "%{IncludeDir.spdlog}",
+        "%{IncludeDir.imgui}",
         "%{prj.location}/src",
         "%{prj.location}/src/dewpsi-include"
     }

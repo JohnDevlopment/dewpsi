@@ -30,6 +30,7 @@ namespace Dewpsi {
         /// Destroys the layer and frees any memory allocated by it.
         virtual ~Layer();
         
+        /// Called when attaching a layer to a layer stack.
         virtual void OnAttach()
         {  }
         

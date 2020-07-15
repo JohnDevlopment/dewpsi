@@ -68,8 +68,23 @@ int main (int argc, char const* argv[])
     {
         using Dewpsi::WindowFlags;
         Dewpsi::WindowProps props;
-        props.title = "Client Dewpsi Application";
-//        props.title = "list renderers";
+        
+        if (argc > 1)
+        {
+            if (std::strcmp(argv[1], "-l") == 0)
+            {
+                props.title = "list renderers";
+            }
+            else
+            {
+                props.title = "Client Dewpsi Application";
+            }
+        }
+        else
+        {
+            props.title = "Client Dewpsi Application";
+        }
+        
         props.x = PD_WINDOWPOS_CENTERED;
         props.y = PD_WINDOWPOS_CENTERED;
         props.width = 640;

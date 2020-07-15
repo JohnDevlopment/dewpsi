@@ -7,6 +7,12 @@
 #include <SDL.h>
 
 namespace Dewpsi {
+    struct SDLNativeWindow {
+        SDL_Window* window;
+        SDL_Renderer* renderer;
+        SDL_GLContext context;
+    };
+    
     class SDL2Window : public Window {
     public:
         SDL2Window(const WindowProps& props);
@@ -42,7 +48,7 @@ namespace Dewpsi {
         // returns a pointer to the actual window
         virtual void* GetNativeWindow() const override
         {
-            return m_window;
+            return (void*) &m_native;
         }
         
      private:
@@ -73,7 +79,9 @@ namespace Dewpsi {
         
         SDL_Window* m_window;
         SDL_Renderer* m_renderer;
+        SDL_GLContext m_context;
         WindowData m_data;
+        SDLNativeWindow m_native;
     };
 }
 

@@ -4,6 +4,9 @@
 #include "Dewpsi_MouseEvent.h"
 #include "Dewpsi_KeyEvent.h"
 #include "Dewpsi_String.h"
+#include "Dewpsi_ImGui_SDL.h"
+
+#include <glad/glad.h>
 
 #include <SDL.h>
 #include <csignal>
@@ -321,9 +324,31 @@ void SDL2Window::Init(const WindowProps& props)
         #endif
     }
     
+    // set native window data
+    m_native.window = m_window;
+    m_native.renderer = m_renderer;
+    
+    // mark vsync as enabled
     if (props.flags & RendererVSync)
-    {
         m_data.vsync = true;
+    
+    // OpenGL context
+    if (props.flags & WindowOpenGL)
+    {
+        // new OpenGL context
+        m_context = SDL_GL_CreateContext(m_window);
+        PD_CORE_ASSERT(m_context, "Failed to create OpenGL context: {0}", SDL_GetError());
+        m_native.context = m_context;
+        
+        // GLAD loader
+        int iCode = gladLoadGLLoader(SDL_GL_GetProcAddress);
+        PD_CORE_ASSERT(iCode, "Failed to load GLAD");
+        
+        PD_CORE_INFO("OpenGL vendor: {0}, renderer: {1}, version: {2}", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
+        
+        // enable vsync
+        if (m_data.vsync)
+            SDL_GL_SetSwapInterval(1);
     }
     
     // register event callback
@@ -332,11 +357,23 @@ void SDL2Window::Init(const WindowProps& props)
 
 void SDL2Window::Shutdown()
 {
+    if (m_context)
+    {
+        SDL_GL_DeleteContext(m_context);
+        m_context = nullptr;
+    }
+    
     if (m_renderer)
+    {
         SDL_DestroyRenderer(m_renderer);
+        m_renderer = nullptr;
+    }
     
     if (m_window)
+    {
         SDL_DestroyWindow(m_window);
+        m_window = nullptr;
+    }
 }
 
 int SDL2Window::OnEvent(void* udata, SDL_Event* event)

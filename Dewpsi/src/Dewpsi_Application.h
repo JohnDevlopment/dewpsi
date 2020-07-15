@@ -33,6 +33,14 @@ namespace Dewpsi {
         /// Pushes a layer on top of the other layers in the layer stack.
         void PushOverlay(Layer* overlay);
         
+        /// Returns a pointer to the window.
+        Window& GetWindow()
+        { return *m_window; }
+        
+        /// Returns a pointer to the application.
+        static Application& Get()
+        { return *s_instance; }
+        
     private:
         static Application* s_instance;
         bool m_bRunning;

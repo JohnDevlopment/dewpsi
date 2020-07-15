@@ -2,7 +2,6 @@
 doc/
 bin/
 bin-int/
-Dewpsi/vendor
 Sandbox/vendor
 Sandbox/src/dewpsi-include
 vendor/lua

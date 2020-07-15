@@ -36,6 +36,9 @@ fi
 type="$1"
 
 case $type in
+    class)
+        ;;
+    
     header)
         filename="${2:?no file specified}"
         if [ "${filename#*.}" = "" ]; then
