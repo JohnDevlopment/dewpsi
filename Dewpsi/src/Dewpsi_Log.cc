@@ -1,5 +1,10 @@
 #include "Dewpsi_Log.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <cstdarg>
+#include <cstdio>
+
+
+static std::unique_ptr<char[]> g_pError(new char[500]);
 
 namespace Dewpsi {
 
@@ -19,6 +24,19 @@ void Log::Init()
     s_ClientLogger->set_level(spdlog::level::trace);
     
     s_Initted = true;
+}
+
+void SetError(const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    std::vsprintf(g_pError.get(), fmt, args);
+    va_end(args);
+}
+
+const char* GetError()
+{
+    return g_pError.get();
 }
 
 }

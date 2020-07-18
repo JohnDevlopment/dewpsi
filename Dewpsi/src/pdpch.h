@@ -2,6 +2,7 @@
 #define PDPCH_H
 
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include <utility>
 #include <string>
@@ -11,7 +12,7 @@
 #include <stdexcept>
 #include <csignal>
 #include <type_traits>
-#include <spdlog/spdlog.h>
+#include <alloca.h>
 
 #include "Dewpsi_Log.h"
 

@@ -2,6 +2,9 @@
 
 namespace Dewpsi {
 
+LayerStack::LayerStack() : m_vLayers(), m_iInsertIndex(0)
+{  }
+
 LayerStack::~LayerStack()
 {
     for (Layer* layer : m_vLayers)
@@ -14,12 +17,14 @@ LayerStack::~LayerStack()
 void LayerStack::PushLayer(Layer* layer)
 {
     m_vLayers.emplace(m_vLayers.begin() + m_iInsertIndex, layer);
+    layer->OnAttach();
     ++m_iInsertIndex;
 }
 
 void LayerStack::PushOverlay(Layer* overlay)
 {
     m_vLayers.emplace_back(overlay);
+    overlay->OnAttach();
 }
 
 void LayerStack::PullLayer(Layer* layer)

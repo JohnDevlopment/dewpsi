@@ -7,10 +7,11 @@
 *   @ingroup    core
 */
 
-#include <string>
-#include <Dewpsi_Window.h>
 #include <Dewpsi_Core.h>
+#include <Dewpsi_Window.h>
 #include <Dewpsi_LayerStack.h>
+
+#include <string>
 
 int main(int argc, const char** argv);
 
@@ -36,6 +37,9 @@ namespace Dewpsi {
         /// Returns a pointer to the window.
         Window& GetWindow()
         { return *m_window; }
+        
+        /// Updates each layer on the layer stack.
+        void UpdateLayers();
         
         /// Returns a pointer to the application.
         static Application& Get()

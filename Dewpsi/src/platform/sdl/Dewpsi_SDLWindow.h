@@ -4,6 +4,7 @@
 #include <Dewpsi_Core.h>
 #include <Dewpsi_Event.h>
 #include <Dewpsi_Window.h>
+#include <Dewpsi_Color.h>
 #include <SDL.h>
 
 namespace Dewpsi {
@@ -50,6 +51,9 @@ namespace Dewpsi {
         {
             return (void*) &m_native;
         }
+        
+        // set clear color
+        virtual void SetClearColor(const Color& color) override;
         
      private:
         virtual void Init(const WindowProps& props);

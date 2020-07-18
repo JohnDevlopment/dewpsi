@@ -12,6 +12,7 @@
 *   @{
 */
 
+#include <Dewpsi_Core.h>
 #include <memory>
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
@@ -72,6 +73,7 @@ namespace Dewpsi {
     /** Constructs a @c LogHex with the given value.
     *   @param  val Any integer value.
     *   @return     A @c LogHex with @a value in it.
+    *   @ingroup    logging
     */
     template<typename T>
     inline typename std::enable_if<std::is_arithmetic<T>::value, LogHex<T>>::type
@@ -79,35 +81,57 @@ namespace Dewpsi {
     {
         return LogHex<T>(val);
     }
+    
+    /** Sets an error message.
+    *   @param  fmt A format string in the syntax used by printf
+    *   @param  ... A list of arguments that correspond to the fields in @a fmt
+    *   @warning    The error string max size is 500 characters.
+    *   @ingroup    logging
+    */
+    PD_CALL void SetError(const char* fmt, ...);
+    
+    /** Returns the error message last set by SetError().
+    *   @return The error message last set by SetError()
+    *   @ingroup    logging
+    */
+    PD_CALL const char* GetError();
 }
 
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const Dewpsi::LogHex<T>& obj)
 {
-    os << std::hex << obj.get() << std::dec;
+    os << std::hex << "0x" << obj.get() << std::dec;
 }
 
-/// Logs trace messages.
-#define PD_CORE_TRACE(...)     ::Dewpsi::Log::GetCoreLogger()->trace(__VA_ARGS__)
-/// Logs info messages.
-#define PD_CORE_INFO(...)      ::Dewpsi::Log::GetCoreLogger()->info(__VA_ARGS__)
-/// Prints a warning.
-#define PD_CORE_WARN(...)      ::Dewpsi::Log::GetCoreLogger()->warn(__VA_ARGS__)
-/// Prints an error.
-#define PD_CORE_ERROR(...)     ::Dewpsi::Log::GetCoreLogger()->error(__VA_ARGS__)
-/// Prints a @a fatal @a error.
-#define PD_CORE_CRITICAL(...)  ::Dewpsi::Log::GetCoreLogger()->critical(__VA_ARGS__)
+// TODO: add description
+#define PD_BADPARAM(param)      ::Dewpsi::SetError("Bad parameter '%s'", #param)
+
+// TODO: add description
+#ifdef PD_DEBUG
+    #define PD_CORE_PRINTFUNC() ::Dewpsi::Log::GetCoreLogger()->trace("Function name: {0}", __FUNCTION__);
+#endif
 
 /// Logs trace messages.
-#define PD_TRACE(...)          ::Dewpsi::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define PD_CORE_TRACE(...)      ::Dewpsi::Log::GetCoreLogger()->trace(__VA_ARGS__)
 /// Logs info messages.
-#define PD_INFO(...)           ::Dewpsi::Log::GetClientLogger()->info(__VA_ARGS__)
+#define PD_CORE_INFO(...)       ::Dewpsi::Log::GetCoreLogger()->info(__VA_ARGS__)
 /// Prints a warning.
-#define PD_WARN(...)           ::Dewpsi::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define PD_CORE_WARN(...)       ::Dewpsi::Log::GetCoreLogger()->warn(__VA_ARGS__)
 /// Prints an error.
-#define PD_ERROR(...)          ::Dewpsi::Log::GetClientLogger()->error(__VA_ARGS__)
+#define PD_CORE_ERROR(...)      ::Dewpsi::Log::GetCoreLogger()->error(__VA_ARGS__)
 /// Prints a @a fatal @a error.
-#define PD_CRITICAL(...)       ::Dewpsi::Log::GetClientLogger()->critical(__VA_ARGS__)
+#define PD_CORE_CRITICAL(...)   ::Dewpsi::Log::GetCoreLogger()->critical(__VA_ARGS__)
+
+/// Logs trace messages.
+#define PD_TRACE(...)           ::Dewpsi::Log::GetClientLogger()->trace(__VA_ARGS__)
+/// Logs info messages.
+#define PD_INFO(...)            ::Dewpsi::Log::GetClientLogger()->info(__VA_ARGS__)
+/// Prints a warning.
+#define PD_WARN(...)            ::Dewpsi::Log::GetClientLogger()->warn(__VA_ARGS__)
+/// Prints an error.
+#define PD_ERROR(...)           ::Dewpsi::Log::GetClientLogger()->error(__VA_ARGS__)
+/// Prints a @a fatal @a error.
+#define PD_CRITICAL(...)        ::Dewpsi::Log::GetClientLogger()->critical(__VA_ARGS__)
 
 /// @}
 

@@ -1,0 +1,2 @@
+break Dewpsi::LayerStack::PushLayer(Dewpsi::Layer*)
+catch signal SIGSEGV

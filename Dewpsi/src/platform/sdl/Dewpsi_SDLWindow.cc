@@ -1,10 +1,12 @@
 #include "Dewpsi_WhichOS.h"
 #include "Dewpsi_Core.h"
+#include "Dewpsi_Application.h"
 #include "Dewpsi_ApplicationEvent.h"
 #include "Dewpsi_MouseEvent.h"
 #include "Dewpsi_KeyEvent.h"
 #include "Dewpsi_String.h"
 #include "Dewpsi_ImGui_SDL.h"
+//#include "Dewpsi_ImGui_OpenGL3.h"
 
 #include <glad/glad.h>
 
@@ -20,6 +22,12 @@
 #define newl(x)         "\n" space(x)
 #define newlstr(x, s)   "\n" space(x) s
 #define spacestr(x, s)  space(x) s
+
+void OpenGL_Test1();
+void OpenGL_Test2();
+void OpenGL_Test3();
+
+static bool UseOpenGL = false;
 
 static constexpr Dewpsi::StaticString FalseTrueStrings[2] = { "false", "true" };
 
@@ -158,9 +166,15 @@ static std::unordered_map<uint32_t, Dewpsi::KeyCode> KeyCodeMap = {
 #endif
 
 #ifdef PD_DEBUG
-static void list_sdl_renderers();
-static void print_window_information(const Dewpsi::WindowProps&, SDL_Window*);
-static void print_renderer_information(SDL_Renderer*);
+    #ifdef PD_LIST_RENDERERS
+    static void list_sdl_renderers();
+    #endif
+    #ifdef PD_PRINT_WINDOW
+    static void print_window_information(const Dewpsi::WindowProps&, SDL_Window*);
+    #endif
+    #ifdef PD_PRINT_RENDERER
+    static void print_renderer_information(SDL_Renderer*);
+    #endif
 #endif
 
 static Dewpsi::KeyCode GetKeyCode(int kc);
@@ -181,8 +195,27 @@ SDL2Window::~SDL2Window()
 void SDL2Window::Update()
 {
     SDL_PumpEvents();
-    SDL_RenderClear(m_renderer);
-    SDL_RenderPresent(m_renderer);
+    
+    static bool bInit = false;
+    
+    if (! UseOpenGL)
+    {
+        SDL_RenderClear(m_renderer);
+        Application::Get().UpdateLayers();
+        SDL_RenderPresent(m_renderer);
+    }
+    else
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+        Application::Get().UpdateLayers();
+        if (! bInit)
+        {
+            OpenGL_Test1();
+            bInit = true;
+        }
+        OpenGL_Test2();
+        SDL_GL_SwapWindow(m_window);
+    }
 }
 
 void SDL2Window::SetVSync(bool bEnable)
@@ -193,6 +226,11 @@ void SDL2Window::SetVSync(bool bEnable)
 bool SDL2Window::IsVSync() const
 {
     return false;
+}
+
+void SDL2Window::SetClearColor(const Color& color)
+{
+    glClearColor(0.0f, 0.0f, 0.0f, 1);
 }
 
 void SDL2Window::Init(const WindowProps& props)
@@ -208,12 +246,81 @@ void SDL2Window::Init(const WindowProps& props)
     PD_CORE_ASSERT(! m_window, "Window already created");
     
     // for debugging purposes
-#ifdef PD_DEBUG
+#if defined(PD_DEBUG) && defined(PD_LIST_RENDERERS)
     if (props.title == "list renderers")
     {
         list_sdl_renderers();
     }
 #endif
+    
+    // set OpenGL flags prior to window creation
+    if (props.flags & WindowOpenGL)
+    {
+        for (int x = 0; x < int(OpenGLAttributes::Count); ++x)
+        {
+            int iAttrVal = 0;
+            SDL_GLattr eAttr;
+            OpenGLAttributes eMyAttr;
+            
+            GetWindowOpenGLAttribute(props, eMyAttr, iAttrVal, static_cast<unsigned int>(x));
+            
+            // no attribute given
+            if (eMyAttr == OpenGLAttributes::Empty)
+                continue;
+            
+            switch (eMyAttr)
+            {
+            case OpenGLAttributes::Depth:
+                eAttr = SDL_GL_DEPTH_SIZE;
+                break;
+            
+            case OpenGLAttributes::DoubleBuffer:
+                eAttr = SDL_GL_DOUBLEBUFFER;
+                PD_CORE_TRACE("SDL_GL_DOUBLEBUFFER"); // TODO: remove
+                break;
+            
+            case OpenGLAttributes::RedSize:
+                eAttr = SDL_GL_RED_SIZE;
+                break;
+            
+            case OpenGLAttributes::GreenSize:
+                eAttr = SDL_GL_GREEN_SIZE;
+                break;
+            
+            case OpenGLAttributes::BlueSize:
+                eAttr = SDL_GL_BLUE_SIZE;
+                break;
+            
+            case OpenGLAttributes::AlphaSize:
+                eAttr = SDL_GL_ALPHA_SIZE;
+                break;
+            
+            case OpenGLAttributes::AccelerationRequired:
+                eAttr = SDL_GL_ACCELERATED_VISUAL;
+                PD_CORE_TRACE("SDL_GL_ACCELERATED_VISUAL"); // TODO: remove
+                break;
+            
+            case OpenGLAttributes::MajorVersion:
+                eAttr = SDL_GL_CONTEXT_MAJOR_VERSION;
+                break;
+            
+            case OpenGLAttributes::MinorVersion:
+                eAttr = SDL_GL_CONTEXT_MINOR_VERSION;
+                break;
+            
+            case OpenGLAttributes::ContextFlags:
+                eAttr = SDL_GL_CONTEXT_FLAGS;
+                break;
+            
+            default: break;
+            }
+            
+            SDL_GL_SetAttribute(eAttr, iAttrVal);
+        }
+        
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+    }    
     
     // create a window
     {
@@ -272,24 +379,25 @@ void SDL2Window::Init(const WindowProps& props)
             // if the Dewpsi window bit is set,
             // the corresponding SDL window flag is set
             if (props.flags & itrWinFlag)
-            {
                 uiFlags |= *itrSDLFlag;
-            }
             ++itrSDLFlag;
         }
         
         // create a window (SDL_WINDOWPOS_CENTERED = center)
         m_window = SDL_CreateWindow(props.title.c_str(), props.x, props.y,
                                     props.width, props.height, uiFlags);
+        
         PD_CORE_ASSERT(m_window, "Failed to create window: {0}", SDL_GetError());
         
-        #ifdef PD_DEBUG
+        #if defined(PD_DEBUG) && defined(PD_PRINT_WINDOW)
         print_window_information(props, m_window);
         #endif
+        
+        m_native.window = m_window;
     }
     
     // create rendering context
-    {
+    if (! (props.flags & WindowOpenGL)) {
         uint32_t uiFlags = 0;
         std::vector<uint32_t> vWinFlags = {
             RendererSoftware,
@@ -317,16 +425,14 @@ void SDL2Window::Init(const WindowProps& props)
         
         // create renderer
         m_renderer = SDL_CreateRenderer(m_window, props.index, uiFlags);
-        PD_CORE_ASSERT(m_renderer, "Failed to create renderer: {}", SDL_GetError());
+        PD_CORE_ASSERT(m_renderer, "Failed to create renderer: {0}", SDL_GetError());
         
-        #ifdef PD_DEBUG
+        #if defined(PD_DEBUG) && defined(PD_PRINT_RENDERER)
         print_renderer_information(m_renderer);
         #endif
+        
+        m_native.renderer = m_renderer;
     }
-    
-    // set native window data
-    m_native.window = m_window;
-    m_native.renderer = m_renderer;
     
     // mark vsync as enabled
     if (props.flags & RendererVSync)
@@ -340,15 +446,23 @@ void SDL2Window::Init(const WindowProps& props)
         PD_CORE_ASSERT(m_context, "Failed to create OpenGL context: {0}", SDL_GetError());
         m_native.context = m_context;
         
+        // associate window with context
+        SDL_GL_MakeCurrent(m_window, m_context);
+        
         // GLAD loader
         int iCode = gladLoadGLLoader(SDL_GL_GetProcAddress);
         PD_CORE_ASSERT(iCode, "Failed to load GLAD");
         
-        PD_CORE_INFO("OpenGL vendor: {0}, renderer: {1}, version: {2}", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
+        PD_CORE_TRACE("OpenGL vendor: {0}, renderer: {1}, version: {2}", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
         
         // enable vsync
         if (m_data.vsync)
+        {
             SDL_GL_SetSwapInterval(1);
+            PD_CORE_TRACE("Enabled vertical sync with OpenGL context");
+        }
+        
+        UseOpenGL = true;
     }
     
     // register event callback
@@ -357,6 +471,8 @@ void SDL2Window::Init(const WindowProps& props)
 
 void SDL2Window::Shutdown()
 {
+    OpenGL_Test3();
+    
     if (m_context)
     {
         SDL_GL_DeleteContext(m_context);
@@ -454,7 +570,11 @@ Dewpsi::KeyCode GetKeyCode(int kc)
     return static_cast<Dewpsi::KeyCode>(found->second);
 }
 
+// == DEBUG == //
+
 #ifdef PD_DEBUG
+
+#ifdef PD_LIST_RENDERERS
 void list_sdl_renderers()
 {
     using Dewpsi::IsNonzero;
@@ -481,7 +601,9 @@ void list_sdl_renderers()
     
     std::raise(SIGINT);
 }
+#endif /* PD_LIST_RENDERERS */
 
+#ifdef PD_PRINT_WINDOW
 static constexpr Dewpsi::StaticString WinFlagStrings[] = {
     "fullscreen window",
     "fullscreen window with desktop resolution",
@@ -508,23 +630,24 @@ static constexpr Dewpsi::StaticString WinFlagStrings[] = {
 
 void print_window_information(const Dewpsi::WindowProps& props, SDL_Window* win)
 {
-    std::stringstream ss;
+    using std::cout;
+    using std::endl;
     
-    ss << "Window properties:\n";
+    PD_CORE_TRACE("Printing window information...");
     
-    {
-        int x, y;
-        SDL_GetWindowPosition(win, &x, &y);
-        ss << "    x/y position: (" << x << ',' << y << ")\n";
-    }
+    cout << "Window properties:\n";
     
     {
-        int w, h;
-        SDL_GetWindowSize(win, &w, &h);
-        ss << "    width/height: " << w << 'x' << h << '\n';
+        SDL_Rect rect;
+        SDL_GetWindowPosition(win, &rect.x, &rect.y);
+        SDL_GetWindowSize(win, &rect.w, &rect.h);
+        
+        cout << spacestr(1, "x position: ") << rect.x \
+        << newlstr(1, "y position: ") << rect.y << newlstr(1, "width: ") \
+        << rect.w << newlstr(1, "height: ") << rect.h << endl;
     }
     
-    ss << "    title: " << SDL_GetWindowTitle(win) << '\n';
+    cout << spacestr(1, "title: ") << SDL_GetWindowTitle(win) << '\n';
     
     {
         const uint32_t uiaFlags[] = {
@@ -551,20 +674,22 @@ void print_window_information(const Dewpsi::WindowProps& props, SDL_Window* win)
             SDL_WINDOW_POPUP_MENU
         };
         
-        ss << "    flags:\n";
+        cout << spacestr(1, "flags:") << endl;
         
         const uint32_t uiFlags = SDL_GetWindowFlags(win);
-        
         for (int x = 0; x < 21; ++x)
         {
             if (uiFlags & uiaFlags[x])
             {
-                ss << "        " << WinFlagStrings[x].get() << '\n';
+                cout << space(2) << WinFlagStrings[x].get() << '\n';
             }
         }
-    }
+        cout << std::flush;
+    } // end block
 }
+#endif /* PD_PRINT_WINDOW */
 
+#ifdef PD_PRINT_RENDERER
 static constexpr Dewpsi::StaticString RenFlagStrings[4] = {
     "renderer is a software fallback",
     "renderer supports hardware acceleration",
@@ -783,7 +908,9 @@ void print_renderer_information(SDL_Renderer* ren)
         cout << endl;
     }
 }
-#endif
+#endif /* PD_PRINT_RENDERER */
+
+#endif /* PD_DEBUG */
 
 #undef space1
 #undef space2

@@ -1,7 +1,19 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <iostream>
+#include <memory>
+#include <utility>
 #include <type_traits>
+#include <string>
+#include <vector>
+#include <functional>
+#include <stdexcept>
+#include <csignal>
+#include <cstdint>
+#include <Dewpsi_Log.h>
+#include <Dewpsi_Types.h>
+
 
 /**
 *   @file       Dewpsi_Core.h
@@ -13,6 +25,12 @@
 *   @{
 */
 
+/**
+*   @def        PD_CONSTEXPR
+*   @brief      Prefix to the declaration of any function even before PD_CALL.
+*
+*   Indicates that the function returns a constant expression.
+*/
 #if defined(__cplusplus) && __cplusplus >= 201103L
     #define PD_CONSTEXPR    constexpr
 #else
@@ -43,10 +61,13 @@
 */
 // debug breaking
 #ifdef PD_DEBUG
-    #ifdef PD_PLATFORM_LINUX
-        #define PD_DEBUGBREAK() std::raise(3);
-    #elif PD_PLATFORM_WINDOWS
+    #if defined(PD_PLATFORM_LINUX) || defined(__linux)
+        #define PD_DEBUGBREAK() std::raise(SIGINT);
+    #elif defined(PD_PLATFORM_WINDOWS) || defined(_WIN32)
         #define PD_DEBUGBREAK() __debugbreak();
+    #else
+        #warning PD_DEBUGBREAK is undefined because the operating system is not recognized.
+        #define PD_DEBUGBREAK()
     #endif
 #else
     #define PD_DEBUGBREAK(m)
@@ -66,8 +87,8 @@
 *   @note       Only compiles if @a PD_ENABLE_ASSERTS is defined.
 */
 #ifdef PD_ENABLE_ASSERTS
-    #define PD_ASSERT(x, ...)       if (! (x)) { PD_ERROR("Assertion failed: {0}", __VA_ARGS__); PD_DEBUGBREAK(); }
-    #define PD_CORE_ASSERT(x, ...)  if (! (x)) { PD_CORE_ERROR("Assertion failed: {0}", __VA_ARGS__); PD_DEBUGBREAK(); }
+    #define PD_ASSERT(x, ...)       if (! (x)) { ::Dewpsi::Log::GetClientLogger()->error(__VA_ARGS__); PD_DEBUGBREAK(); }
+    #define PD_CORE_ASSERT(x, ...)  if (! (x)) { ::Dewpsi::Log::GetCoreLogger()->error(__VA_ARGS__); PD_DEBUGBREAK(); }
 #else
     #define PD_ASSERT(x, ...)
     #define PD_CORE_ASSERT(x, ...)
@@ -87,7 +108,7 @@
 #define PD_HIWORD(x)            ((x) >> 16)
 
 /// Creates a 32 bit value from two words.
-#define PD_CREATEWORD(lo, hi)   (((uint16_t) hi << 16) | (uint16_t)(lo))
+#define PD_CREATEWORD(lo, hi)   (((uint16_t)(hi) << 16) | (uint16_t)(lo))
 
 /// Dewpsi Namespace: contains all relevent Dewpsi functions, classes, and other types.
 namespace Dewpsi {

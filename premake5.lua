@@ -36,8 +36,14 @@ project "dewpsi"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
     files {
-        (srcdir .. "/**.cc"),
-        (srcdir .. "/**.h"),
+        (srcdir .. "/*.cc"),
+        (srcdir .. "/events/*.cc"),
+        (srcdir .. "/ImGui/*.cc"),
+        
+        (srcdir .. "/*.h"),
+        (srcdir .. "/os/*.h"),
+        (srcdir .. "/events/*.h"),
+        (srcdir .. "/ImGui/*.h"),
     }
     pchheader "pdpch.h"
     pchsource "Dewpsi/src/pdpch.cpp"
@@ -53,7 +59,8 @@ project "dewpsi"
         "%{IncludeDir.glad}",
         (srcdir),
         (srcdir .. "/events"),
-        (srcdir .. "/os")
+        (srcdir .. "/os"),
+        (srcdir .. "/ImGui")
     }
     libdirs {
         (sdl2dir),
@@ -86,10 +93,8 @@ filter "system:linux"
         "dl"
     }
     files {
-        (srcdir .. "/platform/sdl/Dewpsi_SDLWindow.cc"),
-        (srcdir .. "/platform/sdl/Dewpsi_SDLWindow.h"),
-        (srcdir .. "/platform/sdl/Dewpsi_ImGui_SDL.cpp"),
-        (srcdir .. "/platform/sdl/Dewpsi_ImGui_SDL.h")
+        (srcdir .. "/platform/sdl/Dewpsi_*.cc"),
+        (srcdir .. "/platform/sdl/Dewpsi_*.h")
     }
     
     postbuildcommands {

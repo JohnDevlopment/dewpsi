@@ -23,7 +23,7 @@ namespace Dewpsi {
         /// A reverse iterator to a layer
         typedef std::vector<Layer*>::reverse_iterator ReverseIterator;
         
-        LayerStack() = default;
+        LayerStack();
         ~LayerStack();
         
         /// Pushes a layer onto the stack.

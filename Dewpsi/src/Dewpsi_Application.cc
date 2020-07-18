@@ -3,6 +3,7 @@
 #include "Dewpsi_Debug.h"
 #include "Dewpsi_Window.h"
 #include "Dewpsi_ApplicationEvent.h"
+#include "Dewpsi_ImGuiLayer.h"
 
 #include <SDL.h>
 #include <stdexcept>
@@ -36,6 +37,9 @@ Application::Application(const std::string& sName)
     // create the window
     m_window = Window::Create(_WindowProperties);
     m_window->SetEventCallback(PD_BIND_EVENT_FN(Application::OnEvent));
+    
+    // push the ImGui layer
+//    PushOverlay(new ImGuiLayer()); // TODO: reenable
 }
 
 Application::~Application()
@@ -65,6 +69,12 @@ void Application::PushLayer(Layer* layer)
 void Application::PushOverlay(Layer* overlay)
 {
     m_layerStack.PushOverlay(overlay);
+}
+
+void Application::UpdateLayers()
+{
+    for (auto itr = m_layerStack.rbegin(); itr != m_layerStack.rend(); ++itr)
+        (*itr)->OnUpdate();
 }
 
 void Application::Run()
