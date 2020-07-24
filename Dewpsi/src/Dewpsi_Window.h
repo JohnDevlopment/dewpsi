@@ -33,10 +33,13 @@
 #define PD_WINDOWPOS_CENTERED               PD_WINDOWPOS_CENTERED_DISPLAY(0)
 #define PD_WINDOWPOS_ISCENTERED(x)          (((x)&0xFFFF0000) == PD_WINDOWPOS_CENTERED_MASK)
 
-/// @ingroup windows
 namespace Dewpsi {
+    /**
+    *   @addtogroup windows
+    *   @{
+    */
+
     /** OpenGL-specific context flags.
-    *   @ingroup    windows
     *   @note       Check (https://wiki.libsdl.org/SDL_GLattr?highlight=%28%5CbCategoryEnum%5Cb%29%7C%28CategoryVideo%29)
     *               for a full list of SDL OpenGL attributes.
     */
@@ -60,7 +63,6 @@ namespace Dewpsi {
     };
     
     /// Window/renderer creation flags.
-    /// @ingroup windows
     enum WindowFlags : uint32_t {
         WindowFullscreen        = BIT(0),   ///< Generated window is in fullscreen
         WindowFullDesktop       = BIT(1),   ///< Create a fullscreen window at desktop resolution
@@ -92,8 +94,6 @@ namespace Dewpsi {
     
     /** A structure that contains the properties
     *   of the window to be created.
-    *
-    *   @ingroup windows
     */
     struct WindowProps {
         std::string title;      ///< The title of the window
@@ -112,24 +112,34 @@ namespace Dewpsi {
         WindowProps(const WindowProps& src);
     };
     
-    // TODO: add description
+    /** A structure with information about a window.
+    *   This structure with filled by a call to GetWindowInformation().
+    *   @note   A note on the red, green, blue, and alpha fields: those values were constructed with
+    *   PD_CREATEBYTE(). To get the size of these, use PD_LONYBBLE(); to get the order, use PD_HINYBBLE().
+    *   @code{.cpp}
+        WindowModeInfo info;
+        // Window* win;
+        GetWindowInformation(win, info);
+        PDuint8 uiRedSize = PD_LONYBBLE(info.red);
+        // uiRedSize = amount of bits for red
+    *   @endcode
+    */
     struct WindowModeInfo {
-        PDint32         swap;
-        PDint32         accel;
-        PDuint32        width;
-        PDuint32        height;
-        const PDuchar*  vendor;
-        const PDuchar*  renderer;
-        const PDuchar*  version;
-        const PDuchar*  extensions;
-        PDuint8         red;
-        PDuint8         green;
-        PDuint8         blue;
-        PDuint8         alpha;
+        PDint32         swap;       ///< The swap interval (i.e., enable for vsync, 1 for enable, 0 for disable, -1 for adaptive)
+        PDint32         accel;      ///< Hardware acceleration enabled (1 for yes, 0 for no)
+        PDuint32        width;      ///< The display width
+        PDuint32        height;     ///< The display height
+        const PDuchar*  vendor;     ///< A string with the underlying rendering context's vendor
+        const PDuchar*  renderer;   ///< A string with the name of the underlying rendering context
+        const PDuchar*  version;    ///< A string with the version of the underlying rendering context
+        const PDuchar*  extensions; ///< A string with the supported extensions for the underlying rendering context
+        PDuint8         red;        ///< The bit size of the red component
+        PDuint8         green;      ///< The bit size of the green component
+        PDuint8         blue;       ///< The bit size of the blue component
+        PDuint8         alpha;      ///< The bit size of the alpha component
     };
     
     /** A class that abstractly represents the application window.
-    *   @ingroup windows
     */
     class Window {
     public:
@@ -173,14 +183,18 @@ namespace Dewpsi {
         static Scope<Window> Create(const WindowProps& props);
     };
     
-    // TODO: add description
+    /** Retrieves information about a window.
+    *
+    *   @param  win     A pointer to a window
+    *   @param  info    A pointer to WindowModeInfo, filled with information on @a win
+    *   @return         0 on success and -1 on failure; call GetError() for the error message
+    */
     PD_CALL int GetWindowInformation(Window* win, WindowModeInfo* info);
     
     /** Sets a window OpenGL attribute.
     *   @param  props   A WindowProps structure that is filled with OpenGL attributes
     *   @param  attr    An OpenGL attribute of the enumeration OpenGLAttributes
     *   @param  val     A value to set the given attribute to
-    *   @ingroup        windows
     */
     PD_CALL void SetWindowOpenGLAttribute(WindowProps& props, OpenGLAttributes attr, int val);
     
@@ -189,9 +203,10 @@ namespace Dewpsi {
     *   @param  pAttr   Filled with the attribute set at @a index position within the array
     *   @param  pVal    Filled with the value of the attribute
     *   @param  index   The index of the attribute to set, must be less than OpenGLAttributes::Count
-    *   @ingroup        windows
     */
     PD_CALL void GetWindowOpenGLAttribute(const WindowProps& props, OpenGLAttributes& pAttr, int& pVal, unsigned int index);
+    
+    /// @}
 }
 
 /// @}

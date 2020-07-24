@@ -3,7 +3,7 @@
 
 /**
 *   @file       Dewpsi_Color.h
-*   @file       A header for the Dewpsi engine.
+*   @brief      A header for the Dewpsi engine.
 *
 *   @ingroup    core
 */

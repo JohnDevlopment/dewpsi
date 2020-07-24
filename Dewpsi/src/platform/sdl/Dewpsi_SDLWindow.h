@@ -55,6 +55,10 @@ namespace Dewpsi {
         // set clear color
         virtual void SetClearColor(const Color& color) override;
         
+        // get window data
+        uint32_t GetFormat() const
+        { return m_data.format; }
+        
      private:
         virtual void Init(const WindowProps& props);
         virtual void Shutdown();
@@ -63,7 +67,9 @@ namespace Dewpsi {
         
         struct WindowData {
             std::string title;
-            unsigned int width, height;
+            uint32_t width;
+            uint32_t height;
+            uint32_t format;
             bool vsync;
             EventCallback callback;
             

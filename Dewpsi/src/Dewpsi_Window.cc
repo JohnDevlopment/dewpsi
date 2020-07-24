@@ -31,7 +31,7 @@ void SetWindowOpenGLAttribute(WindowProps& props, OpenGLAttributes attr, int val
     {
         if (props.openglattr[x] == OpenGLAttributes::Empty)
         {
-            props.openglattr[x] = PD_CREATEWORD(val, attr);
+            props.openglattr[x] = PD_CREATEDWORD(val, attr);
             break;
         }
     }

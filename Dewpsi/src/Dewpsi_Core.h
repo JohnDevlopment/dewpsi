@@ -107,8 +107,43 @@
 /// Retrieves the high word of a value.
 #define PD_HIWORD(x)            ((x) >> 16)
 
-/// Creates a 32 bit value from two words.
-#define PD_CREATEWORD(lo, hi)   (((uint16_t)(hi) << 16) | (uint16_t)(lo))
+/** Defines a 32-bit integer from two 16-bit values.
+*   @param  lo  The low word
+*   @param  hi  The high word.
+*   @return     A 32 bit value constructed from two words
+*
+*   @par Example
+*   An example of how PD_CREATEDWORD() can be used:
+*   @code{.cpp}
+    PDint32 iVal = PD_CREATEDWORD(0x0f, 0x05); // results in 0x010f
+    std::cout << std::hex << "0x" << iVal << std::endl;
+*   @endcode
+*/
+#define PD_CREATEDWORD(lo, hi)  (((PDuint16)(hi) << 16) | (PDuint16)(lo))
+
+/// Retrieves the low nybble of an 8-bit value.
+#define PD_LONYBBLE(x)          ((PDint8)(x) & 0x0f)
+
+/// Retrieves the high nybble of an 8-bit value.
+#define PD_HINYBBLE(x)          ((PDuint8)(x) >> 4)
+
+/** Defines an 8 bit value from two integers.
+*   The value is created by combining two integers, one for the low nybble
+*   (a nybble is 4 bits), and one for the high nybble.
+*   @param  lo  The low nybble
+*   @param  hi  The high nybble
+*   @return     An 8-bit integer with the two values combined
+*
+*   @par Example
+*   To show how this macro can be used, let's create an 8 bit integer from two
+*   smaller values.
+*
+*   @code{.cpp}
+    PDint8 uiVal = PD_CREATEBYTE(0x0f, 0x01); // results in 0x1f
+    std::cout << std::hex << "0x" << uiVal << std::endl;
+*   @endcode
+*/
+#define PD_CREATEBYTE(lo, hi)   (((PDuint8)(hi) << 4) | (PDuint8)(lo))
 
 /// Dewpsi Namespace: contains all relevent Dewpsi functions, classes, and other types.
 namespace Dewpsi {

@@ -13,7 +13,11 @@
 #include <SDL.h>
 #include <csignal>
 #include <cstdlib>
+#include <cstddef>
 #include <unordered_map>
+
+//#warning PD_PRINT_OPENGL_ATTRIBUTES defined
+//#define PD_PRINT_OPENGL_ATTRIBUTES
 
 #define space1          "    "
 #define space2          "        "
@@ -175,9 +179,14 @@ static std::unordered_map<uint32_t, Dewpsi::KeyCode> KeyCodeMap = {
     #ifdef PD_PRINT_RENDERER
     static void print_renderer_information(SDL_Renderer*);
     #endif
+    #ifdef PD_PRINT_OPENGL_ATTRIBUTES
+    static void print_opengl_attributes(SDL_Window*);
+    #endif
 #endif
 
 static Dewpsi::KeyCode GetKeyCode(int kc);
+static SDL_GLattr Dewpsi2SDL_GL_Attrib(Dewpsi::OpenGLAttributes attr);
+static void SeparateFormat(PDuint32, Dewpsi::WindowModeInfo&);
 
 namespace Dewpsi {
 
@@ -215,6 +224,7 @@ void SDL2Window::Update()
         }
         OpenGL_Test2();
         SDL_GL_SwapWindow(m_window);
+        //glFlush();
     }
 }
 
@@ -230,7 +240,8 @@ bool SDL2Window::IsVSync() const
 
 void SDL2Window::SetClearColor(const Color& color)
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1);
+    FColor clearColor = color;
+    glClearColor(clearColor.red, clearColor.green, clearColor.blue, 1.0f);
 }
 
 void SDL2Window::Init(const WindowProps& props)
@@ -268,57 +279,13 @@ void SDL2Window::Init(const WindowProps& props)
             if (eMyAttr == OpenGLAttributes::Empty)
                 continue;
             
-            switch (eMyAttr)
-            {
-            case OpenGLAttributes::Depth:
-                eAttr = SDL_GL_DEPTH_SIZE;
-                break;
-            
-            case OpenGLAttributes::DoubleBuffer:
-                eAttr = SDL_GL_DOUBLEBUFFER;
-                PD_CORE_TRACE("SDL_GL_DOUBLEBUFFER"); // TODO: remove
-                break;
-            
-            case OpenGLAttributes::RedSize:
-                eAttr = SDL_GL_RED_SIZE;
-                break;
-            
-            case OpenGLAttributes::GreenSize:
-                eAttr = SDL_GL_GREEN_SIZE;
-                break;
-            
-            case OpenGLAttributes::BlueSize:
-                eAttr = SDL_GL_BLUE_SIZE;
-                break;
-            
-            case OpenGLAttributes::AlphaSize:
-                eAttr = SDL_GL_ALPHA_SIZE;
-                break;
-            
-            case OpenGLAttributes::AccelerationRequired:
-                eAttr = SDL_GL_ACCELERATED_VISUAL;
-                PD_CORE_TRACE("SDL_GL_ACCELERATED_VISUAL"); // TODO: remove
-                break;
-            
-            case OpenGLAttributes::MajorVersion:
-                eAttr = SDL_GL_CONTEXT_MAJOR_VERSION;
-                break;
-            
-            case OpenGLAttributes::MinorVersion:
-                eAttr = SDL_GL_CONTEXT_MINOR_VERSION;
-                break;
-            
-            case OpenGLAttributes::ContextFlags:
-                eAttr = SDL_GL_CONTEXT_FLAGS;
-                break;
-            
-            default: break;
-            }
-            
-            SDL_GL_SetAttribute(eAttr, iAttrVal);
+            // convert Dewpsi::OpenGLAttributes to SDL_GLattr
+            eAttr = Dewpsi2SDL_GL_Attrib(eMyAttr);
+            if ((int) eAttr >= 0)
+                SDL_GL_SetAttribute(eAttr, iAttrVal);
         }
         
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
     }    
     
@@ -453,7 +420,7 @@ void SDL2Window::Init(const WindowProps& props)
         int iCode = gladLoadGLLoader(SDL_GL_GetProcAddress);
         PD_CORE_ASSERT(iCode, "Failed to load GLAD");
         
-        PD_CORE_TRACE("OpenGL vendor: {0}, renderer: {1}, version: {2}", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
+//        PD_CORE_TRACE("OpenGL vendor: {0}, renderer: {1}, version: {2}", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
         
         // enable vsync
         if (m_data.vsync)
@@ -463,6 +430,35 @@ void SDL2Window::Init(const WindowProps& props)
         }
         
         UseOpenGL = true;
+        
+        // get width and height of window
+        {
+            int w = 0, h = 0;
+            SDL_GetWindowSize(m_window, &w, &h);
+            PD_CORE_ASSERT(w && h, "Failed to get window size: {0}", SDL_GetError());
+            glViewport(0, 0, w, h);
+            m_data.width = w;
+            m_data.height = h;
+        }
+        
+        // set initial background color
+        SetClearColor(DefineColor(PD_COLOR_BLACK));
+        
+//        glEnable(GL_2D_TEXTURE);
+        
+        #if defined(PD_DEBUG) && defined(PD_PRINT_OPENGL_ATTRIBUTES)
+        print_opengl_attributes(m_window);
+        #endif
+    }
+    
+    {
+        SDL_DisplayMode mode;
+        int temp = SDL_GetWindowDisplayMode(m_window, &mode);
+        PD_CORE_ASSERT(temp >= 0, "Failed to derive window information: {0}", SDL_GetError());
+        
+        m_data.width  = mode.w;
+        m_data.height = mode.h;
+        m_data.format = mode.format;
     }
     
     // register event callback
@@ -554,6 +550,70 @@ int SDL2Window::OnEvent(void* udata, SDL_Event* event)
     return 0;
 }
 
+int GetWindowInformation(Window* win, WindowModeInfo* info)
+{
+    const char cpInvalid[] = "undefined";
+    
+    PD_CONSTEXPR int iaAttrs1[] = {
+        SDL_GL_RED_SIZE,
+        SDL_GL_GREEN_SIZE,
+        SDL_GL_BLUE_SIZE,
+        SDL_GL_ALPHA_SIZE,
+    };
+    
+    PD_CONSTEXPR StaticString aStrings[] = {
+        "red bit size",
+        "green bit size",
+        "blue bit size",
+        "alpha bit size"
+    };
+    
+    auto retUString = [&cpInvalid](const PDuchar* str) -> const PDuchar* {
+        if (str) return str;
+        return (const PDuchar*) cpInvalid;
+    };
+    
+    int iCode = 0;
+    
+    // null window pointer
+    if (! win)
+    {
+        PD_BADPARAM("win");
+        return -1;
+    }
+    
+    // null output pointer
+    if (! info)
+    {
+        PD_BADPARAM("info");
+        return -1;
+    }
+    
+    {
+        int iVal;
+        
+        SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &iVal);
+        
+        // swap interval
+        info->swap = SDL_GL_GetSwapInterval();
+        // hardware acceleration
+        info->accel = iVal;
+        // window width and height
+        info->width = win->GetWidth();
+        info->height = win->GetHeight();
+        // string fields
+        info->vendor     = retUString(glGetString(GL_VENDOR));
+        info->renderer   = retUString(glGetString(GL_RENDERER));
+        info->version    = retUString(glGetString(GL_VERSION));
+        info->extensions = retUString(glGetString(GL_EXTENSIONS));
+        // rgba format
+        PDuint32 uiFormat = reinterpret_cast<SDL2Window*>(win)->GetFormat();
+        SeparateFormat(uiFormat, *info);
+    }
+    
+    return iCode;
+}
+
 } // end namespace Dewpsi
 
 Dewpsi::KeyCode GetKeyCode(int kc)
@@ -568,6 +628,187 @@ Dewpsi::KeyCode GetKeyCode(int kc)
     }
     
     return static_cast<Dewpsi::KeyCode>(found->second);
+}
+
+SDL_GLattr Dewpsi2SDL_GL_Attrib(Dewpsi::OpenGLAttributes attr)
+{
+    using Dewpsi::OpenGLAttributes;
+    SDL_GLattr eAttr;
+    
+    switch (attr)
+    {
+    case OpenGLAttributes::Depth:
+        eAttr = SDL_GL_DEPTH_SIZE;
+        break;
+    
+    case OpenGLAttributes::DoubleBuffer:
+        eAttr = SDL_GL_DOUBLEBUFFER;
+        break;
+    
+    case OpenGLAttributes::RedSize:
+        eAttr = SDL_GL_RED_SIZE;
+        break;
+    
+    case OpenGLAttributes::GreenSize:
+        eAttr = SDL_GL_GREEN_SIZE;
+        break;
+    
+    case OpenGLAttributes::BlueSize:
+        eAttr = SDL_GL_BLUE_SIZE;
+        break;
+    
+    case OpenGLAttributes::AlphaSize:
+        eAttr = SDL_GL_ALPHA_SIZE;
+        break;
+    
+    case OpenGLAttributes::AccelerationRequired:
+        eAttr = SDL_GL_ACCELERATED_VISUAL;
+        break;
+    
+    case OpenGLAttributes::MajorVersion:
+        eAttr = SDL_GL_CONTEXT_MAJOR_VERSION;
+        break;
+    
+    case OpenGLAttributes::MinorVersion:
+        eAttr = SDL_GL_CONTEXT_MINOR_VERSION;
+        break;
+    
+    case OpenGLAttributes::ContextFlags:
+        eAttr = SDL_GL_CONTEXT_FLAGS;
+        break;
+    
+    case OpenGLAttributes::BufferSize:
+        eAttr = SDL_GL_BUFFER_SIZE;
+        break;
+    
+    case OpenGLAttributes::StencilSize:
+        eAttr = SDL_GL_STENCIL_SIZE;
+        break;
+    
+    case OpenGLAttributes::ShareContext:
+        eAttr = SDL_GL_SHARE_WITH_CURRENT_CONTEXT;
+        break;
+    
+    default:
+        eAttr = (SDL_GLattr) -1;
+        break;
+    }
+    
+    return eAttr;
+}
+
+void SeparateFormat(PDuint32 format, Dewpsi::WindowModeInfo& info)
+{
+    PDuint8 bits[] = {0, 0, 0, 0};
+    PDuint16 uiOrder = SDL_PIXELORDER(format);
+    
+    /* How to use: the first two arguments are the size of the red color in bits and its order number, 1-4. If the order
+    number were 1, red would be the first in every group of four color fields. The other three pairs correspond to the
+    green, blue, and alpha fields respectively.
+    
+    So func(8, 1, 8, 2, 8, 3, 8, 4) would mean that it's red, green, blue, then alpha, in order, and each is 8 bits long. */
+    auto func = [&bits](PDuint8 rs, PDuint8 ro, PDuint8 gs, PDuint8 go, PDuint8 bs, PDuint8 bo, PDuint8 as, PDuint8 ao) {
+        bits[0] = PD_CREATEBYTE(rs, ro);
+        bits[1] = PD_CREATEBYTE(gs, go);
+        bits[2] = PD_CREATEBYTE(bs, bo);
+        bits[3] = PD_CREATEBYTE(as, ao);
+    };
+    
+    // for formats with alpha channels
+    if (SDL_ISPIXELFORMAT_ALPHA(format))
+    {
+        switch (format)
+        {
+        // 16 bit formats
+        case SDL_PIXELFORMAT_ARGB4444:
+            func(4, 2, 4, 3, 4, 4, 4, 1);
+            break;
+        
+        case SDL_PIXELFORMAT_RGBA4444:
+            func(4, 1, 4, 2, 4, 3, 4, 4);
+            break;
+        
+        case SDL_PIXELFORMAT_ABGR4444:
+            func(4, 4, 4, 3, 4, 2, 4, 1);
+            break;
+        
+        case SDL_PIXELFORMAT_BGRA4444:
+            func(4, 3, 4, 2, 4, 1, 4, 4);
+            break;
+        
+        case SDL_PIXELFORMAT_ARGB1555:
+            func(5, 2, 5, 3, 5, 4, 1, 1);
+            break;
+        
+        case SDL_PIXELFORMAT_RGBA5551:
+            func(5, 1, 5, 2, 5, 3, 1, 4);
+            break;
+        
+        case SDL_PIXELFORMAT_ABGR1555:
+            func(5, 4, 5, 3, 5, 2, 1, 1);
+            break;
+        
+        case SDL_PIXELFORMAT_BGRA5551:
+            func(5, 3, 5, 2, 5, 1, 1, 4);
+            break;
+        
+        // 32 bit formats
+        case SDL_PIXELFORMAT_RGBA8888:
+            func(8, 1, 8, 2, 8, 3, 8, 4);
+            break;
+        
+        case SDL_PIXELFORMAT_ARGB8888:
+            func(8, 2, 8, 3, 8, 4, 8, 1);
+            break;
+        
+        case SDL_PIXELFORMAT_ABGR8888:
+            func(8, 4, 8, 3, 8, 2, 8, 4);
+            break;
+        
+        case SDL_PIXELFORMAT_BGRA8888:
+            func(8, 3, 8, 2, 8, 1, 8, 4);
+            break;
+        
+        case SDL_PIXELFORMAT_ARGB2101010:
+            func(10, 2, 10, 3, 10, 4, 2, 1);
+            break;
+        
+        default:
+            break;
+        }
+    }
+    // no alpha channel
+    else
+    {
+        switch (format)
+        {
+        case SDL_PIXELFORMAT_RGB565:
+            func(5, 1, 6, 2, 5, 3, 0, -1);
+            break;
+        
+        case SDL_PIXELFORMAT_BGR565:
+            func(5, 3, 6, 2, 5, 1, 0, -1);
+            break;
+        
+        case SDL_PIXELFORMAT_RGBX8888:
+        case SDL_PIXELFORMAT_RGB888:
+            func(8, 1, 8, 2, 8, 3, 0, -1);
+            break;
+        
+        case SDL_PIXELFORMAT_BGRX8888:
+        case SDL_PIXELFORMAT_BGR888:
+            func(8, 3, 8, 2, 8, 1, 0, -1);
+            break;
+        
+        default:
+            break;
+        }
+    }
+    
+    info.red   = bits[0];
+    info.green = bits[1];
+    info.blue  = bits[2];
+    info.alpha = bits[3];
 }
 
 // == DEBUG == //
@@ -599,7 +840,7 @@ void list_sdl_renderers()
                      caBools[IsNonzero(info.flags & SDL_RENDERER_TARGETTEXTURE)] );
     }
     
-    std::raise(SIGINT);
+    std::exit();
 }
 #endif /* PD_LIST_RENDERERS */
 
@@ -909,6 +1150,31 @@ void print_renderer_information(SDL_Renderer* ren)
     }
 }
 #endif /* PD_PRINT_RENDERER */
+
+#ifdef PD_PRINT_OPENGL_ATTRIBUTES
+void print_opengl_attributes(SDL_Window* win)
+{
+    PD_CORE_ASSERT( >= 0, "Failed to get window information: {}", SDL_GetError());
+    PD_CORE_INFO("Window display width: {0}\nWindow display height: {1}\nWindow refresh rate: {2} Hz\nWindow BPP: {3}",
+        winMode.w, winMode.h, winMode.refresh_rate, SDL_BITSPERPIXEL(winMode.format));
+    
+    int iCode = 0;
+    
+    {
+        const int iaAttrs[] = {
+            SDL_GL_RED_SIZE,  SDL_GL_GREEN_SIZE,
+            SDL_GL_BLUE_SIZE, SDL_GL_ALPHA_SIZE
+        };
+        int iaValues[4];
+        
+        for (int x = )
+    }
+    
+    iCode = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &iAttr);
+    
+    PD_CORE_INFO("Red channel depth: {0}");
+}
+#endif /* PD_PRINT_OPENGL_ATTRIBUTES */
 
 #endif /* PD_DEBUG */
 

@@ -103,11 +103,22 @@ inline std::ostream& operator<<(std::ostream& os, const Dewpsi::LogHex<T>& obj)
     os << std::hex << "0x" << obj.get() << std::dec;
 }
 
-// TODO: add description
-#define PD_BADPARAM(param)      ::Dewpsi::SetError("Bad parameter '%s'", #param)
+/** Sets an error string for an invalid function parameter.
+*   @param  param   The name of a parameter as a string
+*   @par    Example
+*   @code
+    int add(int param) {
+        if (param < 0)
+            PD_BADPARAM("param");
+        param += 5;
+        return param;
+    }
+*   @endcode
+*/
+#define PD_BADPARAM(param)      ::Dewpsi::SetError("Bad parameter" param)
 
-// TODO: add description
 #ifdef PD_DEBUG
+    /// Prints the name of the function.
     #define PD_CORE_PRINTFUNC() ::Dewpsi::Log::GetCoreLogger()->trace("Function name: {0}", __FUNCTION__);
 #endif
 

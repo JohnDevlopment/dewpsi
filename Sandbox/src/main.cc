@@ -61,8 +61,8 @@ static Dewpsi::Application* App = nullptr;
 
 int main (int argc, char const* argv[])
 {
-    // calls a specific function when the user Control-C's the console
-    std::signal(2, forcequit);
+    std::signal(SIGINT, forcequit);
+    std::atexit(quit);
     
     // initialize the logging system
     Dewpsi::Log::Init();
@@ -91,10 +91,6 @@ int main (int argc, char const* argv[])
         SetWindowOpenGLAttribute(props, Dewpsi::MajorVersion, 4);
         SetWindowOpenGLAttribute(props, Dewpsi::MinorVersion, 3);
         SetWindowOpenGLAttribute(props, Dewpsi::Depth, 24);
-//        SetWindowOpenGLAttribute(props, Dewpsi::RedSize, 8);
-//        SetWindowOpenGLAttribute(props, Dewpsi::GreenSize, 8);
-//        SetWindowOpenGLAttribute(props, Dewpsi::BlueSize, 8);
-//        SetWindowOpenGLAttribute(props, Dewpsi::AlphaSize, 8);
         SetWindowOpenGLAttribute(props, Dewpsi::DoubleBuffer, 1);
         SetWindowOpenGLAttribute(props, Dewpsi::ShareContext, 0);
         Dewpsi::SetWindowProps(props);
@@ -112,28 +108,14 @@ int main (int argc, char const* argv[])
             PD_ERROR("Failed to retrieve window info: {0}", Dewpsi::GetError());
             return 1;
         }
-        PD_CORE_INFO("== Information==\nswap interval: {0}\nhardware acceleration: {1}\nwindow width: {2}\nwindow height: {3}\nrendering device vendor: {4}\nrenderer: {5}\nrender version: {6}\nrenderer extensions: {7}",
+        PD_INFO("\tswap interval: {0}\n\thardware acceleration: {1}\n\twindow width: {2}\n\twindow height: {3}\n\trendering device vendor: {4}\n\trenderer: {5}\n\trender version: {6}\n\trenderer extensions: {7}",
                      info.swap, (info.accel ? "enabled" : "disabled"), info.width, info.height,
-                     info.vendor, info.renderer, info.version, info.extensions );
+                     info.vendor, info.renderer, info.version, info.extensions);
+        
+        // rgba sizes
+        PD_INFO("\twindow red size: {0} bits\n\twindow green size: {1} bits\n\twindow blue size: {2} bits",
+                     PD_LONYBBLE(info.red), PD_LONYBBLE(info.green), PD_LONYBBLE(info.blue));
     }
-    
-    
-    
-/*
-    struct WindowModeInfo {
-        const PDuchar*  vendor;
-        const PDuchar*  renderer;
-        const PDuchar*  version;
-        const PDuchar*  extensions;
-        PDuint8         red;
-        PDuint8         green;
-        PDuint8         blue;
-        PDuint8         alpha;
-    };
-*/
-    
-    
-    
     
     // run main loop
     App->Run();

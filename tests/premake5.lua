@@ -17,3 +17,20 @@ filter "configurations:Debug"
 filter "configurations:Release"
     optimize "On"
     runtime "Release"
+
+project "macrotest"
+    kind "ConsoleApp"
+    language "C++"
+    files {
+        "macrotest_*.cc"
+    }
+    cppdialect "C++11"
+    flags "MultiProcessorCompile"
+    
+filter "configurations:Debug"
+    symbols "On"
+    runtime "Debug"
+    
+filter "configurations:Release"
+    optimize "On"
+    runtime "Release"

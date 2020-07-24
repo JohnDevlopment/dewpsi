@@ -7,7 +7,8 @@ Dewpsi/vendor/spdlog
 Sandbox/vendor
 Sandbox/src/dewpsi-include
 vendor/lua
-.internal
+.internal/
+temp/
 
 # specific files
 Dewpsi/src/platform/sdl/SDL_*.h
