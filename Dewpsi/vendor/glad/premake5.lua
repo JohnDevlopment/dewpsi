@@ -13,11 +13,8 @@ project "Glad"
         "include/KHR/khrplatform.h",
         "src/glad.c"
     }
-
-    includedirs
-    {
-        "include"
-    }
+    includedirs "include"
+    defines "GLAD_GLAPI_EXPORT"
     
 filter "toolset:gcc"
     buildoptions "-fPIC"

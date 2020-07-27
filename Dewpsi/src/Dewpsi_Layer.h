@@ -15,8 +15,8 @@
 
 #include <Dewpsi_Core.h>
 #include <Dewpsi_Event.h>
+#include <Dewpsi_Timestep.h>
 
-/// @ingroup layers
 namespace Dewpsi {
     /** A layer.
     *   It can accept events.
@@ -39,7 +39,7 @@ namespace Dewpsi {
         {  }
         
         /// Called when updating the layer.
-        virtual void OnUpdate()
+        virtual void OnUpdate(Timestep delta)
         {  }
         
         /// Called when processing events for the layer.

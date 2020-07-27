@@ -15,19 +15,16 @@ static WindowProps _WindowProperties;
 Application* Application::s_instance = nullptr;
 
 Application::Application(const std::string& sName)
-    : m_bRunning(true), m_window()
+    : m_bRunning(true), m_window(), m_fLastFrameTime(0.0f)
 {
     PD_PROFILE_FUNCTION();
     
     if (! Log::IsInit())
-    {
         throw std::runtime_error("Logger has not been initialized prior to application start");
-    }
     
     s_instance = this;
     
     // initialize SDL2 video
-    PD_CORE_INFO("Initializing SDL2 library with SDL_Init(), flags: SDL_INIT_VIDEO");
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         PD_CORE_CRITICAL("Failed to initialize SDL, {}", SDL_GetError());
@@ -71,12 +68,6 @@ void Application::PushOverlay(Layer* overlay)
     m_layerStack.PushOverlay(overlay);
 }
 
-void Application::UpdateLayers()
-{
-    for (auto itr = m_layerStack.rbegin(); itr != m_layerStack.rend(); ++itr)
-        (*itr)->OnUpdate();
-}
-
 void Application::Run()
 {
     PD_PROFILE_FUNCTION();
@@ -84,7 +75,16 @@ void Application::Run()
     while (m_bRunning)
     {
         PD_PROFILE_SCOPE("RunLoop");
-        m_window->Update();
+        float fTime = (float) SDL_GetTicks() / 1000.0f; // TODO: change to platform-independent function
+        Timestep delta = fTime - m_fLastFrameTime;
+        m_fLastFrameTime = fTime;
+        
+        // update each layer
+        for (auto itr = m_layerStack.begin(); itr != m_layerStack.end(); ++itr)
+            (*itr)->OnUpdate(delta);
+        
+        // update the window
+        m_window->OnUpdate();
     }
 }
 

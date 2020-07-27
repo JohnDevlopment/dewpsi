@@ -5,6 +5,7 @@
     #include <Dewpsi_SDLWindow.h>
     #include <Dewpsi_ImGui_SDL.h>
     #include <Dewpsi_ImGui_OpenGL3.h>
+    #include <Dewpsi_OpenGL.h>
 #else
     #error Currently only Linux is supported
 #endif

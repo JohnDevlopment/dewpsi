@@ -31,7 +31,6 @@ project "dewpsi"
     kind "SharedLib"
     language "C++"
     cppdialect "C++14"
---    staticruntime "On"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -77,7 +76,9 @@ project "dewpsi"
     postbuildcommands {
         ("{COPY} " .. srcdir .. "/*.h ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
-        ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include")
+        ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
+        "{MKDIR} ../Sandbox/src/dewpsi-include/glad",
+        "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h"
     }
     
 -- Linux

@@ -152,7 +152,7 @@ namespace Dewpsi {
         virtual ~Window() = default;
         
         /// Update the window.
-        virtual void Update() = 0;
+        virtual void OnUpdate() = 0;
         
         /// Obtain the window width.
         virtual uint32_t GetWidth() const = 0;
@@ -176,8 +176,15 @@ namespace Dewpsi {
         /// Returns a pointer to the platform-specific window.
         virtual void* GetNativeWindow() const = 0;
         
-        /// Sets the window clear color
-        virtual void SetClearColor(const Color& color) = 0;
+        /** Sets the window clear color.
+        *   @param color What color to clear the window with
+        *   @todo Move to a renderer class
+        */
+        virtual void SetClearColor(const Color& color) = 0; // TODO: move to a renderer class
+        
+        /// Clears the window.
+        /// @todo move to a renderer class
+        virtual void Clear() = 0; // TODO: move to a renderer class
         
         /// Creates an instance of the window.
         static Scope<Window> Create(const WindowProps& props);

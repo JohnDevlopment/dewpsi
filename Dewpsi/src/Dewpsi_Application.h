@@ -10,6 +10,7 @@
 #include <Dewpsi_Core.h>
 #include <Dewpsi_Window.h>
 #include <Dewpsi_LayerStack.h>
+#include <Dewpsi_Timestep.h>
 
 #include <string>
 
@@ -38,9 +39,6 @@ namespace Dewpsi {
         Window& GetWindow()
         { return *m_window; }
         
-        /// Updates each layer on the layer stack.
-        void UpdateLayers();
-        
         /// Returns a pointer to the application.
         static Application& Get()
         { return *s_instance; }
@@ -49,6 +47,7 @@ namespace Dewpsi {
         static Application* s_instance;
         bool m_bRunning;
         LayerStack m_layerStack;
+        float m_fLastFrameTime;
         
         Scope<Window> m_window;
         

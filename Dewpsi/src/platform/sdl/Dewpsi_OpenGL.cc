@@ -7,11 +7,7 @@
 
 static unsigned int g_uiErrorLength = 500U;
 static std::unique_ptr<char[]> g_cpError(new char[g_uiErrorLength]);
-
-//static int g_iGlVersion = 0;
 static unsigned int g_uiProgram = 0;
-
-unsigned int g_uiVertexBuffer = 0;
 
 struct ShaderProgramSource {
     std::string vertex;
@@ -174,63 +170,32 @@ static unsigned int CreateShader(const std::string& vertShader, const std::strin
     return uiProg;
 }
 
-void OpenGL_Test1()
+namespace Dewpsi {
+
+bool OpenGL_InitShaders(const char* shaderFile)
 {
-    std::string sVertexShaderSource, sFragmentShaderSource;
+    PD_CORE_PRINTFUNC(); // TODO: delete this line
     
-    ShaderProgramSource sources = ParseShaderFile("Dewpsi/OpenGL/shaders/shaders.glsl");
+    // create the shader program and link it to the rendering context
+    std::string sVertexShaderSource, sFragmentShaderSource;
+    ShaderProgramSource sources = ParseShaderFile(shaderFile);
     
     // create the shader program and link it to the rendering context
     g_uiProgram = CreateShader(sources.vertex, sources.fragment);
     glUseProgram(g_uiProgram);
     
-    // generate a buffer ID
-    // bind the buffer to an array target
-    glGenBuffers(1, &g_uiVertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, g_uiVertexBuffer);
-    
-    // allocate memory for the buffer object and copy the bytes from faVerts
-    // the buffer data is not expected to be mmodified
-    // the buffer will be used for drawing vertices
-    const float faVerts[6] = {
-       -0.5f, -0.5f,
-        0.0f,  0.5f,
-        0.5f, -0.5f
-    };
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, faVerts, GL_STATIC_DRAW);
-    
-    /* set the attributes of the vertices: start index 0,
-    2 components per vertex,  the attributes are floating points,
-    do not normalize the vertices,   */
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-    
-    // enable the vertex attributes starting from index 0
-    glEnableVertexAttribArray(0);
-    
-    PD_CORE_PRINTFUNC();
+    return true;
 }
 
-void OpenGL_Test2()
+void OpenGL_DeInitShaders()
 {
-    static bool doneOnce = false;
-    if (! doneOnce)
-    {
-        PD_CORE_PRINTFUNC();
-        doneOnce = true;
-    }
-    // set the shader program
-    glUseProgram(g_uiProgram);
-    
-    // bind the vertex buffer
-    glBindBuffer(GL_ARRAY_BUFFER, g_uiVertexBuffer);
-    glEnableVertexAttribArray(0);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-}
-
-void OpenGL_Test3()
-{
-    PD_CORE_PRINTFUNC();
-    glDeleteBuffers(1, &g_uiVertexBuffer);
+    PD_CORE_PRINTFUNC(); // TODO: delete this line
     glDeleteProgram(g_uiProgram);
 }
 
+PDuint OpenGL_GetShader()
+{
+    return g_uiProgram;
+}
+
+}

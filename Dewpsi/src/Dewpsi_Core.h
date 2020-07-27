@@ -1,6 +1,9 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <Dewpsi_Log.h>
+#include <Dewpsi_Types.h>
+
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -9,11 +12,14 @@
 #include <vector>
 #include <functional>
 #include <stdexcept>
+
 #include <csignal>
 #include <cstdint>
-#include <Dewpsi_Log.h>
-#include <Dewpsi_Types.h>
 
+/**
+*   @defgroup platforms Platform-Specific
+*   Headers, functions, types, and other declarations specific to each platform
+*/
 
 /**
 *   @file       Dewpsi_Core.h

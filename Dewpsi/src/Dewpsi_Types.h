@@ -51,6 +51,15 @@ typedef uint16_t PDuint16;
 /// An unsigned 8 bit integer
 typedef uint8_t PDuint8;
 
+/// A boolean true or false type
+typedef bool PDbool;
+
+/// Values of the type PDbool
+enum PDboolEnum : PDbool {
+    PD_TRUE  = true,    ///< True value
+    PD_FALSE = false    ///< False value
+};
+
 /// @}
 
 #endif /* DEWPSI_TYPES_H */

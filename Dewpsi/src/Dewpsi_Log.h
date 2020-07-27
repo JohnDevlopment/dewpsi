@@ -119,7 +119,12 @@ inline std::ostream& operator<<(std::ostream& os, const Dewpsi::LogHex<T>& obj)
 
 #ifdef PD_DEBUG
     /// Prints the name of the function.
-    #define PD_CORE_PRINTFUNC() ::Dewpsi::Log::GetCoreLogger()->trace("Function name: {0}", __FUNCTION__);
+    #define PD_CORE_PRINTFUNC() ::Dewpsi::Log::GetCoreLogger()->trace("Function name: {0}", __FUNCTION__)
+    /// Prints the name of the function.
+    #define PD_PRINTFUNC()      ::Dewpsi::Log::GetClientLogger()->trace("Function name: {0}", __FUNCTION__)
+#else
+    #define PD_CORE_PRINTFUNC()
+    #define PD_PRINTFUNC()
 #endif
 
 /// Logs trace messages.

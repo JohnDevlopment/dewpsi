@@ -9,28 +9,107 @@
 #include <Dewpsi_Layer.h>
 #include <Dewpsi_KeyEvent.h>
 #include <Dewpsi_Color.h>
+#include <Dewpsi_String.h>
+#include <Dewpsi_Vector.h>
+
+
+static constexpr Dewpsi::StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
 
 static bool g_bOnce = false;
 
 extern "C" void forcequit(int);
 extern "C" void quit();
 
-class ExampleLayer : public Dewpsi::Layer {
+// OpenGL layer
+class OpenGLLayer : public Dewpsi::Layer {
 public:
-    ExampleLayer() : Layer("Example")
+    OpenGLLayer() : Layer("OpenGL"), win(Dewpsi::Application::Get().GetWindow())
     {  }
     
-    ~ExampleLayer()
+    virtual ~OpenGLLayer()
     {  }
     
-    virtual void OnUpdate() override
+    virtual void OnAttach() override;
+    
+    virtual void OnDetach() override;
+    
+    virtual void OnUpdate(Dewpsi::Timestep delta) override;
+
+private:
+    PDuint m_uiVertexBuffer;
+    PDuint m_uiProgram;
+    Dewpsi::Window& win;
+};
+
+void OpenGLLayer::OnAttach()
+{
+    PD_INFO("Attaching {0} layer", m_sDebugName); // TODO: delete
+    
+    const int iVertSize = 2;
+    
+    // load shader
+    bool bInit = Dewpsi::OpenGL_InitShaders(ShaderFile.get());
+    if (! bInit)
     {
+        Dewpsi::SetError("failed to read %s", ShaderFile.get());
+        throw std::runtime_error(Dewpsi::GetError());
+    }
+    m_uiProgram = Dewpsi::OpenGL_GetShader();
+    
+    // generate vertex buffer
+    const float faVerts[] = {
+       -0.5f, -0.5f,
+        0.0f,  0.5f,
+        0.5f, -0.5f
+    };
+    
+    // use program
+    glUseProgram(m_uiProgram);
+    
+    // generate vertex buffer and bind it
+    glGenBuffers(1, &m_uiVertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, m_uiVertexBuffer);
+    
+    // allocate memory for the vertex buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, faVerts, GL_STATIC_DRAW);
+    
+    // set and enable vertex attributes
+    constexpr PDuint uiVertAttrSize = sizeof(float) * 2;
+    
+    glVertexAttribPointer(0, iVertSize, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+}
+
+void OpenGLLayer::OnDetach()
+{
+    glDeleteBuffers(1, &m_uiVertexBuffer);
+    Dewpsi::OpenGL_DeInitShaders();
+}
+
+void OpenGLLayer::OnUpdate(Dewpsi::Timestep delta)
+{
+    win.Clear();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+// sandbox application layer
+class SandboxLayer : public Dewpsi::Layer {
+public:
+    SandboxLayer() : Layer("Sandbox")
+    {  }
+    
+    ~SandboxLayer()
+    {  }
+    
+    virtual void OnAttach() override
+    {
+        PD_INFO("Attaching {0} layer", m_sDebugName); // TODO: delete
     }
     
     virtual void OnEvent(Dewpsi::Event& e) override;
 };
 
-void ExampleLayer::OnEvent(Dewpsi::Event& e)
+void SandboxLayer::OnEvent(Dewpsi::Event& e)
 {
     switch (e.GetEventType())
     {
@@ -38,7 +117,7 @@ void ExampleLayer::OnEvent(Dewpsi::Event& e)
         {
             using Dewpsi::KeyPressedEvent;
             KeyPressedEvent& keyEvent = reinterpret_cast<KeyPressedEvent&>(e);
-            PD_INFO("{0}, key translates to '{1}'", keyEvent, char(keyEvent.GetKeyCode()));
+            PD_INFO("{0}, key translates to '{1}'", keyEvent, char(keyEvent.GetKeyCode())); // TODO: delete
             break;
         }
         
@@ -46,11 +125,13 @@ void ExampleLayer::OnEvent(Dewpsi::Event& e)
     } // end switch
 }
 
+// sandbox application
 class Sandbox : public Dewpsi::Application {
 public:
     Sandbox()
     {
-        PushLayer(new ExampleLayer());
+        PushLayer(new SandboxLayer());
+        PushLayer(new OpenGLLayer());
     }
     
     virtual ~Sandbox()
@@ -98,8 +179,11 @@ int main (int argc, char const* argv[])
     
     // start client application
     App = Dewpsi::NewApplication();
+#ifdef PD_DEBUG
     PD_INFO("Started sandbox application");
+#endif
     
+    // create window
     {
         Dewpsi::Window& rWindow = App->GetWindow();
         Dewpsi::WindowModeInfo info;

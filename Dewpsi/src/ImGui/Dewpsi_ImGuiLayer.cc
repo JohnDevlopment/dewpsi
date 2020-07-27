@@ -52,7 +52,7 @@ void ImGuiLayer::OnDetach()
 //    ImGui_ImplSDL2_Shutdown();
 }
 
-void ImGuiLayer::OnUpdate()
+void ImGuiLayer::OnUpdate(Timestep delta)
 {
     SDLNativeWindow* const pNativeWindow = (SDLNativeWindow*) Application::Get().GetWindow().GetNativeWindow();
     

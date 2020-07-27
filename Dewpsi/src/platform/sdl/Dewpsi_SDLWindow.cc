@@ -6,6 +6,7 @@
 #include "Dewpsi_KeyEvent.h"
 #include "Dewpsi_String.h"
 #include "Dewpsi_ImGui_SDL.h"
+#include "Dewpsi_Vector.h"
 //#include "Dewpsi_ImGui_OpenGL3.h"
 
 #include <glad/glad.h>
@@ -26,10 +27,6 @@
 #define newl(x)         "\n" space(x)
 #define newlstr(x, s)   "\n" space(x) s
 #define spacestr(x, s)  space(x) s
-
-void OpenGL_Test1();
-void OpenGL_Test2();
-void OpenGL_Test3();
 
 static bool UseOpenGL = false;
 
@@ -187,11 +184,12 @@ static std::unordered_map<uint32_t, Dewpsi::KeyCode> KeyCodeMap = {
 static Dewpsi::KeyCode GetKeyCode(int kc);
 static SDL_GLattr Dewpsi2SDL_GL_Attrib(Dewpsi::OpenGLAttributes attr);
 static void SeparateFormat(PDuint32, Dewpsi::WindowModeInfo&);
+static int SDL_GL_Loader();
 
 namespace Dewpsi {
 
 SDL2Window::SDL2Window(const WindowProps& props)
-    : m_window(nullptr), m_renderer(nullptr), m_data()
+    : m_window(nullptr), m_renderer(nullptr), m_data(), m_clearColor()
 {
     Init(props);
 }
@@ -201,36 +199,32 @@ SDL2Window::~SDL2Window()
     Shutdown();
 }
 
-void SDL2Window::Update()
+void SDL2Window::OnUpdate()
 {
     SDL_PumpEvents();
     
-    static bool bInit = false;
-    
     if (! UseOpenGL)
-    {
-        SDL_RenderClear(m_renderer);
-        Application::Get().UpdateLayers();
         SDL_RenderPresent(m_renderer);
-    }
     else
-    {
-        glClear(GL_COLOR_BUFFER_BIT);
-        Application::Get().UpdateLayers();
-        if (! bInit)
-        {
-            OpenGL_Test1();
-            bInit = true;
-        }
-        OpenGL_Test2();
         SDL_GL_SwapWindow(m_window);
-        //glFlush();
-    }
 }
 
 void SDL2Window::SetVSync(bool bEnable)
 {
-    //
+    if (UseOpenGL)
+    {
+        if (bEnable)
+        {
+            SDL_GL_SetSwapInterval(1);
+            PD_CORE_TRACE("Enabled vsync"); // TODO: delete
+        }
+        else
+        {
+            SDL_GL_SetSwapInterval(0);
+            PD_CORE_TRACE("Enabled vsync"); // TODO: delete
+        }
+    }
+    m_data.vsync = UseOpenGL ? bEnable : false;
 }
 
 bool SDL2Window::IsVSync() const
@@ -240,8 +234,26 @@ bool SDL2Window::IsVSync() const
 
 void SDL2Window::SetClearColor(const Color& color)
 {
-    FColor clearColor = color;
-    glClearColor(clearColor.red, clearColor.green, clearColor.blue, 1.0f);
+    m_clearColor = color;
+    
+    if (UseOpenGL)
+    {
+        FColor clearColor = color;
+        glClearColor(clearColor.red, clearColor.green, clearColor.blue, 1.0f);
+    }
+}
+
+void SDL2Window::Clear()
+{
+    if (! UseOpenGL)
+    {
+        SDL_SetRenderDrawColor(m_renderer, m_clearColor.red, m_clearColor.green, m_clearColor.blue, m_clearColor.alpha);
+        SDL_RenderClear(m_renderer);
+    }
+    else
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
 }
 
 void SDL2Window::Init(const WindowProps& props)
@@ -420,13 +432,11 @@ void SDL2Window::Init(const WindowProps& props)
         int iCode = gladLoadGLLoader(SDL_GL_GetProcAddress);
         PD_CORE_ASSERT(iCode, "Failed to load GLAD");
         
-//        PD_CORE_TRACE("OpenGL vendor: {0}, renderer: {1}, version: {2}", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
-        
         // enable vsync
         if (m_data.vsync)
         {
             SDL_GL_SetSwapInterval(1);
-            PD_CORE_TRACE("Enabled vertical sync with OpenGL context");
+            PD_CORE_TRACE("Enabled vertical sync with OpenGL context"); // TODO: delete line
         }
         
         UseOpenGL = true;
@@ -439,18 +449,18 @@ void SDL2Window::Init(const WindowProps& props)
             glViewport(0, 0, w, h);
             m_data.width = w;
             m_data.height = h;
+            PD_CORE_INFO("Set viewport dimensions to {0}", Vector2((float) w, (float) h));
         }
         
         // set initial background color
         SetClearColor(DefineColor(PD_COLOR_BLACK));
-        
-//        glEnable(GL_2D_TEXTURE);
         
         #if defined(PD_DEBUG) && defined(PD_PRINT_OPENGL_ATTRIBUTES)
         print_opengl_attributes(m_window);
         #endif
     }
     
+    // get the dimensions and format of the window
     {
         SDL_DisplayMode mode;
         int temp = SDL_GetWindowDisplayMode(m_window, &mode);
@@ -467,8 +477,6 @@ void SDL2Window::Init(const WindowProps& props)
 
 void SDL2Window::Shutdown()
 {
-    OpenGL_Test3();
-    
     if (m_context)
     {
         SDL_GL_DeleteContext(m_context);
@@ -1177,6 +1185,54 @@ void print_opengl_attributes(SDL_Window* win)
 #endif /* PD_PRINT_OPENGL_ATTRIBUTES */
 
 #endif /* PD_DEBUG */
+
+int SDL_GL_Loader()
+{
+#if SDL_VIDEO_DRIVER_UIKIT
+    #define __SDL_NOGETPROCADDR__
+#elif SDL_VIDEO_DRIVER_ANDROID
+    #define __SDL_NOGETPROCADDR__
+#elif SDL_VIDEO_DRIVER_PANDORA
+    #define __SDL_NOGETPROCADDR__
+#endif
+    
+#ifdef __SDL_NOGETPROCADDR__
+    #define SDL_PROC(ret, func, params) func 
+#else
+    #define SDL_PROC(ret, func, params) \
+        do { \
+            func = SDL_GL_GetProcAddress(#func); \
+            if (! func) { \
+                return SDL_SetError("Could not load GL function %s: %s", #func, SDL_GetError()); \
+            } \
+        } while(0);
+#endif // __SDL_NOGETPROCADDR__
+    
+#undef SDL_PROC
+    return 0;
+}
+
+#if 0
+static int LoadContext(GL_Context * data)
+{
+
+#if defined __SDL_NOGETPROCADDR__
+    #define SDL_PROC(ret,func,params) data->func=func;
+#else
+    #define SDL_PROC(ret,func,params) \
+        do { \
+            data->func = SDL_GL_GetProcAddress(#func); \
+            if ( ! data->func ) { \
+                return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
+            } \
+        } while ( 0 );
+#endif /* __SDL_NOGETPROCADDR__ */
+
+    #include "../src/render/opengl/SDL_glfuncs.h"
+    #undef SDL_PROC
+        return 0;
+    }
+#endif
 
 #undef space1
 #undef space2
