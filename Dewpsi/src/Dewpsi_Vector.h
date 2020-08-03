@@ -1,104 +1,279 @@
 #ifndef DEWPSI_VECTOR_H
 #define DEWPSI_VECTOR_H
 
+#include <Dewpsi_Core.h>
+#include <initializer_list>
+#include <cmath>
+
+
 /**
 *   @file       Dewpsi_Vector.h
 *   @brief      @doxfb
-*   Contains definitions of vectors.
+*   Prototypes for vectors.
 *
 *   @defgroup vectors Vectors
 *   @ingroup math
 */
 
-#include <Dewpsi_Core.h>
-#include <iostream>
-
 namespace Dewpsi {
-    /**
-    *   @addtogroup vectors
-    *   @{
+    /** A 3D vector (x, y, z)
+    *   @ingroup vectors
     */
-    
-    /// A two-component vector.
-    struct Vector2 {
-        float x; ///< X component
-        float y; ///< Y component
-        
+    template<typename Type>
+    struct TVector3D {
         /// Constructs an empty vector.
-        Vector2() : x(0), y(0)
+        TVector3D() : x(0), y(0), z(0)
         {  }
         
-        /// Constructs and initializes a vector with an x and y component.
-        Vector2(float sx, float sy) : x(sx), y(sy)
+        /** Initializes a vector with @a x, @a y, and @a z components.
+        *   
+        *   @param  _x  The X component
+        *   @param  _y  The Y component
+        *   @param  _z  The Z component
+        */
+        TVector3D(Type _x, Type _y, Type _z) : x(_x), y(_y), z(_z)
         {  }
         
-        /// Constructs a vector that is a copy of @a src.
-        Vector2(const Vector2& src) : x(src.x), y(src.y)
-        {  }
+	    /// Destroys the object.
+	    ~TVector3D() {}
         
-        /// Constructs a vector that is a copy of @a src.
-        Vector2(Vector2&& src) : x(src.x), y(src.y)
-        {  }
+	    /// Copy constructor
+	    TVector3D(const TVector3D& rhs) : x(rhs.x), y(rhs.y)
+	    {  }
+	    
+	    /// Move constructor
+	    TVector3D(TVector3D&& rhs) : x(rhs.x), y(rhs.y)
+	    {  }
         
-        /** Adds two vectors.
-        *   @par Example
-        *   @dontinclude vectors.cpp
-        *   @snippet vectors.cpp Add Vectors
+        /** Initialize vector with a list of values.
+        *   @snippet vectors.cpp Initialize Vector
         */
-        Vector2 operator+(const Vector2& rhs)
+        TVector3D(std::initializer_list<Type> il) : x(0), y(0), z(0)
         {
-            Vector2 vec = *this;
-            vec.x += rhs.x;
-            vec.y += rhs.y;
-            return vec;
+            PDuint i = 0;
+            
+            const Type* const end = il.end();
+            for (const Type* itr = il.begin(); itr != end; ++itr)
+            {
+                if (i >= 3) break;
+                reinterpret_cast<Type*>(&x)[i++] = *itr;
+            }
         }
         
-        /** Subtracts two vectors.
-        *   @par Example
-        *   @dontinclude vectors.cpp
-        *   @snippet vectors.cpp Subtract Vectors
-        */
-        Vector2 operator-(const Vector2& rhs)
-        {
-            Vector2 vec = *this;
-            vec.x -= rhs.x;
-            vec.y -= rhs.y;
-            return vec;
-        }
+	    /** Add two vectors together.
+	    *   
+	    *   @snippet vectors.cpp Add Vectors
+	    */
+	    TVector3D operator+(const TVector3D& rhs) const
+	    {
+	        TVector3D res = {x, y, z};
+	        res.x += rhs.x;
+	        res.y += rhs.y;
+	        res.z += rhs.z;
+	        return res;
+	    }
         
-        /** Multiplies two vectors.
-        *   @par Example
-        *   @dontinclude vectors.cpp
-        *   @snippet vectors.cpp Multiply Vectors
-        */
-        Vector2 operator*(const Vector2& rhs)
-        {
-            Vector2 vec = *this;
-            vec.x *= rhs.x;
-            vec.y *= rhs.y;
-            return vec;
-        }
+        /** Subtract two vectors.
+	    *   
+	    *   @snippet vectors.cpp Subtract Vectors
+	    */
+	    TVector3D operator-(const TVector3D& rhs) const
+	    {
+	        TVector3D res = {x, y, z};
+	        res.x -= rhs.x;
+	        res.y -= rhs.y;
+	        res.z -= rhs.z;
+	        return res;
+	    }
+	    
+	    /** Multiply two vectors.
+	    *   
+	    *   @snippet vectors.cpp Multiply Vectors
+	    */
+	    TVector3D operator*(const TVector3D& rhs) const
+	    {
+	        TVector3D res = {x, y, z};
+	        res.x *= rhs.x;
+	        res.y *= rhs.y;
+	        res.z *= rhs.z;
+	        return res;
+	    }
+	    
+	    /** Divide two vectors.
+	    *   
+	    *   @snippet vectors.cpp Divide Vectors
+	    */
+	    TVector3D operator/(const TVector3D& rhs) const
+	    {
+	        TVector3D res = {x, y, z};
+	        
+	        res.x = (res.x && rhs.x) ? (res.x / rhs.x) : 0;
+		    res.y = (res.y && rhs.y) ? (res.y / rhs.y) : 0;
+		    res.z = (res.z && rhs.z) ? (res.z / rhs.z) : 0;
+	        
+	        return res;
+	    }
         
-        /** Divides two vectors.
-        *   @par Example
-        *   @dontinclude vectors.cpp
-        *   @snippet vectors.cpp Divide Vectors
-        */
-        Vector2 operator/(const Vector2& rhs)
-        {
-            Vector2 vec = *this;
-            vec.x /= rhs.x;
-            vec.y /= rhs.y;
-            return vec;
-        }
+	    /// Compond addition
+	    TVector3D& operator+=(const TVector3D& rhs) {
+		    x = x + rhs.x;
+		    y = y + rhs.y;
+		    z = z + rhs.z;
+
+	    return *this;
+	    }
+	    
+	    /// Compond subtraction
+	    TVector3D& operator-=(const TVector3D& rhs) {
+		    x = x - rhs.x;
+		    y = y - rhs.y;
+		    z = z - rhs.z;
+
+	    return *this;
+	    }
+	    
+	    /// Compond multiplication
+	    TVector3D& operator*=(const TVector3D& rhs) {
+		    x = x * rhs.x;
+		    y = y * rhs.y;
+		    z = z * rhs.z;
+
+	    return *this;
+	    }
+	    
+	    /// Compond division
+	    TVector3D& operator/=(const TVector3D& rhs) {
+		    x = (x && rhs.x) ? (x / rhs.x) : 0;
+		    y = (y && rhs.y) ? (y / rhs.y) : 0;
+		    z = (z && rhs.z) ? (z / rhs.z) : 0;
+
+	    return *this;
+	    }
+
+	    /// Returns true if two vectors are equal.
+	    bool operator==(const TVector3D& rhs) const {
+		    return x == rhs.x && y == rhs.y && z == rhs.z;
+	    }
+	    
+	    /// Returns true if two vectors are not equal.
+	    bool operator!=(const TVector3D& rhs) const {
+		    return x != rhs.x && y != rhs.y;
+	    }
+
+	    /** Returns true if the vector is less than @a rhs.
+	    *   @snippet vectors.cpp Bool Less
+	    */
+	    bool operator<(const TVector3D& rhs) const {
+		    return x < rhs.x && y < rhs.y && z < rhs.z;
+	    }
+	    
+	    /** Returns true if the vector is less than or equal to @a rhs.
+	    *   @snippet vectors.cpp Bool LessEqual
+	    */
+	    bool operator<=(const TVector3D& rhs) const {
+		    return x <= rhs.x && y <= rhs.y && z <= rhs.z;
+	    }
+
+	    /** Returns true if the vector is greater than @a rhs.
+	    *   @snippet vectors.cpp Bool Great
+	    */
+	    bool operator>(const TVector3D& rhs) const {
+		    return x > rhs.x && y > rhs.y && z > rhs.z;
+	    }
+	    
+	    /** Returns true if the vector is greater than or equal to @a rhs.
+	    *   @snippet vectors.cpp Bool GreatEqual
+	    */
+	    bool operator>=(const TVector3D& rhs) const {
+		    return x >= rhs.x && y >= rhs.y && z >= rhs.z;
+	    }
+
+	    /// Assignment operator
+	    TVector3D& operator=(const TVector3D& rhs)
+	    {
+	        Copy(rhs);
+	        return *this;
+	    }
+	    
+	    /// Assignment operator
+	    TVector3D& operator=(TVector3D&& rhs)
+	    {
+	        Copy(rhs);
+	        return *this;
+	    }
+
+	    /// Return the length of this vector.
+	    float Length() const;
+
+	    /// Return a normal-length vector.
+	    TVector3D<float> Normalized() const;
+
+        Type x; ///< X component
+        Type y; ///< Y component
+        Type z; ///< Z component
+    
+        void Copy(const TVector3D& src);
+        void Divide(float val);
     };
     
-    /// @}
+    template<typename _Tp>
+    float TVector3D<_Tp>::Length() const
+    {
+        return (float) std::sqrt(x * x + y * y + z * z);
+    }
+    
+    template<typename _Tp>
+    TVector3D<float> TVector3D<_Tp>::Normalized() const
+    {
+        TVector3D<float> result = {(float) x, (float) y, (float) z};
+        
+        result.Divide(result.Length());
+        
+        return result;
+    }
+    
+    template<typename _Tp>
+    void TVector3D<_Tp>::Copy(const TVector3D<_Tp>& src)
+    {
+        x = src.x;
+        y = src.y;
+        z = src.z;
+    }
+    
+    template<typename _Tp>
+    void TVector3D<_Tp>::Divide(float val)
+    {
+        x = (x && val) ? (x / val) : 0;
+	    y = (y && val) ? (y / val) : 0;
+	    z = (z && val) ? (z / val) : 0;
+    }
+    
+    /** A specialization of TVector3D that utilizes floats
+    *   @ingroup vectors
+    */
+    typedef TVector3D<float> Vector3D;
+    
+    /** Constructs a 3D vector with X, Y, and Z components
+    *   the underlying type of which is @a T.
+    *   
+    *   @param  x   The X component
+    *   @param  y   The Y component
+    *   @param  z   The Z component
+    *   @return     TVector3D of type @a T
+    */
+    template<typename T>
+    TVector3D<T> MakeVector3D(T x, T y, T z)
+    {
+        TVector3D<T> vec = {x, y, z};
+        return vec;
+    }
 }
 
-std::ostream& operator<<(std::ostream& os, const Dewpsi::Vector2& vec2)
+/// Extraction operator between @c std::ostream and TVector3D.
+template<typename _valuetype>
+inline std::ostream& operator<<(std::ostream& os, const Dewpsi::TVector3D<_valuetype>& vec)
 {
-    os << '(' << vec2.x << ", " << vec2.y << ')';
+    os << '(' << vec.x << ", " << vec.y << ", " << vec.z << ')';
 }
 
 #endif /* DEWPSI_VECTOR_H */

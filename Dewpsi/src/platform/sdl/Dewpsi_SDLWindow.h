@@ -16,6 +16,9 @@
 #include <Dewpsi_Color.h>
 #include <SDL.h>
 
+/// Retrieves the @a window member from a Window.
+#define PD_GET_SDL_WINDOW(winp)  reinterpret_cast<::Dewpsi::SDLNativeWindow*>((winp)->GetNativeWindow())->window
+
 namespace Dewpsi {
     /// @addtogroup sdl
     /// @{

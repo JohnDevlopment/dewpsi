@@ -33,6 +33,38 @@ namespace Dewpsi {
         
         return val;
     }
+    
+    /** Returns the smaller of two values.
+    *   The type of both parameters is any type that can support
+    *   the less-than operator.
+    *   
+    *   @param  a   A value
+    *   @param  b   A value
+    *   @return     @a a if it is less than @a b, otherwise @a b
+    *   @ingroup    math
+    */
+    template<typename T>
+    T min(T a, T b)
+    {
+        if (a < b) return a;
+        return b;
+    }
+    
+    /** Returns the larger of two values.
+    *   The type of both parameters is any type that can support
+    *   the greater-than operator.
+    *
+    *   @param  a   A value
+    *   @param  b   A value
+    *   @return     @a a if it is greater than @a b, otherwise @a b
+    *   @ingroup    math
+    */
+    template<typename T>
+    T max(T a, T b)
+    {
+        if (a > b) return a;
+        return b;
+    }
 }
 
 #endif /* DEWPSI_MATH_H */

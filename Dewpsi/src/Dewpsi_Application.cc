@@ -34,9 +34,6 @@ Application::Application(const std::string& sName)
     // create the window
     m_window = Window::Create(_WindowProperties);
     m_window->SetEventCallback(PD_BIND_EVENT_FN(Application::OnEvent));
-    
-    // push the ImGui layer
-//    PushOverlay(new ImGuiLayer()); // TODO: reenable
 }
 
 Application::~Application()

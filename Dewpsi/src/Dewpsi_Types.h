@@ -60,6 +60,13 @@ enum PDboolEnum : PDbool {
     PD_FALSE = false    ///< False value
 };
 
+/// For enumerated values
+enum PDenum : PDuint32 {
+    PD_INVALID  = 0xffffffff, ///< Invalid; meaning depends on function
+    PD_NULL     = 0x00000000, ///< NULL value
+    PD_ALLOC    = 0x00000001, ///< Allocate a new array
+};
+
 /// @}
 
 #endif /* DEWPSI_TYPES_H */

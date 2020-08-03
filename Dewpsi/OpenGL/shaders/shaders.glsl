@@ -1,16 +1,19 @@
 #shader vertex
-#version 430
-//layout(location = 0) in vec4 In_position;
-layout(location = 0) in vec2 In_position;
+
+#version 430 core
+
+layout(location = 0) in vec3 In_position;
+
 void main() {
-    gl_Position.xy = In_position;
-    gl_Position.z = 1.0;
-    gl_Position.w = 1.0;
+    gl_Position = vec4(In_position, 0.9);
 }
 
 #shader fragment
-#version 430
-out vec4 Out_color;
+
+#version 430 core
+
+layout(location = 0) out vec4 FragColor;
+
 void main() {
-    Out_color = vec4(0.5, 0.5, 0.5, 0.5);
+    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
 }

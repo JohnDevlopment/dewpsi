@@ -115,7 +115,10 @@ inline std::ostream& operator<<(std::ostream& os, const Dewpsi::LogHex<T>& obj)
     }
 *   @endcode
 */
-#define PD_BADPARAM(param)      ::Dewpsi::SetError("Bad parameter" param)
+#define PD_BADPARAM(param)      ::Dewpsi::SetError("Bad parameter '%s'", param)
+
+/// Sets an error string indicating a lack of memory.
+#define PD_NOMEMORY()           ::Dewpsi::SetError("Ran out of memory")
 
 #ifdef PD_DEBUG
     /// Prints the name of the function.

@@ -7,18 +7,14 @@
 #include "Dewpsi_String.h"
 #include "Dewpsi_ImGui_SDL.h"
 #include "Dewpsi_Vector.h"
-//#include "Dewpsi_ImGui_OpenGL3.h"
+#include "Dewpsi_OpenGL.h"
 
-#include <glad/glad.h>
 
 #include <SDL.h>
 #include <csignal>
 #include <cstdlib>
 #include <cstddef>
 #include <unordered_map>
-
-//#warning PD_PRINT_OPENGL_ATTRIBUTES defined
-//#define PD_PRINT_OPENGL_ATTRIBUTES
 
 #define space1          "    "
 #define space2          "        "
@@ -201,12 +197,12 @@ SDL2Window::~SDL2Window()
 
 void SDL2Window::OnUpdate()
 {
-    SDL_PumpEvents();
-    
     if (! UseOpenGL)
         SDL_RenderPresent(m_renderer);
     else
         SDL_GL_SwapWindow(m_window);
+    
+    SDL_PumpEvents();
 }
 
 void SDL2Window::SetVSync(bool bEnable)
@@ -214,15 +210,9 @@ void SDL2Window::SetVSync(bool bEnable)
     if (UseOpenGL)
     {
         if (bEnable)
-        {
             SDL_GL_SetSwapInterval(1);
-            PD_CORE_TRACE("Enabled vsync"); // TODO: delete
-        }
         else
-        {
             SDL_GL_SetSwapInterval(0);
-            PD_CORE_TRACE("Enabled vsync"); // TODO: delete
-        }
     }
     m_data.vsync = UseOpenGL ? bEnable : false;
 }
@@ -252,7 +242,7 @@ void SDL2Window::Clear()
     }
     else
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
 }
 
@@ -420,6 +410,9 @@ void SDL2Window::Init(const WindowProps& props)
     // OpenGL context
     if (props.flags & WindowOpenGL)
     {
+        // load default opengl library
+        SDL_GL_LoadLibrary(nullptr);
+        
         // new OpenGL context
         m_context = SDL_GL_CreateContext(m_window);
         PD_CORE_ASSERT(m_context, "Failed to create OpenGL context: {0}", SDL_GetError());
@@ -431,13 +424,11 @@ void SDL2Window::Init(const WindowProps& props)
         // GLAD loader
         int iCode = gladLoadGLLoader(SDL_GL_GetProcAddress);
         PD_CORE_ASSERT(iCode, "Failed to load GLAD");
+        PD_CORE_ASSERT(! SDL_GL_Loader(), "Failed to load other GL functions");
         
         // enable vsync
         if (m_data.vsync)
-        {
             SDL_GL_SetSwapInterval(1);
-            PD_CORE_TRACE("Enabled vertical sync with OpenGL context"); // TODO: delete line
-        }
         
         UseOpenGL = true;
         
@@ -449,11 +440,17 @@ void SDL2Window::Init(const WindowProps& props)
             glViewport(0, 0, w, h);
             m_data.width = w;
             m_data.height = h;
-            PD_CORE_INFO("Set viewport dimensions to {0}", Vector2((float) w, (float) h));
         }
         
         // set initial background color
         SetClearColor(DefineColor(PD_COLOR_BLACK));
+        
+        // TODO: remove or edit this block
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_FRAMEBUFFER_SRGB);
+        glCullFace(GL_BACK);
+        ///////////////////////////////////////////////////////////////
         
         #if defined(PD_DEBUG) && defined(PD_PRINT_OPENGL_ATTRIBUTES)
         print_opengl_attributes(m_window);
@@ -481,6 +478,7 @@ void SDL2Window::Shutdown()
     {
         SDL_GL_DeleteContext(m_context);
         m_context = nullptr;
+        SDL_GL_UnloadLibrary();
     }
     
     if (m_renderer)
@@ -1188,51 +1186,9 @@ void print_opengl_attributes(SDL_Window* win)
 
 int SDL_GL_Loader()
 {
-#if SDL_VIDEO_DRIVER_UIKIT
-    #define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_ANDROID
-    #define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_PANDORA
-    #define __SDL_NOGETPROCADDR__
-#endif
-    
-#ifdef __SDL_NOGETPROCADDR__
-    #define SDL_PROC(ret, func, params) func 
-#else
-    #define SDL_PROC(ret, func, params) \
-        do { \
-            func = SDL_GL_GetProcAddress(#func); \
-            if (! func) { \
-                return SDL_SetError("Could not load GL function %s: %s", #func, SDL_GetError()); \
-            } \
-        } while(0);
-#endif // __SDL_NOGETPROCADDR__
-    
-#undef SDL_PROC
+    #include "Dewpsi_GLFuncs.h"
     return 0;
 }
-
-#if 0
-static int LoadContext(GL_Context * data)
-{
-
-#if defined __SDL_NOGETPROCADDR__
-    #define SDL_PROC(ret,func,params) data->func=func;
-#else
-    #define SDL_PROC(ret,func,params) \
-        do { \
-            data->func = SDL_GL_GetProcAddress(#func); \
-            if ( ! data->func ) { \
-                return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
-            } \
-        } while ( 0 );
-#endif /* __SDL_NOGETPROCADDR__ */
-
-    #include "../src/render/opengl/SDL_glfuncs.h"
-    #undef SDL_PROC
-        return 0;
-    }
-#endif
 
 #undef space1
 #undef space2

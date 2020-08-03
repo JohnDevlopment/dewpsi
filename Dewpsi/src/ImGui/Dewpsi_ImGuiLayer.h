@@ -7,7 +7,7 @@
 namespace Dewpsi {
     class ImGuiLayer : public Layer {
     public:
-        ImGuiLayer();
+        ImGuiLayer(const char* path);
         ~ImGuiLayer();
         
         virtual void OnAttach() override;
@@ -16,6 +16,7 @@ namespace Dewpsi {
         virtual void OnEvent(Event& e) override;
     
     private:
+        char* m_cpShaderPath;
     };
 }
 

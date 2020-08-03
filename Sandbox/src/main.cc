@@ -11,41 +11,29 @@
 #include <Dewpsi_Color.h>
 #include <Dewpsi_String.h>
 #include <Dewpsi_Vector.h>
+#include <Dewpsi_ImGuiLayer.h>
 
+#include "OpenGLLayer.h"
 
-static constexpr Dewpsi::StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
+using Dewpsi::StaticString;
+
+static constexpr StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
+
+static constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
 
 static bool g_bOnce = false;
 
 extern "C" void forcequit(int);
 extern "C" void quit();
 
+static int parseArguments(int, const char*[]);
+
 // OpenGL layer
-class OpenGLLayer : public Dewpsi::Layer {
-public:
-    OpenGLLayer() : Layer("OpenGL"), win(Dewpsi::Application::Get().GetWindow())
-    {  }
-    
-    virtual ~OpenGLLayer()
-    {  }
-    
-    virtual void OnAttach() override;
-    
-    virtual void OnDetach() override;
-    
-    virtual void OnUpdate(Dewpsi::Timestep delta) override;
-
-private:
-    PDuint m_uiVertexBuffer;
-    PDuint m_uiProgram;
-    Dewpsi::Window& win;
-};
-
 void OpenGLLayer::OnAttach()
 {
-    PD_INFO("Attaching {0} layer", m_sDebugName); // TODO: delete
-    
-    const int iVertSize = 2;
+    constexpr int iVertSize = 2;
+    constexpr PDuint uiVertArraySize = sizeof(float) * 6;
+    constexpr PDuint uiVertAttrSize = sizeof(float) * 2;
     
     // load shader
     bool bInit = Dewpsi::OpenGL_InitShaders(ShaderFile.get());
@@ -55,33 +43,32 @@ void OpenGLLayer::OnAttach()
         throw std::runtime_error(Dewpsi::GetError());
     }
     m_uiProgram = Dewpsi::OpenGL_GetShader();
+    PD_ASSERT(m_uiProgram, "Did not retrieve shader program");
     
-    // generate vertex buffer
+    glUseProgram(m_uiProgram);
+    glUniform4f(0, 1.0f, 0.0f, 0.0f, 1.0f);
+    
+    // create vertex array object and vertex buffer object
     const float faVerts[] = {
-       -0.5f, -0.5f,
-        0.0f,  0.5f,
-        0.5f, -0.5f
+       -0.5f, -0.5f, 0.5f,
+        0.0f,  0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f
     };
     
-    // use program
-    glUseProgram(m_uiProgram);
+    glGenVertexArrays(1, &m_uiVertexArray);
+    glBindVertexArray(m_uiVertexArray);
     
-    // generate vertex buffer and bind it
     glGenBuffers(1, &m_uiVertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_uiVertexBuffer);
-    
-    // allocate memory for the vertex buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, faVerts, GL_STATIC_DRAW);
-    
-    // set and enable vertex attributes
-    constexpr PDuint uiVertAttrSize = sizeof(float) * 2;
-    
-    glVertexAttribPointer(0, iVertSize, GL_FLOAT, GL_FALSE, 0, 0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(faVerts), faVerts, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
 }
 
 void OpenGLLayer::OnDetach()
 {
+    glDeleteVertexArrays(1, &m_uiVertexArray);
     glDeleteBuffers(1, &m_uiVertexBuffer);
     Dewpsi::OpenGL_DeInitShaders();
 }
@@ -89,7 +76,11 @@ void OpenGLLayer::OnDetach()
 void OpenGLLayer::OnUpdate(Dewpsi::Timestep delta)
 {
     win.Clear();
+    
+    glUseProgram(m_uiProgram);
+    glBindVertexArray(m_uiVertexArray);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
 }
 
 // sandbox application layer
@@ -130,6 +121,7 @@ class Sandbox : public Dewpsi::Application {
 public:
     Sandbox()
     {
+        PushOverlay(new Dewpsi::ImGuiLayer(ImGuiShaderPath.get()));
         PushLayer(new SandboxLayer());
         PushLayer(new OpenGLLayer());
     }
@@ -142,6 +134,10 @@ static Dewpsi::Application* App = nullptr;
 
 int main (int argc, char const* argv[])
 {
+    // parse arguments in another function
+    if (parseArguments(argc, argv))
+        return 1;
+    
     std::signal(SIGINT, forcequit);
     std::atexit(quit);
     
@@ -173,7 +169,7 @@ int main (int argc, char const* argv[])
         SetWindowOpenGLAttribute(props, Dewpsi::MinorVersion, 3);
         SetWindowOpenGLAttribute(props, Dewpsi::Depth, 24);
         SetWindowOpenGLAttribute(props, Dewpsi::DoubleBuffer, 1);
-        SetWindowOpenGLAttribute(props, Dewpsi::ShareContext, 0);
+        SetWindowOpenGLAttribute(props, Dewpsi::ShareContext, 1);
         Dewpsi::SetWindowProps(props);
     }
     
@@ -199,6 +195,8 @@ int main (int argc, char const* argv[])
         // rgba sizes
         PD_INFO("\twindow red size: {0} bits\n\twindow green size: {1} bits\n\twindow blue size: {2} bits",
                      PD_LONYBBLE(info.red), PD_LONYBBLE(info.green), PD_LONYBBLE(info.blue));
+        
+        rWindow.SetClearColor(Dewpsi::DefineColor(0.5f, 0.5f, 0.5f));
     }
     
     // run main loop
@@ -233,5 +231,16 @@ void forcequit(int sig)
         delete App;
         std::exit(0);
     }
+}
+
+int parseArguments(int argc, const char* argv[])
+{
+    using std::cout;
+    using std::cerr;
+    using std::endl;
+    
+    
+    
+    return 0;
 }
 
