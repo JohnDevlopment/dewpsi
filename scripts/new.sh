@@ -26,7 +26,7 @@ print_usage() {
     printf "\n    $argv0 class
     $argv0 header fileName [-s] [header ...] [-l header ...]
     $argv0 [--]help|-h
-    $argv0 script [-t type] [-x permissions] [--|-c] [commandLine ...]
+    $argv0 script fileName [-t type] [-x permissions] [--|-c] [commandLine ...]
     $argv0 source fileName [--main] [-s] [header ...] [-l header ...]\n"
     
     printf "\n    If the first argument is 'header' or 'source', then create a header or source file with the default extensions .h or .cc, respectively.

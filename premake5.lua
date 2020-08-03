@@ -38,11 +38,13 @@ project "dewpsi"
         (srcdir .. "/*.cc"),
         (srcdir .. "/events/*.cc"),
         (srcdir .. "/ImGui/*.cc"),
+        (srcdir .. "/matrices/*.cc"),
         
         (srcdir .. "/*.h"),
         (srcdir .. "/os/*.h"),
         (srcdir .. "/events/*.h"),
         (srcdir .. "/ImGui/*.h"),
+        (srcdir .. "/matrices/*.h")
     }
     pchheader "pdpch.h"
     pchsource "Dewpsi/src/pdpch.cpp"
@@ -59,7 +61,8 @@ project "dewpsi"
         (srcdir),
         (srcdir .. "/events"),
         (srcdir .. "/os"),
-        (srcdir .. "/ImGui")
+        (srcdir .. "/ImGui"),
+        (srcdir .. "/shapes")
     }
     libdirs {
         (sdl2dir),
@@ -67,17 +70,20 @@ project "dewpsi"
     }
     links {
         "spdlog",
-        "sndio",
-        "m",
+--        "sndio",
+--        "m",
         "ImGui",
         "Glad"
     }
     
     postbuildcommands {
+        "{MKDIR} ../Sandbox/src/dewpsi-include/glad",
+        "{MKDIR} ../Sandbox/src/dewpsi-include/bits",
         ("{COPY} " .. srcdir .. "/*.h ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
-        "{MKDIR} ../Sandbox/src/dewpsi-include/glad",
+        ("{COPY} " .. srcdir .. "/ImGui/*.h  ../Sandbox/src/dewpsi-include"),
+        ("{COPY} " .. srcdir .. "/bits/*.h  ../Sandbox/src/dewpsi-include/bits/"),
         "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h"
     }
     
@@ -91,10 +97,12 @@ filter "system:linux"
         (srcdir .. "/platform/sdl")
     }
     links {
-        "dl"
+        "dl",
+        "SDL2"
     }
     files {
         (srcdir .. "/platform/sdl/Dewpsi_*.cc"),
+        (srcdir .. "/platform/sdl/Dewpsi_*.cpp"),
         (srcdir .. "/platform/sdl/Dewpsi_*.h")
     }
     
@@ -104,14 +112,20 @@ filter "system:linux"
 
 -- GCC compiler
 filter "toolset:gcc"
+--    linkoptions {
+--        "-Wl,--enable-new-dtags",
+--        "-Wl,-rpath,/usr/local/lib",
+--        "-Wl,--enable-new-dtags",
+--        "-Wl,--no-undefined",
+--        "-pthread",
+--        "-lSDL2",
+--        "-z undefs"
+--    }
+    
     linkoptions {
         "-Wl,--enable-new-dtags",
         "-Wl,-rpath,/usr/local/lib",
-        "-Wl,--enable-new-dtags",
-        "-Wl,--no-undefined",
-        "-pthread",
-        "-lSDL2",
-        "-z undefs"
+        "-pthread"
     }
 
 -- different configurations
@@ -148,7 +162,7 @@ project "sandbox"
     cppdialect "C++14"
     staticruntime "On"
     
-    links "dewpsi"
+    links { "dewpsi", "SDL2" }
     
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")

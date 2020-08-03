@@ -26,7 +26,5 @@ ostream& operator<<(ostream& os, const ToHex<T>& hex)
 
 int main(int argc, const char* argv[])
 {
-    PDuint8 uiVal = PD_CREATEBYTE(0x0f, 0x01); // should be 0x1f
     
-    cout << MakeToHex(uiVal) << endl;
 }
