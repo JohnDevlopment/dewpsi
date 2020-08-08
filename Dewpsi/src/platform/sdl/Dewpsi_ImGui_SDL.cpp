@@ -6,6 +6,8 @@
 #define _PD_DEBUG_BREAKS
 #include "Dewpsi_Debug.h"
 
+#include "Dewpsi_Core.h"
+#include "Dewpsi_WhichOS.h"
 #include "imgui.h"
 #include "Dewpsi_ImGui_SDL.h"
 
@@ -18,6 +20,8 @@
 
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    SDL_VERSION_ATLEAST(2,0,4)
 #define SDL_HAS_VULKAN                      SDL_VERSION_ATLEAST(2,0,6)
+
+void (* ImGui_UpdateIntState)(SDL_Window*) = nullptr;
 
 // Data
 static SDL_Window*  g_Window = NULL;
@@ -58,13 +62,13 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
             if (event->wheel.y < 0) io.MouseWheel -= 1;
             return true;
         }
-    case SDL_MOUSEBUTTONDOWN:
+    /*case SDL_MOUSEBUTTONDOWN:
         {
             if (event->button.button == SDL_BUTTON_LEFT) g_baMousePressed[0] = true;
             if (event->button.button == SDL_BUTTON_RIGHT) g_baMousePressed[1] = true;
             if (event->button.button == SDL_BUTTON_MIDDLE) g_baMousePressed[2] = true;
             return true;
-        }
+        }*/
     case SDL_TEXTINPUT:
         {
             io.AddInputCharactersUTF8(event->text.text);
@@ -90,6 +94,24 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
     return false;
 }
 
+static void ImGui_ImplSDL2_SetViewport(int x, int y, int w, int h)
+{
+    glViewport(x, y, (GLsizei) w, (GLsizei) h);
+}
+
+static void ImGui_ImplSDL2_UpdateIntState(SDL_Window* window)
+{
+    int w, h, dw, dh;
+    ImGuiIO& io = ImGui::GetIO();
+
+    SDL_GetWindowSize(window, &w, &h);
+    io.DisplaySize = ImVec2((float)w, (float)h);
+
+    SDL_GL_GetDrawableSize(window, &dw, &dh);
+    if (w > 0 && h > 0)
+        io.DisplayFramebufferScale = ImVec2((float) dw / w, (float) dh / h);
+}
+
 static bool ImGui_ImplSDL2_Init(SDL_Window* window)
 {
     g_Window = window;
@@ -99,22 +121,24 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window)
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;       // We can honor GetMouseCursor() values (optional)
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;        // We can honor io.WantSetMousePos requests (optional, rarely used)
     io.BackendPlatformName = "imgui_impl_sdl";
-    
+
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable keyboard controls
 
+    ImGui_UpdateIntState = ImGui_ImplSDL2_UpdateIntState;
+
     // Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
-    io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
+    io.KeyMap[ImGuiKey_Tab] = (int) PD_KEY_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
     io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
     io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
     io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
     io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-    io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-    io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-    io.KeyMap[ImGuiKey_Insert] = SDL_SCANCODE_INSERT;
-    io.KeyMap[ImGuiKey_Delete] = SDL_SCANCODE_DELETE;
-    io.KeyMap[ImGuiKey_Backspace] = SDL_SCANCODE_BACKSPACE;
+    io.KeyMap[ImGuiKey_Home] = (int) PD_KEY_HOME;
+    io.KeyMap[ImGuiKey_End] = (int) PD_KEY_END;
+    io.KeyMap[ImGuiKey_Insert] = (int) PD_KEY_INSERT;
+    io.KeyMap[ImGuiKey_Delete] = (int) PD_KEY_DELETE;
+    io.KeyMap[ImGuiKey_Backspace] = (int) PD_KEY_BACKSPACE;
     io.KeyMap[ImGuiKey_Space] = SDL_SCANCODE_SPACE;
     io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
     io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
@@ -126,9 +150,9 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window)
     io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
     io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
 
-    io.SetClipboardTextFn = ImGui_ImplSDL2_SetClipboardText;
-    io.GetClipboardTextFn = ImGui_ImplSDL2_GetClipboardText;
-    io.ClipboardUserData = NULL;
+    //io.SetClipboardTextFn = ImGui_ImplSDL2_SetClipboardText;
+    //io.GetClipboardTextFn = ImGui_ImplSDL2_GetClipboardText;
+    //io.ClipboardUserData = NULL;
 
     // Load mouse cursors
     g_MouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
@@ -152,6 +176,9 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window)
 #else
     (void)window;
 #endif
+
+    // this function is called whenever the window's resized
+    ImGui_ImplSDL2_UpdateIntState(window);
 
     return true;
 }
@@ -202,20 +229,19 @@ static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
 {
     ImGuiIO& io = ImGui::GetIO();
 
-    // Set OS mouse position if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
-    if (io.WantSetMousePos)
-        SDL_WarpMouseInWindow(g_Window, (int)io.MousePos.x, (int)io.MousePos.y);
-    else
-        io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+    //int mx, my;
+    //Uint32 iMouseButtons = SDL_GetMouseState(&mx, &my);
+    //io.MouseDown[0] = g_baMousePressed[0] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+    //io.MouseDown[1] = g_baMousePressed[1] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+    //io.MouseDown[2] = g_baMousePressed[2] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
 
-    int mx, my;
-    Uint32 iMouseButtons = SDL_GetMouseState(&mx, &my);
-    io.MouseDown[0] = g_baMousePressed[0] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-    io.MouseDown[1] = g_baMousePressed[1] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-    io.MouseDown[2] = g_baMousePressed[2] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-    
+//    io.MouseDown[0] = g_baMousePressed[0];
+//    io.MouseDown[1] = g_baMousePressed[1];
+//    io.MouseDown[2] = g_baMousePressed[2];
+
     g_baMousePressed[0] = g_baMousePressed[1] = g_baMousePressed[2] = false;
 
+/*
 #if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS)
     SDL_Window* focused_window = SDL_GetKeyboardFocus();
     if (g_Window == focused_window)
@@ -242,6 +268,7 @@ static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
     if (SDL_GetWindowFlags(g_Window) & SDL_WINDOW_INPUT_FOCUS)
         io.MousePos = ImVec2((float)mx, (float)my);
 #endif
+*/
 }
 
 static void ImGui_ImplSDL2_UpdateMouseCursor()
@@ -309,40 +336,20 @@ void ImGui_ImplSDL2_NewFrame(SDL_Window* window)
 {
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.Fonts->IsBuilt() && "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer _NewFrame() function? e.g. ImGui_ImplOpenGL3_NewFrame().");
-    
-    static int w = 0;
-    static int h = 0;
-    static int dw = 0;
-    static int dh = 0;
-    
-    _PD_DEBUG_BREAK();
-    
-//    if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
-//        w = h = 0;
-    
-    // FIXME 2020-08-06 12:42:38: this block executes only once. It should execute every frame to account for resizing the window. That will be done at a later date.
-    if (! w)
-    {
-        SDL_GetWindowSize(window, &w, &h);
-        io.DisplaySize = ImVec2((float)w, (float)h);
-        
-        SDL_GL_GetDrawableSize(window, &dw, &dh);
-        if (w > 0 && h > 0)
-            io.DisplayFramebufferScale = ImVec2((float) dw / w, (float) dh / h);
-    }
-    
+
     // Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
     static Uint64 s_uiFrequency = SDL_GetPerformanceFrequency();
-    
+
     Uint64 uiCurrentTime = SDL_GetPerformanceCounter();
-    
+
     io.DeltaTime = g_uiTime > 0 ? (float)((double)(uiCurrentTime - g_uiTime) / s_uiFrequency) : (float)(1.0f / 60.0f);
     g_uiTime = uiCurrentTime;
 
-    ImGui_ImplSDL2_UpdateMousePosAndButtons();
+    _PD_DEBUG_BREAK(); // TODO: remove _PD_DEBUG_BREAK
+
+    //ImGui_ImplSDL2_UpdateMousePosAndButtons();
     ImGui_ImplSDL2_UpdateMouseCursor();
 
     // Update game controllers (if enabled and available)
     ImGui_ImplSDL2_UpdateGamepads();
 }
-

@@ -41,10 +41,11 @@ project "dewpsi"
         (srcdir .. "/matrices/*.cc"),
         
         (srcdir .. "/*.h"),
-        (srcdir .. "/os/*.h"),
+        (srcdir .. "/debug/*.h"),
         (srcdir .. "/events/*.h"),
         (srcdir .. "/ImGui/*.h"),
-        (srcdir .. "/matrices/*.h")
+        (srcdir .. "/matrices/*.h"),
+        (srcdir .. "/os/*.h")
     }
     pchheader "pdpch.h"
     pchsource "Dewpsi/src/pdpch.cpp"
@@ -59,9 +60,10 @@ project "dewpsi"
         "%{IncludeDir.imgui}",
         "%{IncludeDir.glad}",
         (srcdir),
+        (srcdir .. "/debug"),
         (srcdir .. "/events"),
-        (srcdir .. "/os"),
         (srcdir .. "/ImGui"),
+        (srcdir .. "/os"),
         (srcdir .. "/shapes")
     }
     libdirs {
@@ -79,11 +81,14 @@ project "dewpsi"
     postbuildcommands {
         "{MKDIR} ../Sandbox/src/dewpsi-include/glad",
         "{MKDIR} ../Sandbox/src/dewpsi-include/bits",
+        
         ("{COPY} " .. srcdir .. "/*.h ../Sandbox/src/dewpsi-include"),
-        ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
-        ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
-        ("{COPY} " .. srcdir .. "/ImGui/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/bits/*.h  ../Sandbox/src/dewpsi-include/bits/"),
+        ("{COPY} " .. srcdir .. "/debug/*.h  ../Sandbox/src/dewpsi-include"),
+        ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
+        ("{COPY} " .. srcdir .. "/ImGui/*.h  ../Sandbox/src/dewpsi-include"),
+        ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
+        
         "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h"
     }
     

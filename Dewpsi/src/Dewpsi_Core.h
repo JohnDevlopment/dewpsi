@@ -32,6 +32,9 @@
 #include <csignal>
 #include <cstdint>
 
+/// Convert an lvalue to an rvalue.
+#define PD_MOVE(e)  std::move(e)
+
 /**
 *   @def    PD_INLINE
 *   @brief  Marks a function as inline.
@@ -78,6 +81,36 @@
         #define PD_FORCE_INLINE __forceinline
     #else
         #define PD_FORCE_INLINE static PD_INLINE
+    #endif
+#endif
+
+/**
+*   @def    PD_COLD
+*   @brief  Mark a function as hot.
+*   @code
+    int add(int a, int b) PD_COLD;
+*   #endcode
+*/
+#ifndef PD_COLD
+    #ifdef __GNUC__
+        #define PD_COLD  __attribute__ ((hot))
+    #else
+        #define PD_COLD
+    #endif
+#endif
+
+/**
+*   @def    PD_HOT
+*   @brief  Mark a function as hot.
+*   @code
+    int add(int a, int b) PD_HOT;
+*   #endcode
+*/
+#ifndef PD_HOT
+    #ifdef __GNUC__
+        #define PD_HOT  __attribute__ ((hot))
+    #else
+        #define PD_HOT
     #endif
 #endif
 
@@ -238,10 +271,10 @@
 namespace Dewpsi {
     /// @addtogroup core
     /// @{
-    
+
     template<typename T>
     using Scope = std::unique_ptr<T>;
-    
+
 #if __cplusplus >= 201402L
     /// Create a scope of type @c T and pass @a args to its constructor.
     template<typename T, typename... Args>
@@ -250,10 +283,10 @@ namespace Dewpsi {
         return std::make_unique<T>(std::forward<Args>(args)...);
     }
 #endif
-    
+
     template<typename T>
     using Ref = std::shared_ptr<T>;
-    
+
 #if __cplusplus >= 201402L
     /// Create a "reference" of type @c T and pass @a args to its constructor.
     template<typename T, typename... Args>
@@ -262,7 +295,7 @@ namespace Dewpsi {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
 #endif
-    
+
     /// Returns 1 or 0 depending on whether @a val is non-zero.
     template<typename T>
     inline typename std::enable_if<std::is_arithmetic<T>::value, int>::type
@@ -270,7 +303,7 @@ namespace Dewpsi {
     {
         return (val) ? 1 : 0;
     }
-    
+
     /** Exchanges the values of @a a and @a b.
     *   The parameters are of course @a a and @a b, whose values are swapped.
     *   The type @c T must be move constructible and move assignable.
@@ -283,7 +316,7 @@ namespace Dewpsi {
         a = std::move(b);
         b = std::move(temp);
     }
-    
+
     /// @}
 }
 
@@ -314,7 +347,7 @@ struct ImDrawCmd
     unsigned int    ElemCount;        ///< Number of indices (multiple of 3) to be rendered as triangles; vertices are stored in the callee @c ImDrawList's @a vtx_buffer array, indices in @a idx_buffer[]
     ImDrawCallback  UserCallback;     ///< If not null, call the function instead of rendering the vertices; clip_rect and texture_id will be set normally
     void*           UserCallbackData; ///< Accessed by the callback function
-    
+
     /// Initializes @c ImDrawCmd's data to zero.
     ImDrawCmd() { memset(this, 0, sizeof(*this)); }
 };
@@ -325,17 +358,17 @@ struct ImDrawCmd
 *   Each Dear ImGui window contains its own ImDrawList. You can use ImGui::GetWindowDrawList() to
 *   access the current window draw list and draw custom primitives.
 *   You can interleave normal ImGui calls and add primitives to the current draw list.
-*   
+*
 *   @par Pixel
 *   All positions are generally in pixel coordinates (top-left corner at (0, 0), bottom-right corner
 *   at io.DisplaySize). However, transformation matrices can be applied to the data, and they can
 *   be any type of transformation. A point of advice: if such a transformation is applied, it should be
 *   applied to ClipRect as well.
-*   
+*
 *   @note
 *   Primitives are always added to the list not culled (culling is done at a higher level by ImGui functions).
 *   Culling of drawn objects should be considered if this API is used a lot.
-*   
+*
 *   @ingroup imgui
 */
 struct ImDrawList {
@@ -357,19 +390,19 @@ struct ImDrawData {
     ImVec2       DisplayPos;        ///< Upper-left position of the viewport to render (== upper-left of the orthogonal projection matrix to use)
     ImVec2       DisplaySize;       ///< Size of the viewport to render (== io.DisplaySize for the main viewport) (DisplayPos + DisplaySize == lower-right of the orthogonal projection matrix to use)
     ImVec2       FramebufferScale;  ///< Amount of pixels for each unit of DisplaySize. Based on io.DisplayFramebufferScale. Generally (1,1) on normal display, (2,2) on OSX with Retina display
-    
+
     /// Default constructor
     ImDrawData()
     {
         Clear();
     }
-    
+
     /// Destructor
     ~ImDrawData()
     {
         Clear();
     }
-    
+
     /// Clear and initialize data.
     void Clear()
     {
@@ -378,13 +411,13 @@ struct ImDrawData {
         CmdListsCount = TotalVtxCount = TotalIdxCount = 0;
         DisplayPos = DisplaySize = FramebufferScale = ImVec2(0.f, 0.f);
     }
-    
+
     /** Helper to convert all buffers from indexed to non-indexed, in case you cannot render indexed.
     *   @note
     *   This is a slow and most likely a waste of resources. Always prefer indexed rendering!
     */
     IMGUI_API void DeIndexAllBuffers();
-    
+
     /** Helper to scale the ClipRect field of each ImDrawCmd.
     *   Use if the final output buffer is at a different scale than
     *   Dear ImGui expects, or if there is a difference between

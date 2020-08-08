@@ -1,6 +1,8 @@
 #ifndef DEWPSI_MACROS_H
 #define DEWPSI_MACROS_H
 
+#if defined(__GNUC__)
+
 #ifndef PD_STRLEN
     #ifdef __has_builtin
         #if __has_builtin(strlen)
@@ -24,5 +26,19 @@
         #define PD_MEMCPY(d,s,l)        ::std::memcpy(d,s,l)
     #endif
 #endif
+
+#ifndef PD_SSCANF
+    #ifdef __has_builtin
+        #if __has_builtin(sscanf)
+            #define PD_SSCANF(s,f,...)  __builtin_sscanf(s,f,__VA_ARGS__)
+        #else
+            #define PD_SSCANF(s,f,...)  ::std::sscanf(s,f,__VA_ARGS__)
+        #endif
+    #else
+        #define PD_SSCANF(s,f,...)      ::std::sscanf(s,f,__VA_ARGS__)
+    #endif
+#endif
+
+#endif /* defined(__GNUC__) */
 
 #endif /* DEWPSI_MACROS_H */
