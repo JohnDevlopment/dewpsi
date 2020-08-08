@@ -1,5 +1,6 @@
+#define _PD_DEBUG_DEFINE_VARS
 #include "Dewpsi_Application.h"
-#include "Dewpsi_Application.h"
+#include "Dewpsi_Platform.h"
 #include "Dewpsi_Debug.h"
 #include "Dewpsi_Window.h"
 #include "Dewpsi_ApplicationEvent.h"
@@ -72,7 +73,7 @@ void Application::Run()
     while (m_bRunning)
     {
         PD_PROFILE_SCOPE("RunLoop");
-        float fTime = (float) SDL_GetTicks() / 1000.0f; // TODO: change to platform-independent function
+        float fTime = Platform::GetTime();
         Timestep delta = fTime - m_fLastFrameTime;
         m_fLastFrameTime = fTime;
         

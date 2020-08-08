@@ -70,7 +70,25 @@ namespace Dewpsi {
         *   @return         The number of characters copied or PD_INVALID on failure
         *   @ingroup strings
         */
-        PD_CALL size_t Copy(char* dst, const char* src, size_t maxlen, PDenum mode = PD_NULL);
+        PD_CALL size_t Copy(char* dst, const char* src, size_t maxlen = -1, PDenum mode = PD_NULL);
+        
+        /** Concatenate two strings.
+        *   Appends the @a src string at the @a dst string, overwriting the terminating null character '\0'
+        *   at the end of @a dst, and adds a terminating null byte.
+        *   
+        *   If any parameter except @a mode is @c NULL, Copy() returns @c PD_INVALID and nothing
+        *   else is done. In that case, you can call GetError() to retrieve the specific error message.
+        *
+        *   @warning        The destination string @a dst must be large enough to hold
+        *                   @a maxlen characters and must not overlap with @a src.
+        *   
+        *   @param  dst     The destination buffer
+        *   @param  src     The string whose characters are copied to @a dst
+        *   @param  maxlen  The maximum number of characters to copy
+        *   @return         The total length of @a dst after concatenating the two strings
+        *   @ingroup        strings
+        */
+        PD_CALL size_t Cat(char* dst, const char* src, size_t maxlen = -1);
         
         /** Allocates a character array.
         *   Allocates an array of @a cnt characters and returns a pointer to it.
@@ -90,8 +108,9 @@ namespace Dewpsi {
         *   Frees the memory holding the string pointed to by @a src.
         *   
         *   @param  ptr The pointer to free
-        *   @warning    After this call, the pointer is no longer valid.
-        *   @ingroup strings
+        *
+        *   @warning    After this call, the pointer is no longer valid and should not be used.
+        *   @ingroup    strings
         */
         PD_INLINE void Delete(char* ptr)
         {

@@ -9,28 +9,13 @@ namespace String {
 
 size_t Length(const char* str)
 {
-    if (! str)
-    {
-        PD_BADPARAM("str");
-        return (size_t) PD_INVALID;
-    }
-    
+    PD_CORE_ASSERT(str, "invalid parameter 'src'");
     return PD_STRLEN(str);
 }
 
 size_t Copy(char* dst, const char* src, size_t maxlen, PDenum mode)
 {
-    if (! dst)
-    {
-        PD_BADPARAM("dst");
-        return PD_INVALID;
-    }
-    
-    if (! src)
-    {
-        PD_BADPARAM("src");
-        return PD_INVALID;
-    }
+    PD_CORE_ASSERT(dst && src, "invalid parameters");
     
     const size_t szSrcLen = PD_STRLEN(src);
     size_t szDestLen = 0;
@@ -47,12 +32,11 @@ size_t Copy(char* dst, const char* src, size_t maxlen, PDenum mode)
             char* const cpTemp = New(szDestLen);
             if (! cpTemp)
             {
-                PD_OUTOFMEMORY();
+                PD_NOMEMORY();
                 return PD_INVALID;
             }
             *cppDest = cpTemp;
             cpDest = *cppDest;
-            cpTemp = nullptr;
         }
         
         PD_MEMCPY(cpDest, src, szDestLen);
@@ -62,11 +46,22 @@ size_t Copy(char* dst, const char* src, size_t maxlen, PDenum mode)
     return szSrcLen;
 }
 
+size_t Cat(char* dst, const char* src, size_t maxlen)
+{
+    PD_CORE_ASSERT(dst && src, "invalid parameters");
+    
+    size_t szDstLen = Length(dst);
+    size_t szSrcLen = Length(src);
+    
+    if (szDstLen < maxlen)
+        Copy(dst + szDstLen, src, maxlen - szDstLen);
+    
+    return szDstLen + szSrcLen;
+}
+
 char* New(const size_t cnt, char ch)
 {
-    
-    
-    char* const cpResult = nullptr;
+    char* cpResult = nullptr;
     
     if (cnt > 0)
     {

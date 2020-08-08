@@ -30,7 +30,7 @@ namespace Dewpsi_ImGui_Impl {
         PDuint attribLocationVtxPos;
         PDuint attribLocationVtxUV;
         PDuint attribLocationVtxColor;
-        PDuint vboHandle;
+        PDuint vboHandle; // vertex buffer object
         PDuint elementsHandle;
         char glslVersionString[32];  // Specified by user or detected based on compile time GL settings.
     };

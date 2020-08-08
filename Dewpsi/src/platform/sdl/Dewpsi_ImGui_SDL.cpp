@@ -3,6 +3,9 @@
 // (Info: SDL2 is a cross-platform general purpose library for handling windows, inputs, graphics context creation, etc.)
 // (Requires: SDL 2.0. Prefer SDL 2.0.4+ for full feature support.)
 
+#define _PD_DEBUG_BREAKS
+#include "Dewpsi_Debug.h"
+
 #include "imgui.h"
 #include "Dewpsi_ImGui_SDL.h"
 
@@ -18,11 +21,11 @@
 
 // Data
 static SDL_Window*  g_Window = NULL;
-static Uint64       g_Time = 0;
-static bool         g_MousePressed[3] = { false, false, false };
+static Uint64       g_uiTime = 0;
+static bool         g_baMousePressed[3] = { false, false, false };
 static SDL_Cursor*  g_MouseCursors[ImGuiMouseCursor_COUNT] = {};
 static char*        g_ClipboardTextData = NULL;
-static bool         g_MouseCanUseGlobalState = true;
+static bool         g_bMouseCanUseGlobalState = true;
 
 static const char* ImGui_ImplSDL2_GetClipboardText(void*)
 {
@@ -57,9 +60,9 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
         }
     case SDL_MOUSEBUTTONDOWN:
         {
-            if (event->button.button == SDL_BUTTON_LEFT) g_MousePressed[0] = true;
-            if (event->button.button == SDL_BUTTON_RIGHT) g_MousePressed[1] = true;
-            if (event->button.button == SDL_BUTTON_MIDDLE) g_MousePressed[2] = true;
+            if (event->button.button == SDL_BUTTON_LEFT) g_baMousePressed[0] = true;
+            if (event->button.button == SDL_BUTTON_RIGHT) g_baMousePressed[1] = true;
+            if (event->button.button == SDL_BUTTON_MIDDLE) g_baMousePressed[2] = true;
             return true;
         }
     case SDL_TEXTINPUT:
@@ -96,6 +99,8 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window)
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;       // We can honor GetMouseCursor() values (optional)
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;        // We can honor io.WantSetMousePos requests (optional, rarely used)
     io.BackendPlatformName = "imgui_impl_sdl";
+    
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable keyboard controls
 
     // Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
     io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
@@ -137,7 +142,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window)
     g_MouseCursors[ImGuiMouseCursor_NotAllowed] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
 
     // Check and store if we are on Wayland
-    g_MouseCanUseGlobalState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
+    g_bMouseCanUseGlobalState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
 
 #ifdef _WIN32
     SDL_SysWMinfo wmInfo;
@@ -204,17 +209,18 @@ static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
         io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 
     int mx, my;
-    Uint32 mouse_buttons = SDL_GetMouseState(&mx, &my);
-    io.MouseDown[0] = g_MousePressed[0] || (mouse_buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-    io.MouseDown[1] = g_MousePressed[1] || (mouse_buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-    io.MouseDown[2] = g_MousePressed[2] || (mouse_buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-    g_MousePressed[0] = g_MousePressed[1] = g_MousePressed[2] = false;
+    Uint32 iMouseButtons = SDL_GetMouseState(&mx, &my);
+    io.MouseDown[0] = g_baMousePressed[0] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+    io.MouseDown[1] = g_baMousePressed[1] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+    io.MouseDown[2] = g_baMousePressed[2] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
+    
+    g_baMousePressed[0] = g_baMousePressed[1] = g_baMousePressed[2] = false;
 
 #if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS)
     SDL_Window* focused_window = SDL_GetKeyboardFocus();
     if (g_Window == focused_window)
     {
-        if (g_MouseCanUseGlobalState)
+        if (g_bMouseCanUseGlobalState)
         {
             // SDL_GetMouseState() gives mouse position seemingly based on the last window entered/focused(?)
             // The creation of a new windows at runtime and SDL_CaptureMouse both seems to severely mess up with that, so we retrieve that position globally.
@@ -303,23 +309,35 @@ void ImGui_ImplSDL2_NewFrame(SDL_Window* window)
 {
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.Fonts->IsBuilt() && "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer _NewFrame() function? e.g. ImGui_ImplOpenGL3_NewFrame().");
-
-    // Setup display size (every frame to accommodate for window resizing)
-    int w, h;
-    int display_w, display_h;
-    SDL_GetWindowSize(window, &w, &h);
-    if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
-        w = h = 0;
-    SDL_GL_GetDrawableSize(window, &display_w, &display_h);
-    io.DisplaySize = ImVec2((float)w, (float)h);
-    if (w > 0 && h > 0)
-        io.DisplayFramebufferScale = ImVec2((float)display_w / w, (float)display_h / h);
-
+    
+    static int w = 0;
+    static int h = 0;
+    static int dw = 0;
+    static int dh = 0;
+    
+    _PD_DEBUG_BREAK();
+    
+//    if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
+//        w = h = 0;
+    
+    // FIXME 2020-08-06 12:42:38: this block executes only once. It should execute every frame to account for resizing the window. That will be done at a later date.
+    if (! w)
+    {
+        SDL_GetWindowSize(window, &w, &h);
+        io.DisplaySize = ImVec2((float)w, (float)h);
+        
+        SDL_GL_GetDrawableSize(window, &dw, &dh);
+        if (w > 0 && h > 0)
+            io.DisplayFramebufferScale = ImVec2((float) dw / w, (float) dh / h);
+    }
+    
     // Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
-    static Uint64 frequency = SDL_GetPerformanceFrequency();
-    Uint64 current_time = SDL_GetPerformanceCounter();
-    io.DeltaTime = g_Time > 0 ? (float)((double)(current_time - g_Time) / frequency) : (float)(1.0f / 60.0f);
-    g_Time = current_time;
+    static Uint64 s_uiFrequency = SDL_GetPerformanceFrequency();
+    
+    Uint64 uiCurrentTime = SDL_GetPerformanceCounter();
+    
+    io.DeltaTime = g_uiTime > 0 ? (float)((double)(uiCurrentTime - g_uiTime) / s_uiFrequency) : (float)(1.0f / 60.0f);
+    g_uiTime = uiCurrentTime;
 
     ImGui_ImplSDL2_UpdateMousePosAndButtons();
     ImGui_ImplSDL2_UpdateMouseCursor();

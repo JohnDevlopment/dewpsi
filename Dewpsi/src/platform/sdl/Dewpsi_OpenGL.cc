@@ -121,7 +121,7 @@ unsigned int CreateShader(const ShaderProgramSource& source, PDuint* pVert, PDui
     }
     
     // validate shader program
-    {
+    if (reinterpret_cast<void*>(glGetProgramPipelineiv) != nullptr) {
         int iCode;
         glValidateProgram(uiProg);
         glGetProgramPipelineiv(uiProg, GL_VALIDATE_STATUS, &iCode);

@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <memory>
+#include <new>
 #include <utility>
 #include <type_traits>
 #include <string>
@@ -30,8 +31,6 @@
 
 #include <csignal>
 #include <cstdint>
-
-
 
 /**
 *   @def    PD_INLINE
@@ -92,6 +91,12 @@
 */
 #define PD_OFFSETOF(type, member)   offsetof(type, member)
 
+/** Get the size of a static array.
+*   @param  a   An array with static storage
+*   @return     The number of elements in the array
+*/
+#define PD_ARRAYSIZE(a)             static_cast<int>(sizeof(a) / sizeof(* (a)))
+
 /** Prefix to the declaration of any function or variable.
 *   Indicates that a function or variable is @c constexpr.
 */
@@ -146,6 +151,9 @@
     #define PD_DEBUGBREAK(m)
 #endif
 
+/// Aborts execution of the program.
+#define PD_ABORT()  std::abort()
+
 /**
 *   @def        PD_ASSERT
 *   @brief      Summarily stops execution of the application if @a x evaluates as @c false.
@@ -160,8 +168,16 @@
 *   @note       Only compiles if @a PD_ENABLE_ASSERTS is defined.
 */
 #ifdef PD_ENABLE_ASSERTS
-    #define PD_ASSERT(x, ...)       if (! (x)) { ::Dewpsi::Log::GetClientLogger()->error(__VA_ARGS__); PD_DEBUGBREAK(); }
-    #define PD_CORE_ASSERT(x, ...)  if (! (x)) { ::Dewpsi::Log::GetCoreLogger()->error(__VA_ARGS__); PD_DEBUGBREAK(); }
+    #define PD_ASSERT(x, ...)       if (! (x)) { \
+                                        ::Dewpsi::Log::GetClientLogger()->error("Assertion '" #x "' failed"); \
+                                        ::Dewpsi::Log::GetClientLogger()->error(__VA_ARGS__); \
+                                        PD_DEBUGBREAK(); \
+                                    }
+    #define PD_CORE_ASSERT(x, ...)  if (! (x)) { \
+                                        ::Dewpsi::Log::GetCoreLogger()->error("Assertion '" #x "' failed"); \
+                                        ::Dewpsi::Log::GetCoreLogger()->error(__VA_ARGS__); \
+                                        PD_DEBUGBREAK(); \
+                                    }
 #else
     #define PD_ASSERT(x, ...)
     #define PD_CORE_ASSERT(x, ...)
