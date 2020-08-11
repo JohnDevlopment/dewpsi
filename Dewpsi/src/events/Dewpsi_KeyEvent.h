@@ -13,28 +13,29 @@
 
 #include <Dewpsi_Event.h>
 #include <Dewpsi_Input.h>
+#include <Dewpsi_String.h>
 
 namespace Dewpsi {
     /// @addtogroup keyevents
     /// @{
-    
+
     /// Key event.
     class KeyEvent : public Event {
     public:
         /// Returns the key code
         KeyCode GetKeyCode() const
         { return m_keycode; }
-        
+
     protected:
         /// Constructs a key event with a key code.
         KeyEvent(KeyCode key) : m_keycode(key)
         {  }
-        
+
         EVENT_CLASS_CATEGORY(EC_Application|EC_Keyboard)
-        
+
         KeyCode m_keycode;
     };
-    
+
     /// Key pressed event.
     class KeyPressedEvent : public KeyEvent {
     public:
@@ -42,13 +43,13 @@ namespace Dewpsi {
         KeyPressedEvent(KeyCode keycode, int repeatCount)
             : KeyEvent(keycode), m_iRepeatCount(repeatCount)
         {  }
-        
+
         EVENT_CLASS_TYPE(ET_KeyPressed)
-        
+
         /// Returns the repeat count.
         int GetRepeatCount() const
         { return m_iRepeatCount; }
-        
+
         /// Returns a string denoting the key being pressed.
         virtual std::string ToString() const
         {
@@ -56,11 +57,11 @@ namespace Dewpsi {
             ss << "Key pressed: " << m_keycode << " (" << m_iRepeatCount << " repeats)";
             return ss.str();
         }
-        
+
     private:
         int m_iRepeatCount;
     };
-    
+
     /// Key released event.
     class KeyReleasedEvent : public KeyEvent {
     public:
@@ -68,9 +69,9 @@ namespace Dewpsi {
         KeyReleasedEvent(KeyCode keycode)
             : KeyEvent(keycode)
         {  }
-        
+
         EVENT_CLASS_TYPE(ET_KeyReleased)
-        
+
         /// Returns a string denoting the key being pressed.
         virtual std::string ToString() const
         {
@@ -79,26 +80,37 @@ namespace Dewpsi {
             return ss.str();
         }
     };
-    
+
     /// Key typed event.
     class KeyTypedEvent : public KeyEvent {
     public:
         /// Constructs a key-typed event with a keycode and repeat count.
-        KeyTypedEvent(KeyCode keycode)
-            : KeyEvent(keycode)
-        {  }
-        
+        KeyTypedEvent(const char* text)
+            : KeyEvent(PD_KEY_UNKNOWN)
+        {
+            String::Copy(m_caText, text, PD_ARRAYSIZE(m_caText));
+        }
+
         EVENT_CLASS_TYPE(ET_KeyTyped)
-        
+
         /// Returns a string denoting the key being pressed.
         virtual std::string ToString() const
         {
             std::stringstream ss;
-            ss << "Key typed: " << m_keycode;
+            ss << "Typed event: " << m_caText;
             return ss.str();
         }
+
+        /// Returns the input characters as a string.
+        const char* GetText() const
+        {
+            return m_caText;
+        }
+
+    private:
+        char m_caText[32];
     };
-    
+
     /// @}
 }
 

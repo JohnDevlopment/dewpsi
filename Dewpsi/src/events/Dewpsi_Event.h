@@ -89,7 +89,12 @@ namespace Dewpsi {
         }
     };
     
-    /// Event dispatcher
+    /** %Event dispatcher.
+    *   The member function %Dispatch() is used to dispatch
+    *   an event
+    *
+    *   @snippet events.cpp Event Dispatcher
+    */
     class EventDispatcher {
     public:
         /// Sets the event to be dispatched.

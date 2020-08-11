@@ -9,8 +9,11 @@
     #include <Dewpsi_SDLPlatform.h>
     #define PD_GL_FUNC_DECLS
     #include <Dewpsi_GLFuncs.h>
+    #include <Dewpsi_SDLInput.h>
 #else
     #error Currently only Linux is supported
 #endif
+
+extern void (PD_APIENTRY * ImGui_UpdateIntState)(SDL_Window*);
 
 #endif /* DEWPSI_WHICHOS_H */

@@ -3,24 +3,21 @@
 
 /**
 *   @file       Dewpsi_KeyCode.h
-*   @brief      A header for the Dewpsi engine.
+*   @brief      @doxfb
 *   Contains key codes.
 *   @ingroup    keyevents
 */
 
-/*#define PD_NUMPAD_MASK      (1<<14)*/
-/*#define PD_KEYTONUMPAD(x)   ((x)|PD_KEYTONUMPAD)*/
-
 namespace Dewpsi {
     /// @addtogroup keyevents
     /// @{
-    
+
     /** Virtual keycode.
     *   A value of this type can be passed to cout.
     */
     typedef enum class KeyCode : uint16_t {
         Unknown             = 0, ///< Unknown key
-        
+
         // From glfw3.h
         Space               = 32, ///< Spacebar
         Exclaim             = 33, ///< Exclaimation point (!)
@@ -91,7 +88,7 @@ namespace Dewpsi {
         Caret               = 94, ///< Caret (^)
         Underscore          = 95, ///< Underscore (_)
         GraveAccent         = 96, ///< Grave accent (`)
-        
+
         LeftBrace           = 123, ///< Left brace({)
         Pipe                = 124, ///< Pipe (|)
         RightBrace          = 125, ///< Right brace (})
@@ -152,7 +149,7 @@ namespace Dewpsi {
         KPAdd               = 334, ///< Keypad add (+)
         KPEnter             = 335, ///< Keypad Enter
         KPEqual             = 336, ///< Keypad equal (=)
-        
+
         Application         = 337, ///< Application/Window button
 
         LeftShift           = 340, ///< Left shift
@@ -164,16 +161,18 @@ namespace Dewpsi {
         RightAlt            = 346, ///< Right alt
         RightSuper          = 347, ///< Right super
         LeftMenu            = 348, ///< Left menu/gui key
-        RightMenu           = 349  ///< Right menu/gui key
+        RightMenu           = 349, ///< Right menu/gui key
+
+        Count               = 132, ///< Number of key codes
     } Key;
-    
+
     /// Prints the value of a keycode as an integer.
     inline std::ostream& operator<<(std::ostream& os, KeyCode code)
     {
         os << static_cast<int32_t>(code);
         return os;
     }
-    
+
     /// @}
 }
 
@@ -473,6 +472,8 @@ namespace Dewpsi {
 #define PD_KEY_LEFTGUI          ::Dewpsi::Key::LeftMenu
 /// Right window/gui key
 #define PD_KEY_RIGHTGUI         ::Dewpsi::Key::RightMenu
+/// Number of key codes
+#define PD_KEY_COUNT            ::Dewpsi::Key::Count
 
 /// @}
 

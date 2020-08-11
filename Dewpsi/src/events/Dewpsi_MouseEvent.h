@@ -12,6 +12,7 @@
 */
 
 #include <Dewpsi_Event.h>
+#include <Dewpsi_Input.h>
 
 namespace Dewpsi {
     /// @addtogroup mouse
@@ -81,6 +82,66 @@ namespace Dewpsi {
     private:
         float m_fXOffset;
         float m_fYOffset;
+    };
+    
+    /** Mouse button event.
+    *   Base class of mouse pressed and released events.
+    */
+    class MouseButtonEvent : public Event {
+    public:
+        EVENT_CLASS_CATEGORY(EC_Application|EC_Mouse)
+        
+        /// Returns the mouse button that was invoked.
+        MouseCode GetMouseCode() const
+        {
+            return m_eCode;
+        }
+        
+    protected:
+        MouseButtonEvent(MouseCode code) : m_eCode(code)
+        {  }
+        
+        MouseCode m_eCode;
+    };
+    
+    /** Mouse pressed event.
+    *   Dispatched whenever a mouse button is pressed down.
+    */
+    class MousePressedEvent : public MouseButtonEvent {
+    public:
+        /// Constructs a mouse button event mouse button @a code.
+        MousePressedEvent(MouseCode code) : MouseButtonEvent(code)
+        {  }
+        
+        /// Returns a string representation of the mouse code.
+        std::string ToString() const override
+        {
+            std::stringstream ss;
+            ss << "MousePressedEvent: " << m_eCode;
+            return ss.str();
+        }
+        
+        EVENT_CLASS_TYPE(ET_MouseButtonPressed)
+    };
+    
+    /** Mouse released event.
+    *   Dispatched whenever a mouse button is released.
+    */
+    class MouseReleasedEvent : public MouseButtonEvent {
+    public:
+        /// Constructs a mouse button event mouse button @a code.
+        MouseReleasedEvent(MouseCode code) : MouseButtonEvent(code)
+        {  }
+        
+        /// Returns a string representation of the mouse code.
+        std::string ToString() const override
+        {
+            std::stringstream ss;
+            ss << "MouseReleasedEvent: " << m_eCode;
+            return ss.str();
+        }
+        
+        EVENT_CLASS_TYPE(ET_MouseButtonReleased)
     };
     
     /// @}
