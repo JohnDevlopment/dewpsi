@@ -18,6 +18,7 @@ namespace Dewpsi {
     class SDLInput : public Input {
     protected:
         virtual bool IsKeyPressedImpl(KeyCode key) override;
+        virtual KeyMod GetModStateImpl() override;
         virtual bool IsMouseButtonPressedImpl(MouseCode button);
         virtual PDuint32 GetMouseStateImpl() override;
         virtual std::pair<float, float> GetMousePositionImpl() override;

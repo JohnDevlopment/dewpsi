@@ -42,6 +42,11 @@ namespace Dewpsi {
             return s_Instance->IsKeyPressedImpl(key);
         }
 
+        static KeyMod GetModState()
+        {
+            return s_Instance->GetModStateImpl();
+        }
+
         /** Returns true if the mouse button @a button is pressed.
         *   @param  button  A MouseCode
         *   @return         True if the button is pressed down, false otherwise
@@ -51,7 +56,10 @@ namespace Dewpsi {
             return s_Instance->IsMouseButtonPressedImpl(button);
         }
 
-        /// Get the mouse state.
+        /** Get the mouse state.
+        *   The return value is a field of bits representing what mouse
+        *   buttons have been pressed.
+        */
         static PDuint32 GetMouseState()
         {
             return s_Instance->GetMouseStateImpl();
@@ -79,6 +87,7 @@ namespace Dewpsi {
 
     protected:
         virtual bool IsKeyPressedImpl(KeyCode key) = 0;
+        virtual KeyMod GetModStateImpl() = 0;
         virtual bool IsMouseButtonPressedImpl(MouseCode button) = 0;
         virtual PDuint32 GetMouseStateImpl() = 0;
         virtual std::pair<float, float> GetMousePositionImpl() = 0;

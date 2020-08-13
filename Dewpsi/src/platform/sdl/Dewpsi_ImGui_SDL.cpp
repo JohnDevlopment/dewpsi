@@ -10,6 +10,7 @@
 #include "Dewpsi_WhichOS.h"
 #include "imgui.h"
 #include "Dewpsi_ImGui_SDL.h"
+#include "bits/Dewpsi_Macros.h"
 
 // SDL
 #include <SDL.h>
@@ -77,12 +78,12 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
         {
-            int key = event->key.keysym.scancode;
-            IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
-            io.KeysDown[key] = (event->type == SDL_KEYDOWN);
-            io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-            io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-            io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+            //int key = event->key.keysym.scancode;
+            //IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
+            //io.KeysDown[key] = (event->type == SDL_KEYDOWN);
+            //io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+            //io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+            //io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
 #ifdef _WIN32
             io.KeySuper = false;
 #else
@@ -222,53 +223,38 @@ void ImGui_ImplSDL2_Shutdown()
     // Destroy SDL mouse cursors
     for (ImGuiMouseCursor cursor_n = 0; cursor_n < ImGuiMouseCursor_COUNT; cursor_n++)
         SDL_FreeCursor(g_MouseCursors[cursor_n]);
-    memset(g_MouseCursors, 0, sizeof(g_MouseCursors));
+    PD_MEMSET(g_MouseCursors, 0, sizeof(g_MouseCursors));
 }
 
 static void ImGui_ImplSDL2_UpdateMousePosAndButtons()
 {
     ImGuiIO& io = ImGui::GetIO();
 
-    //int mx, my;
-    //Uint32 iMouseButtons = SDL_GetMouseState(&mx, &my);
-    //io.MouseDown[0] = g_baMousePressed[0] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-    //io.MouseDown[1] = g_baMousePressed[1] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-    //io.MouseDown[2] = g_baMousePressed[2] || (iMouseButtons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-
-//    io.MouseDown[0] = g_baMousePressed[0];
-//    io.MouseDown[1] = g_baMousePressed[1];
-//    io.MouseDown[2] = g_baMousePressed[2];
-
     g_baMousePressed[0] = g_baMousePressed[1] = g_baMousePressed[2] = false;
 
-/*
+    int iMx, iMy;
+    PDuint32 uiMouseButtons = SDL_GetMouseState(&iMx, &iMy);
+
 #if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS)
-    SDL_Window* focused_window = SDL_GetKeyboardFocus();
-    if (g_Window == focused_window)
+    SDL_Window* pFocusedWindow = SDL_GetKeyboardFocus();
+    if (g_Window == pFocusedWindow)
     {
         if (g_bMouseCanUseGlobalState)
         {
-            // SDL_GetMouseState() gives mouse position seemingly based on the last window entered/focused(?)
-            // The creation of a new windows at runtime and SDL_CaptureMouse both seems to severely mess up with that, so we retrieve that position globally.
-            // Won't use this workaround when on Wayland, as there is no global mouse position.
-            int wx, wy;
-            SDL_GetWindowPosition(focused_window, &wx, &wy);
-            SDL_GetGlobalMouseState(&mx, &my);
-            mx -= wx;
-            my -= wy;
+            int iWx, iWy;
+            SDL_GetWindowPosition(pFocusedWindow, &iWx, &iWy);
+            SDL_GetGlobalMouseState(&iMx, &iMy);
+            iMx -= iWx;
+            iMy -= iWy;
         }
-        io.MousePos = ImVec2((float)mx, (float)my);
+        io.MousePos = ImVec2((float) iMx, (float) iMy);
     }
-
-    // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger the OS window resize cursor.
-    // The function is only supported from SDL 2.0.4 (released Jan 2016)
-    bool any_mouse_button_down = ImGui::IsAnyMouseDown();
-    SDL_CaptureMouse(any_mouse_button_down ? SDL_TRUE : SDL_FALSE);
+    bool bAnyMouseDown = ImGui::IsAnyMouseDown();
+    SDL_CaptureMouse(bAnyMouseDown ? SDL_TRUE : SDL_FALSE);
 #else
     if (SDL_GetWindowFlags(g_Window) & SDL_WINDOW_INPUT_FOCUS)
-        io.MousePos = ImVec2((float)mx, (float)my);
+        io.MousePos = ImVec2((float) iMx, (float) iMy);
 #endif
-*/
 }
 
 static void ImGui_ImplSDL2_UpdateMouseCursor()
@@ -294,7 +280,7 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
 static void ImGui_ImplSDL2_UpdateGamepads()
 {
     ImGuiIO& io = ImGui::GetIO();
-    memset(io.NavInputs, 0, sizeof(io.NavInputs));
+    PD_MEMSET(io.NavInputs, 0, sizeof(io.NavInputs));
     if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) == 0)
         return;
 
@@ -347,7 +333,7 @@ void ImGui_ImplSDL2_NewFrame(SDL_Window* window)
 
     _PD_DEBUG_BREAK(); // TODO: remove _PD_DEBUG_BREAK
 
-    //ImGui_ImplSDL2_UpdateMousePosAndButtons();
+    ImGui_ImplSDL2_UpdateMousePosAndButtons();
     ImGui_ImplSDL2_UpdateMouseCursor();
 
     // Update game controllers (if enabled and available)

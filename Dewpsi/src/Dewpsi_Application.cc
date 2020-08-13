@@ -16,7 +16,8 @@ static WindowProps _WindowProperties;
 Application* Application::s_instance = nullptr;
 
 Application::Application(const std::string& sName)
-    : m_bRunning(true), m_window(), m_fLastFrameTime(0.0f)
+    : m_bRunning(true), m_window(), m_fLastFrameTime(0.0f),
+      m_UserData(nullptr)
 {
     PD_PROFILE_FUNCTION();
 

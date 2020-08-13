@@ -2,7 +2,7 @@
 #define DEWPSI_APPLICATION_H
 
 /**
-*   @mainpage   Dewpsi Engine
+*   @mainpage   %Dewpsi Engine
 *   @section    intro_sec Introduction
 *   This is an introduction.
 *
@@ -11,7 +11,39 @@
 *   is the "Client".
 *
 *   @section    compile_sec Compiling A Client Program
-*   aaa
+*   The minimum code required in order to compile a client is the following.
+*
+*	The window is created by a call to Dewpsi::NewApplication(). Prior to that,
+*	you must call Dewpsi::SetWindowProps() with a reference to Dewpsi::WindowProps.
+*	Use this to set the properties of the window, including the initial position
+*	and size of the window.
+*
+*   @snippet    client.cpp  Window Properties
+*
+*	See the documentation for @c %Dewpsi::WindowProps and %Dewpsi::SetWindowProps().
+*	After the window properties are set, it is time to create the window. But
+*	if the client wishes to use OpenGL on platforms that support it, add
+*	WindowOpenGL to the list of flags passed to @a %WindowProps::flags. Then
+*	set the OpenGL attributes with Dewpsi::SetWindowOpenGLAttribute().
+*
+*	@snippet    client.cpp  OpenGL Attributes
+*
+*   @subsection compile_sec_app_ssec Creating the Application
+*   Finally, once all the options have been set, the window can be created. This
+*	is done through Dewpsi::NewApplication(). The function is not implemented in
+*	the library and must be implemented by the client. It returns a pointer to
+*	a user-defined class that inherits from Dewpsi::Application.
+*
+*   @code
+    Application* NewApplication(PDuserdata userdata);
+*   @endcode
+*
+*   The function is responsible for allocating a pointer to the derived class --
+*	let's say @c Sandbox.
+*
+*   The argument is a pointer to user-defined data that can then be passed
+*   to the derived class as the client wills. It can be used, for example,
+*	to hold parameters used to initialize the @c Sandbox application.
 */
 
 /**
@@ -24,6 +56,7 @@
 #include <Dewpsi_Window.h>
 #include <Dewpsi_LayerStack.h>
 #include <Dewpsi_Timestep.h>
+#include <Dewpsi_Memory.h>
 
 #include <string>
 
@@ -75,10 +108,13 @@ namespace Dewpsi {
         bool OnWindowResized(WindowResizeEvent& e);
 
         friend int ::main(int argc, const char** argv);
+
+    protected:
+        PDuserdata m_UserData; ///< User data (can be passed to the derived class' constructor)
     };
 
     /// Implemented by the client to create an instance of Application.
-    Application* NewApplication();
+    Application* NewApplication(PDuserdata userdata = nullptr);
 
     /// Set the window properties prior to the window creation.
     PD_CALL void SetWindowProps(const WindowProps&);

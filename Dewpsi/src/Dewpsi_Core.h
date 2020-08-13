@@ -20,7 +20,6 @@
 #include <Dewpsi_Types.h>
 
 #include <iostream>
-#include <memory>
 #include <new>
 #include <utility>
 #include <type_traits>
@@ -89,7 +88,7 @@
 *   @brief  Mark a function as hot.
 *   @code
     int add(int a, int b) PD_COLD;
-*   #endcode
+*   @endcode
 */
 #ifndef PD_COLD
     #ifdef __GNUC__
@@ -104,7 +103,7 @@
 *   @brief  Mark a function as hot.
 *   @code
     int add(int a, int b) PD_HOT;
-*   #endcode
+*   @endcode
 */
 #ifndef PD_HOT
     #ifdef __GNUC__
@@ -271,30 +270,6 @@
 namespace Dewpsi {
     /// @addtogroup core
     /// @{
-
-    template<typename T>
-    using Scope = std::unique_ptr<T>;
-
-#if __cplusplus >= 201402L
-    /// Create a scope of type @c T and pass @a args to its constructor.
-    template<typename T, typename... Args>
-    constexpr Scope<T> CreateScope(Args&&... args)
-    {
-        return std::make_unique<T>(std::forward<Args>(args)...);
-    }
-#endif
-
-    template<typename T>
-    using Ref = std::shared_ptr<T>;
-
-#if __cplusplus >= 201402L
-    /// Create a "reference" of type @c T and pass @a args to its constructor.
-    template<typename T, typename... Args>
-    constexpr Ref<T> CreateRef(Args&&... args)
-    {
-        return std::make_shared<T>(std::forward<Args>(args)...);
-    }
-#endif
 
     /// Returns 1 or 0 depending on whether @a val is non-zero.
     template<typename T>

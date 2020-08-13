@@ -5,15 +5,21 @@
 *   @file   Dewpsi_Types.h
 *   @brief  A header for the Dewpsi engine.
 *   Contains typedefs and forward declarations.
-* 
+*
 *   @ingroup core
 *   @{
 */
 
 #include <cstdint>
 
+/// An unsigned type used to represent the size of objects
+typedef size_t PDsizei;
+
 /// A signed integer
 typedef int PDint;
+
+/// A signed long integer
+typedef long int PDlong;
 
 /// A signed short integer
 typedef short int PDshort;
@@ -35,6 +41,9 @@ typedef int8_t PDint8;
 
 /// An unsigned integer
 typedef unsigned int PDuint;
+
+/// An unsigned long integer
+typedef unsigned long int PDulong;
 
 /// An unsigned short
 typedef unsigned short PDushort;
@@ -67,6 +76,9 @@ enum PDenum : PDuint32 {
     PD_ALLOC    = 0x00000001, ///< Allocate a new array
     PD_OKAY     = 0x00000002  ///< Okay, function returned successfully
 };
+
+/// User data type
+typedef void* PDuserdata;
 
 /// @}
 

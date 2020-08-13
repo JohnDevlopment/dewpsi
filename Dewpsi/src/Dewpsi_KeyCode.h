@@ -1,6 +1,8 @@
 #ifndef DEWPSI_KEYCODE_H
 #define DEWPSI_KEYCODE_H
 
+#include <Dewpsi_Core.h>
+
 /**
 *   @file       Dewpsi_KeyCode.h
 *   @brief      @doxfb
@@ -11,6 +13,30 @@
 namespace Dewpsi {
     /// @addtogroup keyevents
     /// @{
+
+    /** Virtual key modifier.
+    *   @ingroup keyevents
+    */
+    enum KeyMod : uint16_t {
+        None = 0, ///< No modifier
+
+        LeftShift    = BIT(0),  ///< Left Shift
+        RightShift   = BIT(1),  ///< Right Shift
+        LeftControl  = BIT(2),  ///< Left Control
+        RightControl = BIT(3),  ///< Right Control
+        LeftAlt      = BIT(4),  ///< Left Alt
+        RightAlt     = BIT(5),  ///< Right Alt
+        LeftGui      = BIT(6),  ///< Left Gui
+        RightGui     = BIT(7),  ///< Right Gui
+        NumLock      = BIT(8),  ///< Num lock
+        CapsLock     = BIT(9),  ///< Caps lock
+        Mode         = BIT(10), ///< Mode
+
+        Shift        = LeftShift   | RightShift,   ///< Shift
+        Control      = LeftControl | RightControl, ///< Control
+        Alt          = LeftAlt     | RightAlt,     ///< Alt
+        Gui          = LeftGui     | RightGui      ///< Gui
+    };
 
     /** Virtual keycode.
     *   A value of this type can be passed to cout.
@@ -474,6 +500,40 @@ namespace Dewpsi {
 #define PD_KEY_RIGHTGUI         ::Dewpsi::Key::RightMenu
 /// Number of key codes
 #define PD_KEY_COUNT            ::Dewpsi::Key::Count
+
+/// None
+#define PD_MOD_NONE             ::Dewpsi::None
+/// Left Shift
+#define PD_MOD_LEFTSHIFT        ::Dewpsi::LeftShift
+/// Right Shift
+#define PD_MOD_RIGHTSHIFT       ::Dewpsi::RightShift
+/// Left Control
+#define PD_MOD_LEFTCONTROL      ::Dewpsi::LeftControl
+/// Right Control
+#define PD_MOD_RIGHTCONTROL     ::Dewpsi::RightControl
+/// Left Alt
+#define PD_MOD_LEFTALT          ::Dewpsi::LeftAlt
+/// Right Alt
+#define PD_MOD_RIGHTALT         ::Dewpsi::RightAlt
+/// Left Gui
+#define PD_MOD_LEFTGUI          ::Dewpsi::LeftGui
+/// Right Gui
+#define PD_MOD_RIGHTGUI         ::Dewpsi::RightGui
+/// Num Lock
+#define PD_MOD_NUMLOCK          ::Dewpsi::NumLock
+/// Caps Lock
+#define PD_MOD_CAPSLOCK         ::Dewpsi::CapsLock
+/// Both mode keys
+#define PD_MOD_MODE             ::Dewpsi::Mode
+
+/// Both/either shift keys
+#define PD_MOD_SHIFT            ::Dewpsi::Shift
+/// Both/either control keys
+#define PD_MOD_CONTROL          ::Dewpsi::Control
+/// Both/either alt keys
+#define PD_MOD_ALT              ::Dewpsi::Alt
+/// Both/either gui keys
+#define PD_MOD_GUI              ::Dewpsi::Gui
 
 /// @}
 

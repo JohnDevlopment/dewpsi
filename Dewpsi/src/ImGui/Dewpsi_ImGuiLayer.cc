@@ -6,6 +6,7 @@
 #include "Dewpsi_String.h"
 #include "Dewpsi_Platform.h"
 #include "Dewpsi_Except.h"
+#include "Dewpsi_Input.h"
 
 #include <glad/glad.h>
 
@@ -136,6 +137,16 @@ bool ImGuiLayer::OnKeyPressed(KeyPressedEvent& e)
     ImGuiIO& io = ImGui::GetIO();
     KeyCode key = e.GetKeyCode();
     io.KeysDown[(int)key] = true;
+
+    KeyMod mod = Input::GetModState();
+    io.KeyShift = static_cast<bool>(mod & PD_MOD_SHIFT != 0);
+    io.KeyCtrl = static_cast<bool>(mod & PD_MOD_CONTROL != 0);
+    io.KeyAlt = static_cast<bool>(mod & PD_MOD_ALT != 0);
+#ifdef _WIN32
+            io.KeySuper = false;
+#else
+            io.KeySuper = static_cast<bool>(mod & PD_MOD_GUI != 0);
+#endif
 
     return false;
 }

@@ -14,6 +14,7 @@
 #include <Dewpsi_Core.h>
 #include <Dewpsi_Event.h>
 #include <Dewpsi_Color.h>
+#include <Dewpsi_Memory.h>
 
 /**
 *   @def    PD_WINDOWPOS_CENTERED
@@ -83,7 +84,7 @@ namespace Dewpsi {
         WindowInputGrabbed      = BIT(10),  ///< %Window has grabbed input focus
         WindowInputFocus        = BIT(11),  ///< %Window has input focus
         WindowMouseFocus        = BIT(12),  ///< %Window has mouse focus
-        WindowForeign           = BIT(13),  ///< %Window is not created with SDL
+        WindowForeign           = BIT(13),  ///< %Window is not created with the native API
         WindowAllowHighDPI      = BIT(14),  ///< %Window should be created in high-DPI mode if supported
         WindowMouseCapture      = BIT(15),  ///< %Window has mouse captured (unreleated to WindowInputGrabbed)
         WindowAlwaysOnTop       = BIT(16),  ///< %Window is always above others

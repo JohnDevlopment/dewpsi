@@ -27,6 +27,18 @@
     #endif
 #endif
 
+#ifndef PD_MEMSET
+    #ifdef __has_builtin
+        #if __has_builtin(memset)
+            #define PD_MEMSET(d,c,l)    __builtin_memset(d,c,l)
+        #else
+            #define PD_MEMSET(d,c,l)    ::std::memset(d,c,l)
+        #endif
+    #else
+        #define PD_MEMSET(d,c,l)        ::std::memset(d,c,l)
+    #endif
+#endif
+
 #ifndef PD_SSCANF
     #ifdef __has_builtin
         #if __has_builtin(sscanf)
