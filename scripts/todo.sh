@@ -1,6 +1,5 @@
 #!/bin/sh
 
-startdir="${1:?no dirname provided}"
-rootdir=/home/john/programming/C++/git/dewpsi
+dir="${0%/*}"
 
-grep -rno $rootdir/$startdir/ -e '// TODO.*$'
+exec "$dir/pattern.sh" TODO

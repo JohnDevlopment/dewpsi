@@ -5,7 +5,7 @@ workspace "Dewpsi"
         "Dist"
     }
     architecture "x64"
-    startproject "dewpsi"
+    startproject "sandbox"
     flags "MultiProcessorCompile"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -19,10 +19,12 @@ IncludeDir = {}
 IncludeDir["spdlog"] = "Dewpsi/vendor/spdlog/include"
 IncludeDir["imgui"] = "Dewpsi/vendor/imgui"
 IncludeDir["glad"] = "Dewpsi/vendor/glad/include"
+IncludeDir["getopt"] = "Dewpsi/vendor/getopt/include"
 
 group "Dependencies"
     include "Dewpsi/vendor/imgui"
     include "Dewpsi/vendor/glad"
+    include "Dewpsi/vendor/getopt"
 group ""
 
 -- Main engine project --
@@ -39,7 +41,7 @@ project "dewpsi"
         (srcdir .. "/events/*.cc"),
         (srcdir .. "/ImGui/*.cc"),
         (srcdir .. "/matrices/*.cc"),
-        
+
         (srcdir .. "/*.h"),
         (srcdir .. "/debug/*.h"),
         (srcdir .. "/events/*.h"),
@@ -49,16 +51,17 @@ project "dewpsi"
     }
     pchheader "pdpch.h"
     pchsource "Dewpsi/src/pdpch.cpp"
-    
+
     defines {
         "SPDLOG_COMPILED_LIB",
         "_REENTRANT"
     }
-    
+
     includedirs {
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.imgui}",
         "%{IncludeDir.glad}",
+        "%{IncludeDir.getopt}",
         (srcdir),
         (srcdir .. "/debug"),
         (srcdir .. "/events"),
@@ -72,26 +75,26 @@ project "dewpsi"
     }
     links {
         "spdlog",
---        "sndio",
---        "m",
+        "sndio",
+        "m",
         "ImGui",
-        "Glad"
+        "Glad",
+        "getopt"
     }
-    
     postbuildcommands {
         "{MKDIR} ../Sandbox/src/dewpsi-include/glad",
         "{MKDIR} ../Sandbox/src/dewpsi-include/bits",
-        
+
         ("{COPY} " .. srcdir .. "/*.h ../Sandbox/src/dewpsi-include"),
-        ("{COPY} " .. srcdir .. "/bits/*.h  ../Sandbox/src/dewpsi-include/bits/"),
+        ("{COPY} " .. srcdir .. "/bits/*.h  ../Sandbox/src/dewpsi-include/bits"),
         ("{COPY} " .. srcdir .. "/debug/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/ImGui/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
-        
+
         "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h"
     }
-    
+
 -- Linux
 filter "system:linux"
     defines {
@@ -102,35 +105,27 @@ filter "system:linux"
         (srcdir .. "/platform/sdl")
     }
     links {
-        "dl",
-        "SDL2"
+        "dl"
+--        "SDL2"
     }
     files {
         (srcdir .. "/platform/sdl/Dewpsi_*.cc"),
         (srcdir .. "/platform/sdl/Dewpsi_*.cpp"),
         (srcdir .. "/platform/sdl/Dewpsi_*.h")
     }
-    
     postbuildcommands {
         ("{COPY} " .. srcdir .. "/platform/sdl/*.h ../Sandbox/src/dewpsi-include")
     }
 
 -- GCC compiler
 filter "toolset:gcc"
---    linkoptions {
---        "-Wl,--enable-new-dtags",
---        "-Wl,-rpath,/usr/local/lib",
---        "-Wl,--enable-new-dtags",
---        "-Wl,--no-undefined",
---        "-pthread",
---        "-lSDL2",
---        "-z undefs"
---    }
-    
     linkoptions {
         "-Wl,--enable-new-dtags",
-        "-Wl,-rpath,/usr/local/lib",
-        "-pthread"
+        ("-Wl,-rpath," .. sdl2dir),
+        "-Wl,--no-undefined",
+        "-pthread",
+        "-lSDL2",
+        "-z undefs"
     }
 
 -- different configurations
@@ -166,9 +161,9 @@ project "sandbox"
     language "C++"
     cppdialect "C++14"
     staticruntime "On"
-    
+
     links { "dewpsi", "SDL2" }
-    
+
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
     files {
@@ -178,20 +173,19 @@ project "sandbox"
     includedirs {
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.imgui}",
+        "%{IncludeDir.getopt}",
         "%{prj.location}/src",
         "%{prj.location}/src/dewpsi-include"
     }
-    
     pchheader "pdpch.h"
     pchsource "pdpch.cpp"
-    
     defines "SPDLOG_COMPILED_LIB"
-    
+
 -- Linux build
 filter "system:linux"
     defines "PD_PLATFORM_LINUX"
 
--- different configurations    
+-- different configurations
 filter "configurations:Debug"
     defines {
         "PD_DEBUG",
@@ -226,19 +220,18 @@ project "spdlog"
     staticruntime "On"
     runtime "Release"
     optimize "On"
-    
+
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-    
+
     files {
         "%{prj.location}/src/*.cpp"
     }
     includedirs {
         "%{prj.location}/include"
     }
-    
+
     defines "SPDLOG_COMPILED_LIB"
-    
+
 filter "toolset:gcc"
     buildoptions "-fPIC"
-
