@@ -16,8 +16,7 @@
 */
 
 #include <Dewpsi_Core.h>
-#include <bits/Dewpsi_Macros.h>
-
+#include <cstring>
 
 namespace Dewpsi {
     /** A static string class.
@@ -61,13 +60,38 @@ namespace Dewpsi {
     };*/
 
     namespace String {
+        /** Returns the first occurrence of @a ch in @a str.
+        *   @param str A string
+        *   @param ch  A character (byte) to find in @a str
+        *   @return    A pointer to the first occurrence of @a ch in @a str
+        *              or @c NULL if @a ch cannot be found
+        */
+        PD_FORCE_INLINE const char* StringChar(const char* str, int ch)
+        {
+            return ::std::strchr(str, ch);
+        }
+
+        /** Returns the last occurrence of @a ch in @a str.
+        *   @param str A string
+        *   @param ch  A character (byte) to find in @a str
+        *   @return    A pointer to the last occurrence of @a ch in @a str
+        *              or @c NULL if @a ch cannot be found
+        */
+        PD_FORCE_INLINE const char* StringRevChar(const char* str, int ch)
+        {
+            return ::std::strrchr(str, ch);
+        }
+
         /** Returns the length of the string @a str.
         *
         *   @param  str A string, must not be @c NULL
         *   @return     The length of @a str in characters or PD_INVALID if @a str is @c NULL
         *   @ingroup strings
         */
-        PD_CALL size_t Length(const char* str);
+        PD_FORCE_INLINE size_t Length(const char* str)
+        {
+            return ::std::strlen(str);
+        }
 
         /** Fills a block of memory with the constant byte @a byte.
         *   This function sets the first @a len bytes in the memory

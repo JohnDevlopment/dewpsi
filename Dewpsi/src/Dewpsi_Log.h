@@ -25,32 +25,38 @@ namespace Dewpsi {
     public:
         /// Initialize the logger.
         static void Init();
-        
+
         /// Returns true if the logger is initialized.
         static bool IsInit()
         {
             return s_Initted;
         }
-        
+
         /// Returns a pointer to the core logger.
         static std::shared_ptr<spdlog::logger>& GetCoreLogger()
         {
             return s_CoreLogger;
         }
-        
+
         /// Returns a pointer to the client logger.
         static std::shared_ptr<spdlog::logger>& GetClientLogger()
         {
             return s_ClientLogger;
         }
-    
+
+        /// Creates a generic stdout logger.
+        static std::shared_ptr<spdlog::logger> NewStdoutLogger(const std::string& name);
+
+        /// Creates a generic stderr logger.
+        static std::shared_ptr<spdlog::logger> NewStderrLogger(const std::string& name);
+
     private:
         static std::shared_ptr<spdlog::logger> s_CoreLogger;
         static std::shared_ptr<spdlog::logger> s_ClientLogger;
-        
+
         static bool s_Initted;
     };
-    
+
     /** Just a class that holds an arbitrary integral value.
     *   Can be passed to std::cout or any other ostream as well
     *   as the logger.
@@ -62,14 +68,14 @@ namespace Dewpsi {
         /// Constructs a LogHex with an integral value.
         LogHex(T val) : m_value(val)
         {  }
-        
+
         /// Returns the value.
         T get() const { return m_value; }
-        
+
     private:
         T m_value;
     };
-    
+
     /** Constructs a @c LogHex with the given value.
     *   @param  val Any integer value.
     *   @return     A @c LogHex with @a value in it.
@@ -81,7 +87,7 @@ namespace Dewpsi {
     {
         return LogHex<T>(val);
     }
-    
+
     /** Sets an error message.
     *   @param  fmt A format string in the syntax used by printf
     *   @param  ... A list of arguments that correspond to the fields in @a fmt
@@ -89,7 +95,7 @@ namespace Dewpsi {
     *   @ingroup    logging
     */
     PD_CALL void SetError(const char* fmt, ...);
-    
+
     /** Returns the error message last set by SetError().
     *   @return The error message last set by SetError()
     *   @ingroup    logging

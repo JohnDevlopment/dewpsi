@@ -13,26 +13,31 @@
 #include <Dewpsi_String.h>
 #include <Dewpsi_Vector.h>
 #include <Dewpsi_ImGuiLayer.h>
+#include <Dewpsi_Memory.h>
 
 #define _PD_DEBUG_BREAKS
 #include <Dewpsi_Debug.h>
+
+#include <spdlog/sinks/stdout_sinks.h>
 
 #include "OpenGLLayer.h"
 
 using Dewpsi::StaticString;
 
-static constexpr StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
+struct SandboxData {
+    PDchar enableImGui;
+    Dewpsi::ImGuiInitData guiInit;
 
-static constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
+    SandboxData() : enableImGui(0), guiInit()
+    {  }
+};
 
 static bool g_bOnce = false;
-
-static Dewpsi::ImGuiInitData GuiInit;
 
 extern "C" void forcequit(int);
 extern "C" void quit();
 
-static int parseArguments(int, const char*[]);
+static int parseArguments(int, const char*[], SandboxData* data);
 
 // sandbox application layer
 class SandboxLayer : public Dewpsi::Layer {
@@ -54,42 +59,45 @@ public:
     }
 };
 
-/*
-void SandboxLayer::OnEvent(Dewpsi::Event& e)
-{
-
-}
-*/
-
 // sandbox application
 class Sandbox : public Dewpsi::Application {
 public:
-    Sandbox()
-    {
-        PushOverlay(new Dewpsi::ImGuiLayer(&GuiInit));
-        PushLayer(new SandboxLayer());
-    }
+    Sandbox(PDuserdata userdata);
 
     virtual ~Sandbox()
     {  }
 };
 
+Sandbox::Sandbox(PDuserdata userdata)
+{
+    m_UserData = userdata;
+    SandboxData* data = (SandboxData*) userdata;
+    PD_ASSERT(data, "NULL \"data\" pointer");
+    if (data->enableImGui)
+    {
+        PushOverlay(new Dewpsi::ImGuiLayer(&data->guiInit));
+        PD_INFO("Enabled Dear ImGui layer");
+    }
+    PushLayer(new SandboxLayer());
+}
+
 static Dewpsi::Application* App = nullptr;
 
 int main (int argc, char const* argv[])
 {
-    // parse arguments in another function
-    if (parseArguments(argc, argv))
-        return 1;
+    Dewpsi::Scope<SandboxData> appData = Dewpsi::CreateScope<SandboxData>();
 
-    std::signal(SIGINT, forcequit);
-    std::atexit(quit);
+    // parse arguments in another function
+    if (parseArguments(argc, argv, appData.get()) != PD_OKAY)
+        return 1;
 
     // initialize the logging system
     Dewpsi::Log::Init();
 
+    std::signal(SIGINT, forcequit);
+    std::atexit(quit);
+
     {
-        using Dewpsi::WindowFlags;
         using Dewpsi::SetWindowOpenGLAttribute;
         Dewpsi::WindowProps props;
 
@@ -108,7 +116,7 @@ int main (int argc, char const* argv[])
         props.width = 640;
         props.height = 480;
         props.index = 0;
-        props.flags = WindowFlags::RendererVSync | WindowFlags::WindowOpenGL | WindowFlags::WindowResizable;
+        props.flags = Dewpsi::RendererVSync | Dewpsi::WindowOpenGL | Dewpsi::WindowResizable;
         SetWindowOpenGLAttribute(props, Dewpsi::MajorVersion, 3);
         SetWindowOpenGLAttribute(props, Dewpsi::MinorVersion, 3);
         SetWindowOpenGLAttribute(props, Dewpsi::Depth, 24);
@@ -117,35 +125,15 @@ int main (int argc, char const* argv[])
         Dewpsi::SetWindowProps(props);
     }
 
-    // ImGui information
-    GuiInit.glslPath = ImGuiShaderPath.get();
-    GuiInit.glslVersion = "#version 130";
-
     // start client application
-    App = Dewpsi::NewApplication();
+    App = Dewpsi::NewApplication(appData.get());
 #ifdef PD_DEBUG
     PD_INFO("Started sandbox application");
 #endif
 
-    // create window
+    // set window clear color
     {
-        _PD_DEBUG_BREAK();
-        Dewpsi::Window& rWindow = App->GetWindow();
-        Dewpsi::WindowModeInfo info;
-        if (Dewpsi::GetWindowInformation(&rWindow, &info) < 0)
-        {
-            PD_ERROR("Failed to retrieve window info: {0}", Dewpsi::GetError());
-            return 1;
-        }
-#ifdef PD_DEBUG
-        PD_INFO("\tswap interval: {0}\n\thardware acceleration: {1}\n\twindow width: {2}\n\twindow height: {3}\n\trendering device vendor: {4}\n\trenderer: {5}\n\trender version: {6}\n\trenderer extensions: {7}",
-                     info.swap, (info.accel ? "enabled" : "disabled"), info.width, info.height,
-                     info.vendor, info.renderer, info.version, info.extensions);
-
-        // rgba sizes
-        PD_INFO("\twindow red size: {0} bits\n\twindow green size: {1} bits\n\twindow blue size: {2} bits",
-                     PD_LONYBBLE(info.red), PD_LONYBBLE(info.green), PD_LONYBBLE(info.blue));
-#endif
+        Dewpsi::Window& rWindow = Dewpsi::Application::Get().GetWindow();
         rWindow.SetClearColor(Dewpsi::DefineColor(0.5f, 0.5f, 0.5f));
     }
 
@@ -157,9 +145,9 @@ int main (int argc, char const* argv[])
     return 0;
 }
 
-Dewpsi::Application* Dewpsi::NewApplication()
+Dewpsi::Application* Dewpsi::NewApplication(PDuserdata userdata)
 {
-    return new Sandbox();
+    return new Sandbox(userdata);
 }
 
 void quit()
@@ -183,13 +171,73 @@ void forcequit(int sig)
     }
 }
 
-int parseArguments(int argc, const char* argv[])
+static constexpr StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
+static constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
+
+static constexpr StaticString Usage = \
+    "sandbox -h    Display this help message\n" \
+    "sandbox [-g]  Launch sandbox application with/without gui layer";
+
+int parseArguments(int argc, const char* argv[], SandboxData* data)
 {
     using std::cout;
     using std::cerr;
     using std::endl;
 
+    // base name of the program
+    const char* cpBaseName = Dewpsi::String::StringRevChar(argv[0], '/');
+    if (! cpBaseName)
+        cpBaseName = argv[0];
+    else
+        ++cpBaseName;
 
+    // error logger
+    auto err_logger = Dewpsi::Log::NewStderrLogger("Argument Error");
+    err_logger->set_level(spdlog::level::info);
 
-    return 0;
+    int iCode = 1;
+
+    // ImGui information
+    data->guiInit.glslPath = ImGuiShaderPath.get();
+    data->guiInit.glslVersion = "#version 130";
+
+    do
+    {
+        iCode = Dewpsi::GetOption(argc, (char**) argv, ":a:bgh");
+        if (iCode > 0)
+        {
+            switch (iCode)
+            {
+                case 'g':
+                    cout << "Enable Dear ImGui layer\n";
+                    data->enableImGui = 1;
+                    break;
+
+                case 'h':
+                    //printUsage(cpBaseName);
+                    cout << Usage.get() << endl;
+                    return PD_INVALID;
+                    break;
+
+                case ':':
+                    err_logger->error("Missing argument for '-{0}'", (char) optopt);
+                    break;
+
+                default:
+                    err_logger->error("Unrecognized option '-{0}'", (char) iCode);
+                    break;
+            }
+        } // end if (iCode > 0)
+    }
+    while (iCode > 0);
+
+    if (optind < argc)
+        cout << "Printing non-options\n";
+
+    while (optind < argc)
+    {
+        cout << "argv[" << optind << "] = " << argv[optind++] << '\n';
+    }
+
+    return PD_OKAY;
 }

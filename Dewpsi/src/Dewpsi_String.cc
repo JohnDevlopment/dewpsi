@@ -1,6 +1,5 @@
 #include "Dewpsi_String.h"
 #include "Dewpsi_Math.h"
-#include "bits/Dewpsi_Macros.h"
 
 #include <cstring>
 
@@ -9,12 +8,6 @@ constexpr size_t OPTSIZE = sizeof(PDulong);
 namespace Dewpsi {
 
 namespace String {
-
-size_t Length(const char* str)
-{
-    PD_CORE_ASSERT(str, "invalid parameter 'src'");
-    return PD_STRLEN(str);
-}
 
 void MemSet(void* dst, int byte, size_t len)
 {
@@ -55,7 +48,7 @@ void MemSet(void* dst, int byte, size_t len)
 
     return dst;
 #else
-    PD_MEMSET(dst, byte, len);
+    ::std::memset(dst, byte, len);
 #endif /* PD_CUSTOM_MEMSET */
 }
 
@@ -63,7 +56,7 @@ size_t Copy(char* dst, const char* src, size_t maxlen, PDenum mode)
 {
     PD_CORE_ASSERT(dst && src, "invalid parameters");
 
-    const size_t szSrcLen = PD_STRLEN(src);
+    const size_t szSrcLen = Length(src);
     size_t szDestLen = 0;
     char* cpDest = dst;
 
@@ -85,7 +78,7 @@ size_t Copy(char* dst, const char* src, size_t maxlen, PDenum mode)
             cpDest = *cppDest;
         }
 
-        PD_MEMCPY(cpDest, src, szDestLen);
+        ::std::memcpy(cpDest, src, szDestLen);
         cpDest[szDestLen] = '\0';
     }
 
