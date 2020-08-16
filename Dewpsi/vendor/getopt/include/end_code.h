@@ -1,0 +1,11 @@
+#ifndef END_CODE_H
+#define END_CODE_H
+
+#undef GETOPT_ATTR
+#undef GETOPT_HIDDEN
+#undef GETOPT_NOTHROW
+#undef GETOPT_LEAF
+#undef GETOPT_NONNULLP
+#undef GETOPT_NONNULL
+
+#endif /* END_CODE_H */

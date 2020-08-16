@@ -1,3 +1,0 @@
-break ImGuiLayer::OnUpdate(Dewpsi::Timestep)
-break /home/john/programming/C++/git/dewpsi/Dewpsi/src/ImGui/Dewpsi_ImGuiLayer.cc:69
-break ImGui_OpenGL_RenderDrawData(ImDrawData*)

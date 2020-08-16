@@ -86,13 +86,14 @@ project "dewpsi"
         "{MKDIR} ../Sandbox/src/dewpsi-include/bits",
 
         ("{COPY} " .. srcdir .. "/*.h ../Sandbox/src/dewpsi-include"),
-        ("{COPY} " .. srcdir .. "/bits/*.h  ../Sandbox/src/dewpsi-include/bits"),
+        --("{COPY} " .. srcdir .. "/bits/*.h  ../Sandbox/src/dewpsi-include/bits"),
         ("{COPY} " .. srcdir .. "/debug/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/ImGui/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
 
-        "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h"
+        "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h",
+        "{COPY} %{prj.location}/vendor/getopt/include/my_getopt.h ../Sandbox/src/dewpsi-include/my_getopt.h",
     }
 
 -- Linux
