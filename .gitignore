@@ -2,7 +2,6 @@
 doc/
 bin/
 bin-int/
-Dewpsi/vendor/imgui
 Dewpsi/vendor/spdlog
 Sandbox/vendor
 Sandbox/src/dewpsi-include
