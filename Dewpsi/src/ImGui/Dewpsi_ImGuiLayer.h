@@ -40,6 +40,7 @@ namespace Dewpsi {
     private:
         bool OnMouseButtonPressed(MousePressedEvent& e);
         bool OnMouseButtonReleased(MouseReleasedEvent& e);
+        bool OnMouseScrolled(MouseScrolledEvent& e);
         bool OnMouseMotion(MouseMovedEvent& e);
         bool OnWindowResized(WindowResizeEvent& e);
         bool OnKeyTyped(KeyTypedEvent& e);

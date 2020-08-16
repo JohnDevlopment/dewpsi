@@ -326,9 +326,14 @@ void SDL2Window::OnUpdate()
     SDL_PumpEvents();
 
     if (! UseOpenGL)
+    {
         SDL_RenderPresent(m_renderer);
+    }
     else
+    {
+        glViewport(0, 0, (int) m_data.width, (int) m_data.height); // TODO: this is temporary, remove later
         SDL_GL_SwapWindow(m_window);
+    }
 }
 
 bool SDL2Window::IsValid() const
@@ -683,8 +688,9 @@ int SDL2Window::OnEvent(void* udata, SDL_Event* event)
     case SDL_MOUSEWHEEL:
         {
             SDL_MouseWheelEvent& wheel = event->wheel;
-            int32_t iMulitplier = (wheel.direction == SDL_MOUSEWHEEL_NORMAL) ? 1 : -1;
-            MouseScrolledEvent e(static_cast<float>(wheel.x * iMulitplier), static_cast<float>(wheel.y * iMulitplier));
+            int32_t iMultiplier = (wheel.direction == SDL_MOUSEWHEEL_NORMAL) ? 1 : -1;
+            MouseScrolledEvent e(static_cast<float>(wheel.x * iMultiplier),
+                                 static_cast<float>(wheel.y * iMultiplier));
             pWinData->callback(e);
             break;
         }

@@ -7,6 +7,8 @@
 #include "Dewpsi_Platform.h"
 #include "Dewpsi_Except.h"
 #include "Dewpsi_Input.h"
+#define _PD_DEBUG_BREAKS
+#include "Dewpsi_Debug.h" // TODO: delete
 
 #include <glad/glad.h>
 
@@ -64,9 +66,12 @@ void ImGuiLayer::OnUpdate(Timestep delta)
     ImGui::NewFrame();
 
     // show widgets
-    ImGui::Begin("Test Window");
-    ShowMainWindow();
-    ImGui::End();
+    static bool display_demo_window = true;
+    if (display_demo_window)
+        ImGui::ShowDemoWindow(&display_demo_window);
+    //ImGui::Begin("Test Window");
+    //ShowMainWindow();
+    //ImGui::End();
 
     // finalize and render commands
     ImGui::Render();
@@ -85,6 +90,7 @@ void ImGuiLayer::OnEvent(Event& e)
     dispatcher.Dispatch<KeyTypedEvent>(PD_BIND_EVENT_FN(ImGuiLayer::OnKeyTyped));
     dispatcher.Dispatch<KeyPressedEvent>(PD_BIND_EVENT_FN(ImGuiLayer::OnKeyPressed));
     dispatcher.Dispatch<KeyReleasedEvent>(PD_BIND_EVENT_FN(ImGuiLayer::OnKeyReleased));
+    dispatcher.Dispatch<MouseScrolledEvent>(PD_BIND_EVENT_FN(ImGuiLayer::OnMouseScrolled));
 }
 
 bool ImGuiLayer::OnMouseMotion(MouseMovedEvent& e)
@@ -97,11 +103,9 @@ bool ImGuiLayer::OnMouseButtonPressed(MousePressedEvent& e)
 {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[(int)e.GetMouseCode()] = true;
-    PD_CORE_TRACE("io.MouseDown[{0}] = true", (int)e.GetMouseCode());
 
     auto pair = Input::GetMousePosition();
     io.MousePos = ImVec2(pair.first, pair.second);
-    PD_CORE_TRACE("io.MousePos = ({0},{1})", io.MousePos.x, io.MousePos.y);
 
     return false;
 }
@@ -110,9 +114,15 @@ bool ImGuiLayer::OnMouseButtonReleased(MouseReleasedEvent& e)
 {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[(int)e.GetMouseCode()] = false;
-    PD_CORE_TRACE("io.MouseDown[{0}] = false", (int)e.GetMouseCode());
 
     return false;
+}
+
+bool ImGuiLayer::OnMouseScrolled(MouseScrolledEvent& e)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.MouseWheelH += e.GetXOffset();
+    io.MouseWheel += e.GetYOffset();
 }
 
 bool ImGuiLayer::OnWindowResized(WindowResizeEvent& e)
@@ -139,14 +149,18 @@ bool ImGuiLayer::OnKeyPressed(KeyPressedEvent& e)
     io.KeysDown[(int)key] = true;
 
     KeyMod mod = Input::GetModState();
-    io.KeyShift = static_cast<bool>(mod & PD_MOD_SHIFT != 0);
-    io.KeyCtrl = static_cast<bool>(mod & PD_MOD_CONTROL != 0);
-    io.KeyAlt = static_cast<bool>(mod & PD_MOD_ALT != 0);
+    io.KeyShift = static_cast<bool>((mod & PD_MOD_SHIFT) != 0);
+    io.KeyCtrl = static_cast<bool>((mod & PD_MOD_CONTROL) != 0);
+    io.KeyAlt = static_cast<bool>((mod & PD_MOD_ALT) != 0);
+
 #ifdef _WIN32
             io.KeySuper = false;
 #else
             io.KeySuper = static_cast<bool>(mod & PD_MOD_GUI != 0);
 #endif
+
+    PD_CORE_TRACE("Shift = {0}, control = {1}, alt = {2}, super = {3}", (bool) io.KeyShift,
+                  (bool) io.KeyCtrl, (bool) io.KeyAlt, (bool) io.KeySuper); // TODO: remove PD_CORE_TRACE
 
     return false;
 }

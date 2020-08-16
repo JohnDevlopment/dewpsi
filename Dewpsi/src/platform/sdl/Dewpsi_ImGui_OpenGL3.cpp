@@ -83,35 +83,35 @@
 
 using namespace Dewpsi_ImGui_Impl;
 
-static std::unique_ptr<char[]> g_ShaderPath;
+static Dewpsi::Scope<char[]> g_ShaderPath;
 
-static std::unique_ptr<OpenGLData> _g_InitData(new OpenGLData);
+static Dewpsi::Scope<OpenGLData> _g_InitData(new OpenGLData);
 
 static OpenGLData& g_Data = *(_g_InitData.get());
 
 bool ImGui_OpenGL_Init(const char* glslPath, const char* glslVersion)
 {
     PD_CORE_ASSERT(! g_Data.glVersion, "already initialized Dear ImGui");
-    
+
     int iMajor, iMinor;
     glGetIntegerv(GL_MAJOR_VERSION, &iMajor);
     glGetIntegerv(GL_MINOR_VERSION, &iMinor);
     g_Data.glVersion = static_cast<PDuint>(iMajor * 100 + iMinor * 10);
-    
+
     {
         char* cpBuffer = nullptr;
-        
+
         // allocate copy of string glslPath
         size_t szResult = Dewpsi::String::Copy((char*) &cpBuffer, glslPath, 100, PD_ALLOC);
         PD_CORE_ASSERT(szResult != PD_INVALID, "ImGui_OpenGL_Init: Invalid code from Dewpsi::String::Copy : {0}", Dewpsi::GetError());
         if (szResult == PD_INVALID)
             return false;
-        
+
         // wrap pointer in class
         if (cpBuffer)
             g_ShaderPath.reset(cpBuffer);
     }
-    
+
     // setup back-end capabilities flags
     ImGuiIO& io = ImGui::GetIO();
     io.BackendRendererName = "imgui_impl_opengl";
@@ -119,7 +119,7 @@ bool ImGui_OpenGL_Init(const char* glslPath, const char* glslVersion)
     if (g_Data.glVersion >= 320)
         io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // we can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
 #endif
-    
+
     // store GLSL version string so we can refer to it later in case we recreate shaders.
     // note: GLSL version is NOT the same as GL version. Leave this to NULL if unsure.
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -135,16 +135,16 @@ bool ImGui_OpenGL_Init(const char* glslPath, const char* glslVersion)
     if (glslVersion == NULL)
         glslVersion = "#version 130";
 #endif
-    
+
     using namespace Dewpsi::String;
     IM_ASSERT((int) Length(glslVersion) + 2 < IM_ARRAYSIZE(g_Data.glslVersionString));
     Copy(g_Data.glslVersionString, glslVersion);
     Cat(g_Data.glslVersionString, "\n");
-    
+
     // dummy GL call
     int iCurrentTex;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &iCurrentTex);
-    
+
     return true;
 }
 
@@ -163,34 +163,34 @@ static void ImGui_OpenGL_SetupRenderState(ImDrawData* drawData, int fbWidth, int
 {
     PD_CORE_ASSERT((void*) glBlendEquation != nullptr, "glBlendEquation not defined");
     PD_CORE_ASSERT((void*) glBlendFunc != nullptr, "glBlendEquation not defined");
-    
+
     // alpha and RGB blending method: additive blending
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
+
     glEnable(GL_BLEND);
     glEnable(GL_SCISSOR_TEST);
-    
+
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    
+
 #ifdef GL_POLYGON_MODE
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
 
     // support for GL 4.5 rarely used glClipControl(GL_UPPER_LEFT)
     bool ClipOriginLowerLeft = true;
-    
+
 #if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
     GLenum eCurrentClipOrigin = 0;
     glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&eCurrentClipOrigin);
     if (eCurrentClipOrigin == GL_UPPER_LEFT)
         ClipOriginLowerLeft = false;
 #endif
-    
+
     // setup viewport, orthogonal projection matrix
     glViewport(0, 0, (GLsizei) fbWidth, (GLsizei) fbHeight);
-    
+
     {
         float fL = drawData->DisplayPos.x;
         float fR = drawData->DisplayPos.x + drawData->DisplaySize.x;
@@ -198,14 +198,14 @@ static void ImGui_OpenGL_SetupRenderState(ImDrawData* drawData, int fbWidth, int
         float fB = drawData->DisplayPos.y + drawData->DisplaySize.y;
         if (! ClipOriginLowerLeft)
             Dewpsi::Swap(fT, fB);
-        
+
         const float faOrthoProj[4][4] = {
             { 2.0f/(fR-fL),       0.0f,            0.0f,   0.0f },
             { 0.0f,               2.0f/(fT-fB),    0.0f,   0.0f },
             { 0.0f,               0.0f,           -1.0f,   0.0f },
             { (fR+fL)/(fL-fR),    (fT+fB)/(fB-fT), 0.0f,   1.0f }
         };
-        
+
         glUseProgram(g_Data.shader);
         glUniform1i(g_Data.attribLocationTex, 0);
         glUniformMatrix4fv(g_Data.attribLocationProjMtx, 1, GL_FALSE, &faOrthoProj[0][0]);
@@ -213,19 +213,19 @@ static void ImGui_OpenGL_SetupRenderState(ImDrawData* drawData, int fbWidth, int
         glBindSampler(0, 0); // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
 #endif
     }
-    
+
 #ifndef IMGUI_IMPL_OPENGL_ES2
     glBindVertexArray(vao);
 #endif
-    
+
     // bind vertex/index buffers and setup attributes for ImDrawVert
     glBindBuffer(GL_ARRAY_BUFFER, g_Data.vboHandle);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_Data.elementsHandle);
-    
+
     glEnableVertexAttribArray(g_Data.attribLocationVtxPos);
     glEnableVertexAttribArray(g_Data.attribLocationVtxUV);
     glEnableVertexAttribArray(g_Data.attribLocationVtxColor);
-    
+
     glVertexAttribPointer(g_Data.attribLocationVtxPos,   2, GL_FLOAT,         GL_FALSE, sizeof(ImDrawVert), (GLvoid*) IM_OFFSETOF(ImDrawVert, pos));
     glVertexAttribPointer(g_Data.attribLocationVtxUV,    2, GL_FLOAT,         GL_FALSE, sizeof(ImDrawVert), (GLvoid*) IM_OFFSETOF(ImDrawVert, uv));
     glVertexAttribPointer(g_Data.attribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE,  sizeof(ImDrawVert), (GLvoid*) IM_OFFSETOF(ImDrawVert, col));
@@ -235,18 +235,18 @@ static void ImGui_OpenGL_SetupRenderState(ImDrawData* drawData, int fbWidth, int
 void ImGui_OpenGL_RenderDrawData(ImDrawData* drawData)
 {
     OpenGLState state;
-    
+
 //    PD_ENABLE_BREAKS(enable); // TODO: remove
-    
+
     // avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     int iWidth = static_cast<int>(drawData->DisplaySize.x * drawData->FramebufferScale.x);
     int iHeight = static_cast<int>(drawData->DisplaySize.y * drawData->FramebufferScale.y);
-    
+
     if (iWidth <= 0 || iHeight <= 0)
         return;
-    
+
     Dewpsi::OpenGL_BackupState(&state);
-    
+
     /* Setup desired GL state.
     Recreate the VAO every time to allow multiple GL contexts to be renderered to (VAO are not shared among GL contexts). */
     GLuint uiVao = 0;
@@ -254,27 +254,27 @@ void ImGui_OpenGL_RenderDrawData(ImDrawData* drawData)
     glGenVertexArrays(1, &uiVao);
 #endif
     ImGui_OpenGL_SetupRenderState(drawData, iWidth, iHeight, uiVao);
-    
+
     _PD_DEBUG_BREAK(); // TODO: remove
-    
+
     // clipping vectors for the projection
     const ImVec2& clipOff = drawData->DisplayPos;
     const ImVec2& clipScale = drawData->FramebufferScale;
-    
+
     // render command lists
     constexpr size_t szVert = sizeof(ImDrawVert);
     constexpr size_t szDraw = sizeof(ImDrawIdx);
-    
+
     _PD_DEBUG_BREAK(); // TODO: remove
-    
+
     for (int n = 0; n < drawData->CmdListsCount; ++n)
     {
         const ImDrawList* const cmdList = drawData->CmdLists[n];
-        
+
         // upload buffers
         glBufferData(GL_ARRAY_BUFFER,         (GLsizeiptr) cmdList->VtxBuffer.Size * szVert, (const GLvoid*) cmdList->VtxBuffer.Data, GL_STREAM_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) cmdList->IdxBuffer.Size * szDraw, (const GLvoid*) cmdList->IdxBuffer.Data, GL_STREAM_DRAW);
-        
+
         for (int cmdi = 0; cmdi < cmdList->CmdBuffer.Size; ++cmdi)
         {
             const ImDrawCmd* pCmd = &cmdList->CmdBuffer[cmdi];
@@ -290,19 +290,19 @@ void ImGui_OpenGL_RenderDrawData(ImDrawData* drawData)
             else
             {
                 constexpr GLenum valType_idx = sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
-                
+
                 // project scissor/clipping rectangles into framebuffer space
                 Dewpsi::PointRectf clipRect;
                 clipRect.x1 = (pCmd->ClipRect.x - clipOff.x) * clipScale.x;
                 clipRect.y1 = (pCmd->ClipRect.y - clipOff.y) * clipScale.y;
                 clipRect.x2 = (pCmd->ClipRect.z - clipOff.x) * clipScale.x;
                 clipRect.y2 = (pCmd->ClipRect.w - clipOff.y) * clipScale.y;
-                
+
                 if (clipRect.x1 < iWidth && clipRect.y1 < iHeight && clipRect.x2 >= 0.0f && clipRect.y2 >= 0.0f)
                 {
                     // apply scissor/clipping rectangle
                     glScissor((int) clipRect.x1, (int)(iHeight - clipRect.y2), (int)(clipRect.x2 - clipRect.x1), (int)(clipRect.y2 - clipRect.y1));
-                    
+
                     // draw texture
                     glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>((intptr_t) pCmd->TextureId));
 #if IMGUI_IMPL_OPENGL_MAY_HAVE_VTX_OFFSET
@@ -320,7 +320,7 @@ void ImGui_OpenGL_RenderDrawData(ImDrawData* drawData)
             }
         } // end for
     }
-    
+
     // delete temporary VAO; restore previous state
     glDeleteVertexArrays(1, &uiVao);
     Dewpsi::OpenGL_RestoreState(&state);
@@ -332,18 +332,18 @@ bool ImGui_OpenGL_CreateFontsTexture()
     ImGuiIO& io = ImGui::GetIO();
     PDuchar* ucpPixels = nullptr;
     int iWidth = 0, iHeight = 0;
-    
+
     // if your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory
     io.Fonts->GetTexDataAsRGBA32(&ucpPixels, &iWidth, &iHeight); // load as RGBA 32 bit
-    
+
     // unload texture
     int iLastTexture = 0;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &iLastTexture);
-    
+
     // new font texture
     glGenTextures(1, &g_Data.fontTexture);
     glBindTexture(GL_TEXTURE_2D, g_Data.fontTexture);
-    
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 #ifdef GL_UNPACK_ROW_LENGTH
@@ -374,20 +374,20 @@ void ImGui_OpenGL_DestroyFontsTexture()
 bool ImGui_OpenGL_CreateDeviceObjects()
 {
     int iLastTex, iLastVertBuffer, iLastArray;
-    
+
     // file string
     std::string sFile = g_ShaderPath.get();
     sFile += "/Dewpsi_ImGui_Shaders_";
-    
+
     // Backup GL state
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &iLastTex);
     glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &iLastVertBuffer);
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &iLastArray);
-    
+
     // Parse GLSL version string
     int iGlslVersion = 130;
-    PD_SSCANF(g_Data.glslVersionString, "#version %d", &iGlslVersion);
-    
+    ::std::sscanf(g_Data.glslVersionString, "#version %d", &iGlslVersion);
+
     // file based on GLSL version
     if (iGlslVersion < 130)
         sFile += "v120.glsl";
@@ -397,46 +397,46 @@ bool ImGui_OpenGL_CreateDeviceObjects()
         sFile += "v300.glsl";
     else
         sFile += "v130.glsl";
-    
+
     // compile shaders
     ShaderProgramSource sources = ParseShaderFile(sFile);
     g_Data.shader = CreateShader(sources);
-    
+
     // uniforms
     g_Data.attribLocationTex = glGetUniformLocation(g_Data.shader, "Texture");
     g_Data.attribLocationProjMtx = glGetUniformLocation(g_Data.shader, "ProjMtx");
-    
+
     // vertex attributes
     g_Data.attribLocationVtxPos = glGetAttribLocation(g_Data.shader, "Position");
     g_Data.attribLocationVtxUV = (PDuint)glGetAttribLocation(g_Data.shader, "UV");
     g_Data.attribLocationVtxColor = (PDuint)glGetAttribLocation(g_Data.shader, "Color");
-    
+
     // Create buffers
     glGenBuffers(1, &g_Data.vboHandle);
     glGenBuffers(1, &g_Data.elementsHandle);
-    
+
     // setup vertex array
     // bind vertex/index buffers and setup attributes for ImDrawVert
     /*
     glBindBuffer(GL_ARRAY_BUFFER, g_Data.vboHandle);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_Data.elementsHandle);
-    
+
     glEnableVertexAttribArray(g_Data.attribLocationVtxPos);
     glEnableVertexAttribArray(g_Data.attribLocationVtxUV);
     glEnableVertexAttribArray(g_Data.attribLocationVtxColor);
-    
+
     glVertexAttribPointer(g_Data.attribLocationVtxPos,   2, GL_FLOAT,         GL_FALSE, sizeof(ImDrawVert), (GLvoid*) IM_OFFSETOF(ImDrawVert, pos));
     glVertexAttribPointer(g_Data.attribLocationVtxUV,    2, GL_FLOAT,         GL_FALSE, sizeof(ImDrawVert), (GLvoid*) IM_OFFSETOF(ImDrawVert, uv));
     glVertexAttribPointer(g_Data.attribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE,  sizeof(ImDrawVert), (GLvoid*) IM_OFFSETOF(ImDrawVert, col));
     */
-    
+
     ImGui_OpenGL_CreateFontsTexture();
-    
+
     // Restore modified GL state
     glBindTexture(GL_TEXTURE_2D, iLastTex);
     glBindBuffer(GL_ARRAY_BUFFER, iLastVertBuffer);
     glBindVertexArray(iLastArray);
-    
+
     return true;
 }
 
@@ -447,26 +447,26 @@ void ImGui_OpenGL_DestroyDeviceObjects()
         glDeleteBuffers(1, &g_Data.vboHandle);
         g_Data.vboHandle = 0;
     }
-    
+
     if (g_Data.elementsHandle)
     {
         glDeleteBuffers(1, &g_Data.elementsHandle);
         g_Data.elementsHandle = 0;
     }
-    
+
     // delete shaders
     Dewpsi_ImGui_Impl::DeleteShaders(g_Data.vertShader, g_Data.fragShader);
     glDeleteProgram(g_Data.shader);
     g_Data.shader = 0;
 //    g_Data.vertShader = g_Data.fragShader = g_Data.shader = 0;
-    
+
     if (g_Data.shader && g_Data.vertShader)
         glDetachShader(g_Data.shader, g_Data.vertShader);
-    
+
     if (g_Data.shader && g_Data.fragShader)
         glDetachShader(g_Data.shader, g_Data.fragShader);
-    
+
     g_Data.vertShader = g_Data.fragShader = 0;
-    
+
     ImGui_OpenGL_DestroyFontsTexture();
 }

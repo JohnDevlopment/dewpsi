@@ -55,6 +55,22 @@ KeyMod SDLInput::GetModStateImpl()
             uiRetMod |= (PDuint32) PD_MOD_RIGHTALT;
     }
 
+#ifndef _WIN32
+    if (mod & KMOD_GUI)
+    {
+        if (mod & KMOD_LGUI)
+            uiRetMod |= (PDuint32) PD_MOD_LEFTGUI;
+        if (mod & KMOD_RGUI)
+            uiRetMod |= (PDuint32) PD_MOD_RIGHTGUI;
+    }
+#endif
+
+    if (mod & KMOD_NUM)
+        uiRetMod |= (PDuint32) PD_MOD_NUMLOCK;
+
+    if (mod & KMOD_CAPS)
+        uiRetMod |= (PDuint32) PD_MOD_CAPSLOCK;
+
     return static_cast<KeyMod>(uiRetMod);
 }
 
