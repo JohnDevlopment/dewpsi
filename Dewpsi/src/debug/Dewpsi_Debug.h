@@ -7,6 +7,7 @@
 *   Contains debug macros.
 *   @defgroup debug Debugging
 *   Debugging macros and classes.
+*   @ingroup core
 */
 
 #include <Dewpsi_Core.h>
@@ -26,7 +27,7 @@ extern bool g_bDewpsiBreaks;
         #warning "g_bDewpsiBreaks exported as symbol, initialized to false"
 bool g_bDewpsiBreaks = false;
     #endif
-    
+
     // if defined: _PD_DEBUG_BREAKS
     #if defined(_PD_DEBUG_BREAKS)
         #define _PD_DEBUG_BREAK()   if (g_bDewpsiBreaks) {\
@@ -68,7 +69,7 @@ bool g_bDewpsiBreaks = false;
 
 namespace Dewpsi {
     using FloatMicroSeconds = std::chrono::duration<double, std::micro>;
-    
+
     /** Enables and disables debugging at the scope level.
     *   @ingroup debug
     */
@@ -83,7 +84,7 @@ namespace Dewpsi {
 #endif
             PD_CORE_TRACE("Enabled debug breaks for {0}:{1}", file, line);
         }
-        
+
         /// Disable debug breaks.
         ~DebugBreakEnabler()
         {
@@ -93,7 +94,7 @@ namespace Dewpsi {
             m_cpFile = nullptr;
             m_iLine = 0;
         }
-    
+
     private:
         const char* m_cpFile;
         int m_iLine;
@@ -106,7 +107,7 @@ namespace Dewpsi {
     #else
         #define PD_FUNCTION_SIG         "Unknown PD_FUNCTION_SIG"
     #endif
-    
+
     #define PD_PROFILE_SCOPE(sig)
     #define PD_PROFILE_FUNCTION()   PD_PROFILE_SCOPE(PD_FUNCTION_SIG)
 #else

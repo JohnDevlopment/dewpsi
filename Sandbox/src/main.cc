@@ -1,6 +1,8 @@
 #include <csignal>
 #include <iostream>
 
+#define _PD_DEBUG_BREAKS
+
 // Dewpsi includes
 #include <Dewpsi_Log.h>
 #include <Dewpsi_WhichOS.h>
@@ -15,12 +17,30 @@
 #include <Dewpsi_ImGuiLayer.h>
 #include <Dewpsi_Memory.h>
 
-#define _PD_DEBUG_BREAKS
+
 #include <Dewpsi_Debug.h>
 
 #include <spdlog/sinks/stdout_sinks.h>
 
 #include "OpenGLLayer.h"
+
+// glm
+#include <vec3.hpp> // glm::vec3
+#include <vec4.hpp> // glm::vec4
+#include <mat4x4.hpp> // glm::mat4
+#include <ext/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale
+#include <ext/matrix_clip_space.hpp> // glm::perspective
+#include <ext/scalar_constants.hpp> // glm::pi
+
+static glm::mat4 camera(float Translate, glm::vec2 const& Rotate)
+{
+	glm::mat4 Projection = glm::perspective(glm::pi<float>() * 0.25f, 4.0f / 3.0f, 0.1f, 100.f);
+	glm::mat4 View = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -Translate));
+	View = glm::rotate(View, Rotate.y, glm::vec3(-1.0f, 0.0f, 0.0f));
+	View = glm::rotate(View, Rotate.x, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+	return Projection * View * Model;
+}
 
 using Dewpsi::StaticString;
 
@@ -48,16 +68,20 @@ public:
     ~SandboxLayer()
     {  }
 
-    virtual void OnAttach() override
-    {
-        PD_INFO("Attaching {0} layer", m_sDebugName); // TODO: delete
-    }
-
-    virtual void OnEvent(Dewpsi::Event& e) override
-    {
-        //
-    }
+    virtual void OnAttach() override;
+    virtual void OnEvent(Dewpsi::Event& e) override;
 };
+
+void SandboxLayer::OnAttach()
+{
+    PD_INFO("Attaching {0} layer", m_sDebugName); // TODO: delete
+    auto cam = camera(0.5f, {0.1f, 0.1f});
+    _PD_DEBUG_BREAK(); // TODO: delete
+    (void) 5;
+}
+
+void SandboxLayer::OnEvent(Dewpsi::Event& e)
+{  }
 
 // sandbox application
 class Sandbox : public Dewpsi::Application {
@@ -70,6 +94,8 @@ public:
 
 Sandbox::Sandbox(PDuserdata userdata)
 {
+    PD_ENABLE_BREAKS(enable);
+
     m_UserData = userdata;
     SandboxData* data = (SandboxData*) userdata;
     PD_ASSERT(data, "NULL \"data\" pointer");
@@ -176,13 +202,15 @@ static constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
 
 static constexpr StaticString Usage = \
     "sandbox -h    Display this help message\n" \
-    "sandbox [-g]  Launch sandbox application with/without gui layer";
+    "sandbox [-g]  Launch sandbox application, optionally disable gui layer";
 
 int parseArguments(int argc, const char* argv[], SandboxData* data)
 {
     using std::cout;
     using std::cerr;
     using std::endl;
+
+    data->enableImGui = 1;
 
     // base name of the program
     const char* cpBaseName = Dewpsi::String::StringRevChar(argv[0], '/');
@@ -210,7 +238,7 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
             {
                 case 'g':
                     cout << "Enable Dear ImGui layer\n";
-                    data->enableImGui = 1;
+                    data->enableImGui = 0;
                     break;
 
                 case 'h':
