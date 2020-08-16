@@ -3,7 +3,7 @@
 	url = https://github.com/gabime/spdlog
 [submodule "Dewpsi/vendor/imgui"]
 	path = Dewpsi/vendor/imgui
-	url = https://github.com/JohnDevlopment/imgui
+	url = git@github.com:JohnDevlopment/imgui.git
 [submodule "Dewpsi/vendor/glm"]
 	path = Dewpsi/vendor/glm
 	url = https://github.com/g-truc/glm
