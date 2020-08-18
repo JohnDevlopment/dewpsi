@@ -16,7 +16,7 @@ static WindowProps _WindowProperties;
 Application* Application::s_instance = nullptr;
 
 Application::Application(const std::string& sName)
-    : m_bRunning(true), m_window(), m_fLastFrameTime(0.0f),
+    : m_bRunning(true), m_window(), m_guiLayer(), m_fLastFrameTime(0.0f),
       m_UserData(nullptr)
 {
     PD_PROFILE_FUNCTION();
@@ -29,11 +29,17 @@ Application::Application(const std::string& sName)
     // create the window
     m_window = Window::Create(_WindowProperties);
     m_window->SetEventCallback(PD_BIND_EVENT_FN(Application::OnEvent));
+
+    // push ImGui layer
+    m_guiLayer = new ImGuiLayer(m_UserData);
+    PushOverlay(m_guiLayer);
 }
 
 Application::~Application()
 {
     PD_PROFILE_FUNCTION();
+    // delete m_window
+    // delete m_guiLayer
     SDL_Quit();
 }
 
@@ -73,18 +79,47 @@ void Application::Run()
         Timestep delta = fTime - m_fLastFrameTime;
         m_fLastFrameTime = fTime;
 
+        // TODO: this window-clear function should be moved to a renderer API
+        m_window->Clear();
+
         // update each layer
         for (auto itr = m_layerStack.begin(); itr != m_layerStack.end(); ++itr)
             (*itr)->OnUpdate(delta);
+
+        // render ImGui on all the layers
+        m_guiLayer->Begin();
+        for (auto itr = m_layerStack.begin(); itr != m_layerStack.end(); ++itr)
+            (*itr)->OnImGuiRender();
+        m_guiLayer->End();
 
         // update the window
         m_window->OnUpdate();
     }
 }
-
+ 
 bool Application::OnWindowClosed(WindowCloseEvent& e)
 {
-    m_bRunning = false;
+    /*  It's possible for there to be multiple windows to be closed,
+        so the application must know whether it's the main window being
+        closed. As such, check the ID of the window being closed to
+        to make sure that it's the main window being closed. */
+    if (e.GetWindowID() == m_window->GetWindowID())
+    {
+        // main window
+        if (! m_bRunning)
+            return true;
+#ifdef PD_DEBUG
+        PD_CORE_TRACE("Requested window event close for main window {0}", e.GetWindowID());
+#endif
+        m_bRunning = false;
+    }
+    else
+    {
+#ifdef PD_DEBUG
+        PD_CORE_TRACE("Requested window event close for window {0}", e.GetWindowID());
+#endif
+    }
+
     return true;
 }
 

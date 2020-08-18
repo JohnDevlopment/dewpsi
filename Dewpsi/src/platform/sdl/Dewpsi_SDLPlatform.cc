@@ -1,7 +1,7 @@
 #include "Dewpsi_Platform.h"
 #include "Dewpsi_Application.h"
 
-static Dewpsi::ImGuiInitData _Data;
+//static Dewpsi::ImGuiInitData _Data;
 
 namespace Dewpsi {
 
@@ -14,10 +14,10 @@ PDfloat GetTime()
 
 PDenum InitImGui(const void* data)
 {
-    bool bInit;
+    /*bool bInit;
     ImGuiInitData* const pData = (ImGuiInitData*) data;
     SDLNativeWindow* const pNativeWindow = (SDLNativeWindow*) Application::Get().GetWindow().GetNativeWindow();
-    
+
     // initialize ImGui OpenGL renderer
     bInit = ImGui_OpenGL_Init(pData->glslPath.c_str(), pData->glslVersion.c_str());
     if (! bInit)
@@ -25,22 +25,23 @@ PDenum InitImGui(const void* data)
         PD_CORE_ERROR("Failed to initialize ImGui: {0}", Dewpsi::GetError());
         return PD_INVALID;
     }
-    
+
     // SDL2 bindings
     ImGui_ImplSDL2_InitForOpenGL(pNativeWindow->window, pNativeWindow->context);
-    
+    */
     return PD_OKAY;
 }
 
 void QuitImGui()
 {
-    ImGui_OpenGL_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
+    //ImGui_OpenGL_Shutdown();
+    //ImGui_ImplSDL2_Shutdown();
 }
 
 void* GetImGuiInitData()
 {
-    return &_Data;
+    //return &_Data;
+    return nullptr;
 }
 
 }

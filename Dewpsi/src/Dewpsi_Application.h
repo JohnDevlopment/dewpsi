@@ -3,6 +3,7 @@
 
 /**
 *   @mainpage   %Dewpsi Engine
+*   @tableofcontents
 *   @section    intro_sec Introduction
 *   This is an introduction.
 *
@@ -44,6 +45,10 @@
 *   The argument is a pointer to user-defined data that can then be passed
 *   to the derived class as the client wills. It can be used, for example,
 *	to hold parameters used to initialize the @c Sandbox application.
+*
+*   @section    flow_sec Flow of the Application
+*   Calling Application::Run() initiates the main loop of the application.
+*   (1) All the registered layers are processed in sequential order.
 */
 
 /**
@@ -57,7 +62,6 @@
 #include <Dewpsi_LayerStack.h>
 #include <Dewpsi_Timestep.h>
 #include <Dewpsi_Memory.h>
-
 #include <string>
 
 int main(int argc, const char** argv);
@@ -65,6 +69,7 @@ int main(int argc, const char** argv);
 namespace Dewpsi {
     class WindowCloseEvent;
     class WindowResizeEvent;
+    class ImGuiLayer;
 
     /// The class that drives the client application.
     class Application {
@@ -97,6 +102,7 @@ namespace Dewpsi {
         float m_fLastFrameTime;
 
         Scope<Window> m_window;
+        ImGuiLayer* m_guiLayer;
 
         /// The main loop of the application; can only be called from main().
         void Run();
