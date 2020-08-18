@@ -16,19 +16,9 @@
 #include <Dewpsi_Color.h>
 #include <SDL.h>
 
-/// Retrieves the @a window member from a Window.
-#define PD_GET_SDL_WINDOW(winp)  reinterpret_cast<::Dewpsi::SDLNativeWindow*>((winp)->GetNativeWindow())->window
-
 namespace Dewpsi {
     /// @addtogroup sdl
     /// @{
-
-    /// Type returned by SDL2Window::GetNativeWindow().
-    struct SDLNativeWindow {
-        SDL_Window* window;     ///< SDL window
-        SDL_Renderer* renderer; ///< SDL renderer
-        SDL_GLContext context;  ///< OpenGL context
-    };
 
     /// SDL2 window abstraction
     class SDL2Window : public Window {
@@ -86,7 +76,13 @@ namespace Dewpsi {
         /// Returns a pointer to the actual window, type @c SDLNativeWindow.
         virtual void* GetNativeWindow() const override
         {
-            return (void*) &m_native;
+            return (void*) m_window;
+        }
+
+        /// Returns the ID of the window.
+        virtual PDuint32 GetWindowID() const override
+        {
+            return m_data.windowID;
         }
 
         /// Set the clear color.
@@ -109,9 +105,10 @@ namespace Dewpsi {
 
         struct WindowData {
             std::string title;
-            uint32_t width;
-            uint32_t height;
-            uint32_t format;
+            PDuint32 width;
+            PDuint32 height;
+            PDuint32 format;
+            PDuint32 windowID;
             bool vsync;
             EventCallback callback;
 
@@ -124,16 +121,15 @@ namespace Dewpsi {
                 height = src.height;
                 width = src.width;
                 vsync = false;
+                windowID = 0;
 
                 return *this;
             }
         };
 
         SDL_Window* m_window;
-        SDL_Renderer* m_renderer;
         SDL_GLContext m_context;
         WindowData m_data;
-        SDLNativeWindow m_native;
         Color m_clearColor;
     };
 

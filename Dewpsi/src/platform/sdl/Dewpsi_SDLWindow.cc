@@ -25,8 +25,6 @@
 #define newlstr(x, s)   "\n" space(x) s
 #define spacestr(x, s)  space(x) s
 
-static bool UseOpenGL = false;
-
 static constexpr Dewpsi::StaticString FalseTrueStrings[2] = { "false", "true" };
 
 static std::unordered_map<Dewpsi::KeyCode, uint32_t> RevKeyCodeMap = {
@@ -284,14 +282,8 @@ static std::unordered_map<uint32_t, Dewpsi::KeyCode> KeyCodeMap = {
 };
 
 #ifdef PD_DEBUG
-    #ifdef PD_LIST_RENDERERS
-    static void list_sdl_renderers();
-    #endif
     #ifdef PD_PRINT_WINDOW
     static void print_window_information(const Dewpsi::WindowProps&, SDL_Window*);
-    #endif
-    #ifdef PD_PRINT_RENDERER
-    static void print_renderer_information(SDL_Renderer*);
     #endif
     #ifdef PD_PRINT_OPENGL_ATTRIBUTES
     static void print_opengl_attributes(SDL_Window*);
@@ -311,7 +303,7 @@ int Dewpsi2SDLMouseCode(Dewpsi::MouseCode mc);
 namespace Dewpsi {
 
 SDL2Window::SDL2Window(const WindowProps& props)
-    : m_window(nullptr), m_renderer(nullptr), m_data(), m_clearColor()
+    : m_window(nullptr), m_data(), m_clearColor()
 {
     Init(props);
 }
@@ -325,44 +317,23 @@ void SDL2Window::OnUpdate()
 {
     SDL_PumpEvents();
 
-    if (! UseOpenGL)
-    {
-        SDL_RenderPresent(m_renderer);
-    }
-    else
-    {
-        glViewport(0, 0, (int) m_data.width, (int) m_data.height); // TODO: this is temporary, remove later
-        SDL_GL_SwapWindow(m_window);
-    }
+    glViewport(0, 0, (int) m_data.width, (int) m_data.height); // TODO: this is temporary, remove later
+    SDL_GL_SwapWindow(m_window);
 }
 
 bool SDL2Window::IsValid() const
 {
-    bool ret = m_window != nullptr;
-
-    if (! UseOpenGL)
-        ret = ret && m_renderer != nullptr;
-    else
-        ret = ret && m_context != nullptr;
-
-    return ret;
+    return ((m_window != nullptr) && (m_context != nullptr));
 }
 
 void SDL2Window::SetVSync(bool bEnable)
 {
-    if (UseOpenGL)
-    {
-        if (bEnable)
-            SDL_GL_SetSwapInterval(1);
-        else
-            SDL_GL_SetSwapInterval(0);
-
-        m_data.vsync = bEnable;
-    }
+    if (bEnable)
+        SDL_GL_SetSwapInterval(1);
     else
-    {
-        Dewpsi::SetError("VSync is a fixed option in SDL renderer.");
-    }
+        SDL_GL_SetSwapInterval(0);
+
+    m_data.vsync = bEnable;
 }
 
 bool SDL2Window::IsVSync() const
@@ -374,24 +345,13 @@ void SDL2Window::SetClearColor(const Color& color)
 {
     m_clearColor = color;
 
-    if (UseOpenGL)
-    {
-        FColor clearColor = color;
-        glClearColor(clearColor.red, clearColor.green, clearColor.blue, 1.0f);
-    }
+    FColor clearColor = color;
+    glClearColor(clearColor.red, clearColor.green, clearColor.blue, 1.0f);
 }
 
 void SDL2Window::Clear()
 {
-    if (! UseOpenGL)
-    {
-        SDL_SetRenderDrawColor(m_renderer, m_clearColor.red, m_clearColor.green, m_clearColor.blue, m_clearColor.alpha);
-        SDL_RenderClear(m_renderer);
-    }
-    else
-    {
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void SDL2Window::Init(const WindowProps& props)
@@ -412,37 +372,23 @@ void SDL2Window::Init(const WindowProps& props)
         throw DewpsiError(cpExcept);
     }
 
-    // for debugging purposes
-#if defined(PD_DEBUG) && defined(PD_LIST_RENDERERS)
-    if (props.title == "list renderers")
-    {
-        list_sdl_renderers();
-    }
-#endif
-
     // set OpenGL flags prior to window creation
-    if (props.flags & WindowOpenGL)
+    for (int x = 0; x < int(OpenGLAttributes::Count); ++x)
     {
-        for (int x = 0; x < int(OpenGLAttributes::Count); ++x)
-        {
-            int iAttrVal = 0;
-            SDL_GLattr eAttr;
-            OpenGLAttributes eMyAttr;
+        int iAttrVal = 0;
+        SDL_GLattr eAttr;
+        OpenGLAttributes eMyAttr;
 
-            GetWindowOpenGLAttribute(props, eMyAttr, iAttrVal, static_cast<unsigned int>(x));
+        GetWindowOpenGLAttribute(props, eMyAttr, iAttrVal, static_cast<unsigned int>(x));
 
-            // no attribute given
-            if (eMyAttr == OpenGLAttributes::Empty)
-                continue;
+        // no attribute given
+        if (eMyAttr == OpenGLAttributes::Empty)
+            continue;
 
-            // convert Dewpsi::OpenGLAttributes to SDL_GLattr
-            eAttr = Dewpsi2SDL_GL_Attrib(eMyAttr);
-            if ((int) eAttr >= 0)
-                SDL_GL_SetAttribute(eAttr, iAttrVal);
-        }
-
-        //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+        // convert Dewpsi::OpenGLAttributes to SDL_GLattr
+        eAttr = Dewpsi2SDL_GL_Attrib(eMyAttr);
+        if ((int) eAttr >= 0)
+            SDL_GL_SetAttribute(eAttr, iAttrVal);
     }
 
     // create a window
@@ -517,49 +463,11 @@ void SDL2Window::Init(const WindowProps& props)
             throw DewpsiError(cpExcept);
         }
 
+        m_data.windowID = SDL_GetWindowID(m_window);
+
         #if defined(PD_DEBUG) && defined(PD_PRINT_WINDOW)
         print_window_information(props, m_window);
         #endif
-
-        m_native.window = m_window;
-    }
-
-    // create rendering context
-    if (! (props.flags & WindowOpenGL)) {
-        uint32_t uiFlags = 0;
-        std::vector<uint32_t> vWinFlags = {
-            RendererSoftware,
-            RendererAccelerated,
-            RendererVSync,
-            RendererTargetTexture
-        };
-        std::vector<uint32_t> vSDLFlags = {
-            SDL_RENDERER_SOFTWARE,
-            SDL_RENDERER_ACCELERATED,
-            SDL_RENDERER_PRESENTVSYNC,
-            SDL_RENDERER_TARGETTEXTURE
-        };
-
-        // for each render flag that's set, add an SDL flag
-        auto itrSDLFlag = vSDLFlags.begin();
-        for (auto itrWinFlag : vWinFlags)
-        {
-            // if the Dewpsi render bit is set,
-            // the corresponding SDL window flag is set
-            if (props.flags & itrWinFlag)
-                uiFlags |= *itrSDLFlag;
-            ++itrSDLFlag;
-        }
-
-        // create renderer
-        m_renderer = SDL_CreateRenderer(m_window, props.index, uiFlags);
-        PD_CORE_ASSERT(m_renderer, "Failed to create renderer: {0}", SDL_GetError());
-
-        #if defined(PD_DEBUG) && defined(PD_PRINT_RENDERER)
-        print_renderer_information(m_renderer);
-        #endif
-
-        m_native.renderer = m_renderer;
     }
 
     // mark vsync as enabled
@@ -567,54 +475,44 @@ void SDL2Window::Init(const WindowProps& props)
         m_data.vsync = true;
 
     // OpenGL context
-    if (props.flags & WindowOpenGL)
+    // load default opengl library
+    SDL_GL_LoadLibrary(nullptr);
+
+    // new OpenGL context
+    m_context = SDL_GL_CreateContext(m_window);
+    PD_CORE_ASSERT(m_context, "Failed to create OpenGL context: {0}", SDL_GetError());
+
+    // associate window with context
+    SDL_GL_MakeCurrent(m_window, m_context);
+
+    // GLAD loader
+    int iCode = gladLoadGLLoader(SDL_GL_GetProcAddress);
+    PD_CORE_ASSERT(iCode, "Failed to load GLAD");
+    PD_CORE_ASSERT(! SDL_GL_Loader(), "Failed to load other GL functions");
+
+    // enable vsync
+    if (m_data.vsync)
+        SDL_GL_SetSwapInterval(1);
+
+    // get width and height of window
     {
-        // load default opengl library
-        SDL_GL_LoadLibrary(nullptr);
-
-        // new OpenGL context
-        m_context = SDL_GL_CreateContext(m_window);
-        PD_CORE_ASSERT(m_context, "Failed to create OpenGL context: {0}", SDL_GetError());
-        m_native.context = m_context;
-
-        // associate window with context
-        SDL_GL_MakeCurrent(m_window, m_context);
-
-        // GLAD loader
-        int iCode = gladLoadGLLoader(SDL_GL_GetProcAddress);
-        PD_CORE_ASSERT(iCode, "Failed to load GLAD");
-        PD_CORE_ASSERT(! SDL_GL_Loader(), "Failed to load other GL functions");
-
-        // enable vsync
-        if (m_data.vsync)
-            SDL_GL_SetSwapInterval(1);
-
-        UseOpenGL = true;
-
-        // get width and height of window
-        {
-            int w = 0, h = 0;
-            SDL_GetWindowSize(m_window, &w, &h);
-            PD_CORE_ASSERT(w && h, "Failed to get window size: {0}", SDL_GetError());
-            glViewport(0, 0, w, h);
-            m_data.width = w;
-            m_data.height = h;
-        }
-
-        // set initial background color
-        SetClearColor(DefineColor(PD_COLOR_BLACK));
-
-        // TODO: remove or edit this block
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glEnable(GL_FRAMEBUFFER_SRGB);
-        glCullFace(GL_BACK);
-        ///////////////////////////////////////////////////////////////
-
-        #if defined(PD_DEBUG) && defined(PD_PRINT_OPENGL_ATTRIBUTES)
-        print_opengl_attributes(m_window);
-        #endif
+        int w = 0, h = 0;
+        SDL_GetWindowSize(m_window, &w, &h);
+        PD_CORE_ASSERT(w && h, "Failed to get window size: {0}", SDL_GetError());
+        glViewport(0, 0, w, h);
+        m_data.width = w;
+        m_data.height = h;
     }
+
+    // set initial background color
+    SetClearColor(DefineColor(PD_COLOR_BLACK));
+
+    // TODO: remove or edit this block
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_FRAMEBUFFER_SRGB);
+    glCullFace(GL_BACK);
+    ///////////////////////////////////////////////////////////////
 
     // get the dimensions and format of the window
     {
@@ -640,12 +538,6 @@ void SDL2Window::Shutdown()
         SDL_GL_UnloadLibrary();
     }
 
-    if (m_renderer)
-    {
-        SDL_DestroyRenderer(m_renderer);
-        m_renderer = nullptr;
-    }
-
     if (m_window)
     {
         SDL_DestroyWindow(m_window);
@@ -657,21 +549,28 @@ int SDL2Window::OnEvent(void* udata, SDL_Event* event)
 {
     WindowData* const pWinData = reinterpret_cast<WindowData*>(udata);
 
+    ImGui_ImplSDL2_ProcessEvent(event);
+
     switch (event->type)
     {
     case SDL_QUIT:
         {
-            WindowCloseEvent e;
+            WindowCloseEvent e(pWinData->windowID);
             pWinData->callback(e);
             break;
         }
 
     case SDL_WINDOWEVENT:
         {
-            if (event->window.event == SDL_WINDOWEVENT_RESIZED)
+            SDL_WindowEvent& winEvent = event->window;
+            if (winEvent.event == SDL_WINDOWEVENT_RESIZED)
             {
-                SDL_WindowEvent& winEvent = event->window;
-                WindowResizeEvent e(winEvent.data1, winEvent.data2);
+                WindowResizeEvent e(winEvent.windowID, winEvent.data1, winEvent.data2);
+                pWinData->callback(e);
+            }
+            else if (winEvent.event == SDL_WINDOWEVENT_CLOSE)
+            {
+                WindowCloseEvent e(winEvent.windowID);
                 pWinData->callback(e);
             }
             break;
@@ -794,7 +693,6 @@ int GetWindowInformation(Window* win, WindowModeInfo* info)
         info->height = win->GetHeight();
         // string fields
         info->vendor     = retUString(glGetString(GL_VENDOR));
-        info->renderer   = retUString(glGetString(GL_RENDERER));
         info->version    = retUString(glGetString(GL_VERSION));
         info->extensions = retUString(glGetString(GL_EXTENSIONS));
         // rgba format
@@ -1070,35 +968,6 @@ void SeparateFormat(PDuint32 format, Dewpsi::WindowModeInfo& info)
 
 #ifdef PD_DEBUG
 
-#ifdef PD_LIST_RENDERERS
-void list_sdl_renderers()
-{
-    using Dewpsi::IsNonzero;
-
-    SDL_RendererInfo info;
-    const char* caBools[2] = {
-        "false", "true"
-    };
-
-    int iNumDrivers = SDL_GetNumRenderDrivers();
-    PD_CORE_ASSERT(iNumDrivers >= 0, "Failed to query renderer driver count: {}", SDL_GetError());
-
-    for (int x = 0; x < iNumDrivers; ++x)
-    {
-        int iCode = SDL_GetRenderDriverInfo(x, &info);
-        PD_CORE_ASSERT(iCode == 0, "Failed to query driver info: {}", SDL_GetError());
-
-        PD_CORE_INFO("Render driver index {}\n    name: {}\n    # of texture formats: {}\n    hardware acceleration: {}\n    vsync: {}\n    rendering to texture: {}",
-                     x, info.name, info.num_texture_formats,
-                     caBools[IsNonzero(info.flags & SDL_RENDERER_ACCELERATED)],
-                     caBools[IsNonzero(info.flags & SDL_RENDERER_PRESENTVSYNC)],
-                     caBools[IsNonzero(info.flags & SDL_RENDERER_TARGETTEXTURE)] );
-    }
-
-    std::exit();
-}
-#endif /* PD_LIST_RENDERERS */
-
 #ifdef PD_PRINT_WINDOW
 static constexpr Dewpsi::StaticString WinFlagStrings[] = {
     "fullscreen window",
@@ -1184,227 +1053,6 @@ void print_window_information(const Dewpsi::WindowProps& props, SDL_Window* win)
     } // end block
 }
 #endif /* PD_PRINT_WINDOW */
-
-#ifdef PD_PRINT_RENDERER
-static constexpr Dewpsi::StaticString RenFlagStrings[4] = {
-    "renderer is a software fallback",
-    "renderer supports hardware acceleration",
-    "present is synced with the refresh rate (vsync)",
-    "renderer supports rendering to texture"
-};
-
-static constexpr Dewpsi::StaticString PixelTypeStrings[] = {
-    "unknown",
-    "indexed 1 bit",
-    "indexed 4 bit",
-    "indexed 8 bit",
-    "packed 1 bit",
-    "packed 4 bit",
-    "packed 8 bit",
-    "array of unsigned 8-bit  pixels",
-    "array of unsigned 16-bit pixels",
-    "array of unsigned 32-bit pixels",
-    "array of floating-point 16-bit pixels",
-    "array of floating-point 32-bit pixels"
-};
-
-static constexpr Dewpsi::StaticString PixelLayoutStrings[] = {
-    "none",
-    "3-3-2",
-    "4-4-4-4",
-    "1-5-5-5",
-    "5-5-5-1",
-    "5-6-5",
-    "8-8-8-8",
-    "2-10-10-10",
-    "10-10-10-2"
-};
-
-static constexpr Dewpsi::StaticString PixelOrderStrings[] = {
-    "none",
-    "packed [empty], red, green, blue",
-    "packed red, green, blue, [empty]",
-    "packed alpha, red, green, blue",
-    "packed red, green, blue, alpha",
-    "packed [empty], blue, green, red",
-    "packed blue, green, red, [empty]",
-    "packed alpha, blue, green, red",
-    "packed blue, green, red, alpha",
-
-    "SDL_BITMAPORDER_NONE",
-    "SDL_BITMAPORDER_4321",
-    "SDL_BITMAPORDER_1234",
-
-    "SDL_ARRAYORDER_RGB",
-    "SDL_ARRAYORDER_RGBA",
-    "SDL_ARRAYORDER_ARGB",
-    "SDL_ARRAYORDER_BGR",
-    "SDL_ARRAYORDER_BGRA",
-    "SDL_ARRAYORDER_ABGR"
-};
-
-static const char* what_pixel_order(uint32_t order, uint32_t type)
-{
-    uint16_t uiIndex = 0;
-
-    if (type == SDL_PIXELTYPE_PACKED8 || type == SDL_PIXELTYPE_PACKED16 || type == SDL_PIXELTYPE_PACKED32)
-    {
-        switch (order)
-        {
-        case SDL_PACKEDORDER_XRGB:
-            uiIndex = 1;
-            break;
-
-        case SDL_PACKEDORDER_RGBX:
-            uiIndex = 2;
-            break;
-
-        case SDL_PACKEDORDER_ARGB:
-            uiIndex = 3;
-            break;
-
-        case SDL_PACKEDORDER_RGBA:
-            uiIndex = 4;
-            break;
-
-        case SDL_PACKEDORDER_XBGR:
-            uiIndex = 5;
-            break;
-
-        case SDL_PACKEDORDER_BGRX:
-            uiIndex = 6;
-            break;
-
-        case SDL_PACKEDORDER_ABGR:
-            uiIndex = 7;
-            break;
-
-        case SDL_PACKEDORDER_BGRA:
-            uiIndex = 8;
-            break;
-
-        default: break;
-        }
-    }
-    else if (type == SDL_PIXELTYPE_INDEX1 || type == SDL_PIXELTYPE_INDEX4 || type == SDL_PIXELTYPE_INDEX8)
-    {
-        switch (order)
-        {
-        case SDL_BITMAPORDER_4321:
-            uiIndex = 9;
-            break;
-
-        case SDL_BITMAPORDER_1234:
-            uiIndex = 10;
-
-        default: break;
-        }
-    }
-    else {
-        switch (order)
-        {
-        case SDL_ARRAYORDER_RGB:
-            uiIndex = 12;
-            break;
-
-        case SDL_ARRAYORDER_RGBA:
-            uiIndex = 13;
-            break;
-
-        case SDL_ARRAYORDER_ARGB:
-            uiIndex = 14;
-            break;
-
-        case SDL_ARRAYORDER_BGR:
-            uiIndex = 15;
-            break;
-
-        case SDL_ARRAYORDER_BGRA:
-            uiIndex = 16;
-            break;
-
-        case SDL_ARRAYORDER_ABGR:
-            uiIndex = 17;
-            break;
-
-        default: break;
-        }
-    }
-
-    return PixelOrderStrings[uiIndex].get();
-}
-
-void print_renderer_information(SDL_Renderer* ren)
-{
-    using std::cout;
-    using std::endl;
-
-    SDL_RendererInfo info;
-    int iCode = SDL_GetRendererInfo(ren, &info);
-
-    PD_CORE_ASSERT(iCode == 0, "failed to get rendering context info");
-
-    // basic information
-    PD_CORE_TRACE("Printing rendering context information...");
-
-    cout << "Rendering context properties:" << newlstr(1, "number of supported texture formats: ") \
-    << info.num_texture_formats << newlstr(1, "maximum texture width: ") << info.max_texture_width \
-    << newlstr(1, "maximum texture height: ") << info.max_texture_height << endl;
-
-    // flags
-    {
-        const uint32_t uiaFlags[] = {
-            SDL_RENDERER_SOFTWARE,
-            SDL_RENDERER_ACCELERATED,
-            SDL_RENDERER_PRESENTVSYNC,
-            SDL_RENDERER_TARGETTEXTURE
-        };
-
-        cout << spacestr(1, "flags: ");
-
-        // get each flag
-        for (int x = 0; x < 4; ++x)
-        {
-            if (info.flags & uiaFlags[x])
-            {
-                cout << newl(2) << RenFlagStrings[x].get();
-            }
-        }
-        cout << endl;
-    }
-
-    // texture formats
-    cout << spacestr(1, "texture formats: ") << endl;
-
-    for (int x = 0; x < int(info.num_texture_formats); ++x)
-    {
-        const uint32_t uiFormat = info.texture_formats[x];
-
-        cout << spacestr(2, "#") << (x+1) << ":\n" << spacestr(3, "type: ") \
-            << PixelTypeStrings[SDL_PIXELTYPE(uiFormat)].get();
-        cout << newlstr(3, "pixel order: ") << what_pixel_order(SDL_PIXELTYPE(uiFormat), SDL_PIXELORDER(uiFormat));
-        cout << newlstr(3, "pixel layout: ") << PixelLayoutStrings[SDL_PIXELLAYOUT(uiFormat)].get();
-        cout << newlstr(3, "bits per pixel: ") << SDL_BITSPERPIXEL(uiFormat) << endl;
-
-        if (SDL_ISPIXELFORMAT_INDEXED(uiFormat))
-        {
-            cout << newlstr(3, "this format is indexed");
-        }
-
-        if (SDL_ISPIXELFORMAT_ALPHA(uiFormat))
-        {
-            cout << newlstr(3, "this format has an alpha channel");
-        }
-
-        if (SDL_ISPIXELFORMAT_FOURCC(uiFormat))
-        {
-            cout << newlstr(3, "this format is unique");
-        }
-
-        cout << endl;
-    }
-}
-#endif /* PD_PRINT_RENDERER */
 
 #ifdef PD_PRINT_OPENGL_ATTRIBUTES
 void print_opengl_attributes(SDL_Window* win)
