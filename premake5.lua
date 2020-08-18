@@ -41,6 +41,7 @@ project "dewpsi"
         (srcdir .. "/*.cc"),
         (srcdir .. "/events/*.cc"),
         (srcdir .. "/ImGui/*.cc"),
+        (srcdir .. "/ImGui/imguibuild.cpp"),
         (srcdir .. "/matrices/*.cc"),
 
         (srcdir .. "/*.h"),
@@ -48,7 +49,7 @@ project "dewpsi"
         (srcdir .. "/events/*.h"),
         (srcdir .. "/ImGui/*.h"),
         (srcdir .. "/matrices/*.h"),
-        (srcdir .. "/os/*.h")
+        (srcdir .. "/os/*.h"),
     }
     pchheader "pdpch.h"
     pchsource "Dewpsi/src/pdpch.cpp"
@@ -86,6 +87,7 @@ project "dewpsi"
     postbuildcommands {
         "{MKDIR} ../Sandbox/src/dewpsi-include/glad",
         "{MKDIR} ../Sandbox/src/dewpsi-include/bits",
+        "{MKDIR} ../Sandbox/src/dewpsi-include/imgui",
 
         ("{COPY} " .. srcdir .. "/*.h ../Sandbox/src/dewpsi-include"),
         --("{COPY} " .. srcdir .. "/bits/*.h  ../Sandbox/src/dewpsi-include/bits"),
@@ -96,6 +98,16 @@ project "dewpsi"
 
         "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h",
         "{COPY} %{prj.location}/vendor/getopt/include/my_getopt.h ../Sandbox/src/dewpsi-include/my_getopt.h",
+        --"{COPY} %{prj.location}/vendor/imgui/imgui.h ../Sandbox/src/dewpsi-include/imgui.h",
+        --"{COPY} %{prj.location}/vendor/imgui/imconfig.h ../Sandbox/src/dewpsi-include/imconfig.h",
+    }
+
+-- Windows
+filter "system:windows"
+    defines {
+        "PD_PLATFORM_WINDOWS",
+        "IMGUI_API=__declspec(dllimport)",
+        "PD_BUILD_DLL",
     }
 
 -- Linux
@@ -107,13 +119,10 @@ filter "system:linux"
     includedirs {
         (srcdir .. "/platform/sdl")
     }
-    links {
-        "dl"
---        "SDL2"
-    }
+    links "dl"
     files {
         (srcdir .. "/platform/sdl/Dewpsi_*.cc"),
-        (srcdir .. "/platform/sdl/Dewpsi_*.cpp"),
+        --(srcdir .. "/platform/sdl/Dewpsi_*.cpp"),
         (srcdir .. "/platform/sdl/Dewpsi_*.h")
     }
     postbuildcommands {

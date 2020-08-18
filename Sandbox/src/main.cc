@@ -1,28 +1,11 @@
 #include <csignal>
 #include <iostream>
 
-#define _PD_DEBUG_BREAKS
+#include "sandbox.h"
 
-// Dewpsi includes
-#include <Dewpsi_Log.h>
-#include <Dewpsi_WhichOS.h>
-#include <Dewpsi_Window.h>
-#include <Dewpsi_Application.h>
-#include <Dewpsi_Layer.h>
-#include <Dewpsi_MouseEvent.h>
-#include <Dewpsi_KeyEvent.h>
-#include <Dewpsi_Color.h>
-#include <Dewpsi_String.h>
-#include <Dewpsi_Vector.h>
-#include <Dewpsi_ImGuiLayer.h>
-#include <Dewpsi_Memory.h>
-
-
+// Dewpsi
 #include <Dewpsi_Debug.h>
-
 #include <spdlog/sinks/stdout_sinks.h>
-
-#include "OpenGLLayer.h"
 
 // glm
 #include <vec3.hpp> // glm::vec3
@@ -32,25 +15,7 @@
 #include <ext/matrix_clip_space.hpp> // glm::perspective
 #include <ext/scalar_constants.hpp> // glm::pi
 
-static glm::mat4 camera(float Translate, glm::vec2 const& Rotate)
-{
-	glm::mat4 Projection = glm::perspective(glm::pi<float>() * 0.25f, 4.0f / 3.0f, 0.1f, 100.f);
-	glm::mat4 View = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -Translate));
-	View = glm::rotate(View, Rotate.y, glm::vec3(-1.0f, 0.0f, 0.0f));
-	View = glm::rotate(View, Rotate.x, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-	return Projection * View * Model;
-}
-
 using Dewpsi::StaticString;
-
-struct SandboxData {
-    PDchar enableImGui;
-    Dewpsi::ImGuiInitData guiInit;
-
-    SandboxData() : enableImGui(0), guiInit()
-    {  }
-};
 
 static bool g_bOnce = false;
 
@@ -58,54 +23,6 @@ extern "C" void forcequit(int);
 extern "C" void quit();
 
 static int parseArguments(int, const char*[], SandboxData* data);
-
-// sandbox application layer
-class SandboxLayer : public Dewpsi::Layer {
-public:
-    SandboxLayer() : Layer("Sandbox")
-    {  }
-
-    ~SandboxLayer()
-    {  }
-
-    virtual void OnAttach() override;
-    virtual void OnEvent(Dewpsi::Event& e) override;
-};
-
-void SandboxLayer::OnAttach()
-{
-    PD_INFO("Attaching {0} layer", m_sDebugName); // TODO: delete
-    auto cam = camera(0.5f, {0.1f, 0.1f});
-    _PD_DEBUG_BREAK(); // TODO: delete
-    (void) 5;
-}
-
-void SandboxLayer::OnEvent(Dewpsi::Event& e)
-{  }
-
-// sandbox application
-class Sandbox : public Dewpsi::Application {
-public:
-    Sandbox(PDuserdata userdata);
-
-    virtual ~Sandbox()
-    {  }
-};
-
-Sandbox::Sandbox(PDuserdata userdata)
-{
-    PD_ENABLE_BREAKS(enable);
-
-    m_UserData = userdata;
-    SandboxData* data = (SandboxData*) userdata;
-    PD_ASSERT(data, "NULL \"data\" pointer");
-    if (data->enableImGui)
-    {
-        PushOverlay(new Dewpsi::ImGuiLayer(&data->guiInit));
-        PD_INFO("Enabled Dear ImGui layer");
-    }
-    PushLayer(new SandboxLayer());
-}
 
 static Dewpsi::Application* App = nullptr;
 
@@ -153,9 +70,6 @@ int main (int argc, char const* argv[])
 
     // start client application
     App = Dewpsi::NewApplication(appData.get());
-#ifdef PD_DEBUG
-    PD_INFO("Started sandbox application");
-#endif
 
     // set window clear color
     {
@@ -237,7 +151,7 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
             switch (iCode)
             {
                 case 'g':
-                    cout << "Enable Dear ImGui layer\n";
+                    cout << "Disable Dear ImGui layer\n";
                     data->enableImGui = 0;
                     break;
 

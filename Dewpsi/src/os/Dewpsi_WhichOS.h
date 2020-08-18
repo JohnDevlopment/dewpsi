@@ -14,6 +14,6 @@
     #error Currently only Linux is supported
 #endif
 
-extern void (PD_APIENTRY * ImGui_UpdateIntState)(SDL_Window*);
+//extern void (PD_APIENTRY * ImGui_UpdateIntState)(SDL_Window*);
 
 #endif /* DEWPSI_WHICHOS_H */

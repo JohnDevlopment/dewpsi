@@ -195,6 +195,9 @@ namespace Dewpsi {
         /// Returns a pointer to the platform-specific window.
         virtual void* GetNativeWindow() const = 0;
 
+        /// Returns the ID of the window.
+        virtual PDuint32 GetWindowID() const = 0;
+
         /** Sets the window clear color.
         *   @param color What color to clear the window with
         */

@@ -20,16 +20,34 @@ namespace Dewpsi {
     *   @{
     */
 
+    /// A window event.
+    class WindowEvent : public Event {
+    public:
+        /// Initialize with a window ID
+        WindowEvent(PDuint32 id) : m_WindowID(id)
+        {  }
+
+        EVENT_CLASS_CATEGORY(EC_Application)
+
+        /// Return the ID of the window in which the event was pushed.
+        PDuint32 GetWindowID() const
+        {
+            return m_WindowID;
+        }
+
+    protected:
+        PDuint32 m_WindowID;
+    };
+
     /// Window resize event.
-    class WindowResizeEvent : public Event {
+    class WindowResizeEvent : public WindowEvent {
     public:
         /// Initialize a @c %WindowResizeEvent with a width and height.
-        WindowResizeEvent(PDint32 w, PDint32 h)
-            : m_uiWidth(w), m_uiHeight(h)
+        WindowResizeEvent(PDuint32 id, PDint32 w, PDint32 h)
+            : WindowEvent(id), m_uiWidth(w), m_uiHeight(h)
         {  }
 
         EVENT_CLASS_TYPE(ET_WindowResize)
-        EVENT_CLASS_CATEGORY(EC_Application)
 
         /// Returns the new display width.
         PDint32 GetWidth() const
@@ -49,12 +67,13 @@ namespace Dewpsi {
     };
 
     /// Close-window event.
-    class WindowCloseEvent : public Event {
+    class WindowCloseEvent : public WindowEvent {
     public:
-        WindowCloseEvent() = default;
+        /// Initialize with the ID of a window.
+        WindowCloseEvent(PDuint32 id) : WindowEvent(id)
+        {  }
 
         EVENT_CLASS_TYPE(ET_WindowClose)
-        EVENT_CLASS_CATEGORY(EC_Application)
     };
 
     /// @}

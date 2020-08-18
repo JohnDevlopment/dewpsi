@@ -12,6 +12,7 @@
 #include <Dewpsi_MouseEvent.h>
 #include <Dewpsi_ApplicationEvent.h>
 #include <Dewpsi_KeyEvent.h>
+#include <Dewpsi_WhichOS.h>
 
 namespace Dewpsi {
     /** The debug ImGui layer.
@@ -31,23 +32,20 @@ namespace Dewpsi {
         /// Detaches the layer.
         virtual void OnDetach() override;
 
-        /// Update function.
-        virtual void OnUpdate(Timestep delta) override;
+        /// Draws ImGui layer.
+        virtual void OnImGuiRender() override;
 
-        /// Event processor.
-        virtual void OnEvent(Event& e) override;
+        /// Begin an ImGui frame.
+        void Begin();
+
+        /// End an ImGui frame.
+        void End();
 
     private:
-        bool OnMouseButtonPressed(MousePressedEvent& e);
-        bool OnMouseButtonReleased(MouseReleasedEvent& e);
-        bool OnMouseScrolled(MouseScrolledEvent& e);
-        bool OnMouseMotion(MouseMovedEvent& e);
-        bool OnWindowResized(WindowResizeEvent& e);
-        bool OnKeyTyped(KeyTypedEvent& e);
-        bool OnKeyPressed(KeyPressedEvent& e);
-        bool OnKeyReleased(KeyReleasedEvent& e);
-
         const void* m_vpData;
+        SDL_Window* m_Window;
+        SDL_GLContext m_Context;
+        bool m_Init;
     };
 }
 

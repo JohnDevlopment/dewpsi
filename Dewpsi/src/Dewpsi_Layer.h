@@ -26,30 +26,34 @@ namespace Dewpsi {
     public:
         /// Constructs a layer with the given name.
         Layer(const std::string& name = "Layer");
-        
+
         /// Destroys the layer and frees any memory allocated by it.
         virtual ~Layer();
-        
+
         /// Called when attaching a layer to a layer stack.
         virtual void OnAttach()
         {  }
-        
+
         /// Called when detaching a layer from a layer stack.
         virtual void OnDetach()
         {  }
-        
+
         /// Called when updating the layer.
         virtual void OnUpdate(Timestep delta)
         {  }
-        
+
+        /// Lets layers use ImGui functions.
+        virtual void OnImGuiRender()
+        {  }
+
         /// Called when processing events for the layer.
         virtual void OnEvent(Event& e)
         {  }
-        
+
         /// Returns the name of the layer as a string (debug only).
         inline const std::string& GetName() const
         { return m_sDebugName; }
-        
+
     protected:
         std::string m_sDebugName;
     };

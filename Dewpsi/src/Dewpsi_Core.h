@@ -8,9 +8,38 @@
 *
 *   @defgroup   core Core
 *   Provisions of the core functionality of Dewpsi.
+*   For function attributes, see the following.
+*
+*   Macro           | Description
+*	----------------|------------
+*	PD_INLINE       | Suggest that a function be inlined
+*	PD_FORCE_INLINE | force a function to be inlined
+*	PD_COLD         | Declare a function to be cold
+*	PD_HOT          | Declare a function to be hot
+*	PD_CALL         | Prefix to an export library call
+*
+*	For utility macros, see:
+*   - PD_ABORT()         - abort execution of a program
+*	- PD_OFFSETOF()      - get the offset to a member of a type
+*	- PD_ARRAYSIZE()     - to measure the length of an array
+*	- PD_ADDRESSOF()     - to get the address of an object
+*	- PD_BIND_EVENT_FN() - bind an event function to a class
+*	- PD_LOWORD()        - get the low word of a dword
+*	- PD_HIWORD()        - get the high word of a dword
+*	- PD_CREATEDWORD()   - create a dword from two words
+*	- PD_LONYBBLE()      - get the low nybble of a byte
+*	- PD_HINYBBLE()      - get the high nybble of a byte
+*	- PD_CREATEBYTE()    - create a byte from two nybbles
+*
+*   For other kinds of macros, see:
+*	- @ref PD_CONSTEXPR
+*	- @ref PD_APIENTRY
+*	- PD_DEBUGBREAK()
+*	- PD_ASSERT()
+*	- PD_CORE_ASSERT()
 *
 *   @defgroup platforms Platform-Specific
-*   Headers, functions, types, and other declarations specific to each platform
+*   Headers, functions, types, and other declarations specific to each platform.
 *
 *   @addtogroup core
 *   @{
@@ -131,6 +160,12 @@
 */
 #define PD_ARRAYSIZE(a)             static_cast<int>(sizeof(a) / sizeof(* (a)))
 
+/** Get the address of @a o.
+*   Simply calls std::addressof(). Refer to the <a href="http://www.cplusplus.com/reference/memory/addressof/">documentation</a>
+*   for that function.
+*/
+#define PD_ADDRESSOF(o)             ::std::addressof(o)
+
 /** Prefix to the declaration of any function or variable.
 *   Indicates that a function or variable is @c constexpr.
 */
@@ -205,12 +240,12 @@
     #define PD_ASSERT(x, ...)       if (! (x)) { \
                                         ::Dewpsi::Log::GetClientLogger()->error("Assertion '" #x "' failed"); \
                                         ::Dewpsi::Log::GetClientLogger()->error(__VA_ARGS__); \
-                                        PD_DEBUGBREAK(); \
+                                        PD_ABORT(); \
                                     }
     #define PD_CORE_ASSERT(x, ...)  if (! (x)) { \
                                         ::Dewpsi::Log::GetCoreLogger()->error("Assertion '" #x "' failed"); \
                                         ::Dewpsi::Log::GetCoreLogger()->error(__VA_ARGS__); \
-                                        PD_DEBUGBREAK(); \
+                                        PD_ABORT(); \
                                     }
 #else
     #define PD_ASSERT(x, ...)
@@ -220,8 +255,16 @@
 /// Creates a value where only bit @a x is set.
 #define BIT(x)                  (1 << x)
 
-/// Function binding.
-/// @todo Add description.
+/** Used by classes to bind an event to the class.
+*   Binds the function @a fn to the class that this is called in.
+*   @code
+    template<class Tp, class EventType>
+    bool EventCallback(Tp* this, EventType& e);
+*   @endcode
+*   As shown here, the function must return @c void and accept two
+*	parameters, the first being the class' @a this pointer, and the other
+*	a reference to any type that derives from Event.
+*/
 #define PD_BIND_EVENT_FN(fn)    std::bind(&fn, this, std::placeholders::_1)
 
 /// Retrieves the low word of a value.
@@ -266,7 +309,7 @@
     std::cout << std::hex << "0x" << uiVal << std::endl;
 *   @endcode
 */
-#define PD_CREATEBYTE(lo, hi)   (((PDuint8)(hi) << 4) | (PDuint8)(lo))
+#define PD_CREATEBYTE(lo, hi)   (((PDuint8)(hi) << 4) | (((PDuint8)(lo)) & 0x0f))
 
 /// Dewpsi Namespace: contains all relevent Dewpsi functions, classes, and other types.
 namespace Dewpsi {
