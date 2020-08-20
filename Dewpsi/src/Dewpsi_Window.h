@@ -73,8 +73,8 @@ namespace Dewpsi {
     enum WindowFlags : uint32_t {
         WindowFullscreen        = BIT(0),   ///< Generated window is in fullscreen
         WindowFullDesktop       = BIT(1),   ///< Create a fullscreen window at desktop resolution
-        WindowOpenGL            = BIT(2),   ///< %Window is usable with an OpenGL context
-        WindowVulkan            = BIT(3),   ///< %Window is usable with a Vulkan instance
+        WindowOpenGL            = BIT(2),   ///< Use the OpenGL API
+        WindowVulkan            = BIT(3),   ///< Ise the Vulkan API
         WindowShown             = BIT(4),   ///< %Window is visible
         WindowHidden            = BIT(5),   ///< %Window is not visible
         WindowBorderless        = BIT(6),   ///< %Window is without a border

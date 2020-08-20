@@ -14,11 +14,16 @@
 #include <Dewpsi_Event.h>
 #include <Dewpsi_Window.h>
 #include <Dewpsi_Color.h>
+#include <Dewpsi_Memory.h>
+#include <Dewpsi_OpenGLContext.h>
 #include <SDL.h>
 
 namespace Dewpsi {
     /// @addtogroup sdl
     /// @{
+
+    //class RendererContext;
+    //class OpenGLContext;
 
     /// SDL2 window abstraction
     class SDL2Window : public Window {
@@ -76,7 +81,7 @@ namespace Dewpsi {
         /// Returns a pointer to the actual window, type @c SDLNativeWindow.
         virtual void* GetNativeWindow() const override
         {
-            return (void*) m_window;
+            return (void*) m_Window;
         }
 
         /// Returns the ID of the window.
@@ -127,8 +132,8 @@ namespace Dewpsi {
             }
         };
 
-        SDL_Window* m_window;
-        SDL_GLContext m_context;
+        SDL_Window* m_Window;
+        Scope<RenderContext> m_Context;
         WindowData m_data;
         Color m_clearColor;
     };

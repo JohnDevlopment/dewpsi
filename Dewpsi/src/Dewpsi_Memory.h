@@ -5,6 +5,8 @@
 *   @file   Dewpsi_Memory.h
 *   @brief  @doxfb
 *   Contains memory allocation/manipulation functions.
+*   @defgroup memory Memory
+*   Memory allocation/manipulation functions.
 *   @ingroup core
 */
 
@@ -13,7 +15,7 @@
 
 namespace Dewpsi {
     /**
-    *   @addtogroup core
+    *   @addtogroup memory
     *   @{
     */
 
@@ -37,7 +39,7 @@ namespace Dewpsi {
     };
 
     /** CreateScope for single objects.
-    *   @param args A list of arguments used to construct @c T
+    *   @param args A list of arguments used to construct @c T, or none
     *   @return     A @c %Scope of an object of @c T
     */
     template<typename T, typename... Args>

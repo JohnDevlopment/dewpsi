@@ -100,13 +100,14 @@ project "dewpsi"
         (srcdir .. "/events/*.cc"),
         (srcdir .. "/ImGui/*.cc"),
         (srcdir .. "/ImGui/imguibuild.cpp"),
-        (srcdir .. "/matrices/*.cc"),
+        (srcdir .. "/Renderer/*.cc"),
 
         (srcdir .. "/*.h"),
         (srcdir .. "/debug/*.h"),
         (srcdir .. "/events/*.h"),
         (srcdir .. "/ImGui/*.h"),
         (srcdir .. "/matrices/*.h"),
+        (srcdir .. "/Renderer/*.h"),
         (srcdir .. "/os/*.h"),
     }
     pchheader "pdpch.h"
@@ -125,7 +126,8 @@ project "dewpsi"
         (srcdir .. "/debug"),
         (srcdir .. "/events"),
         (srcdir .. "/ImGui"),
-        (srcdir .. "/os")
+        (srcdir .. "/os"),
+        (srcdir .. "/Renderer")
     }
     links {
         "spdlog",
@@ -143,6 +145,7 @@ project "dewpsi"
         ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/ImGui/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
+        ("{COPY} " .. srcdir .. "/Renderer/Dewpsi_RenderContext.h ../Sandbox/src/dewpsi-include"),
 
         "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h",
         "{COPY} %{prj.location}/vendor/getopt/include/my_getopt.h ../Sandbox/src/dewpsi-include/my_getopt.h"
@@ -184,7 +187,8 @@ filter {"system:linux", "toolset:gcc"}
         "-pthread"
     }
     postbuildcommands {
-        ("{COPY} " .. srcdir .. "/platform/sdl/*.h ../Sandbox/src/dewpsi-include")
+        ("{COPY} " .. srcdir .. "/platform/sdl/*.h ../Sandbox/src/dewpsi-include"),
+        ("{COPY} " .. srcdir .. "/Renderer/Dewpsi_OpenGLContext.h ../Sandbox/src/dewpsi-include")
     }
 
 -- different configurations

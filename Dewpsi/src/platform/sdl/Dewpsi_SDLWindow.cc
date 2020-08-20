@@ -10,6 +10,7 @@
 #include "Dewpsi_OpenGL.h"
 #include "Dewpsi_Debug.h"
 #include "Dewpsi_Except.h"
+#include "Dewpsi_OpenGLContext.h"
 
 #include <SDL.h>
 #include <csignal>
@@ -27,259 +28,7 @@
 
 static constexpr Dewpsi::StaticString FalseTrueStrings[2] = { "false", "true" };
 
-static std::unordered_map<Dewpsi::KeyCode, uint32_t> RevKeyCodeMap = {
-    { PD_KEY_0,             SDLK_0   },
-    { PD_KEY_1,             SDLK_1   },
-    { PD_KEY_2,             SDLK_2   },
-    { PD_KEY_3,             SDLK_3   },
-    { PD_KEY_4,             SDLK_4   },
-    { PD_KEY_5,             SDLK_5   },
-    { PD_KEY_6,             SDLK_6   },
-    { PD_KEY_7,             SDLK_7   },
-    { PD_KEY_8,             SDLK_8   },
-    { PD_KEY_9,             SDLK_9   },
-    { PD_KEY_A,             SDLK_a   },
-    { PD_KEY_B,             SDLK_b   },
-    { PD_KEY_C,             SDLK_c   },
-    { PD_KEY_D,             SDLK_d   },
-    { PD_KEY_E,             SDLK_e   },
-    { PD_KEY_F,             SDLK_f   },
-    { PD_KEY_G,             SDLK_g   },
-    { PD_KEY_H,             SDLK_h   },
-    { PD_KEY_I,             SDLK_i   },
-    { PD_KEY_J,             SDLK_j   },
-    { PD_KEY_K,             SDLK_k   },
-    { PD_KEY_L,             SDLK_l   },
-    { PD_KEY_M,             SDLK_m   },
-    { PD_KEY_N,             SDLK_n   },
-    { PD_KEY_O,             SDLK_o   },
-    { PD_KEY_P,             SDLK_p   },
-    { PD_KEY_Q,             SDLK_q   },
-    { PD_KEY_R,             SDLK_r   },
-    { PD_KEY_S,             SDLK_s   },
-    { PD_KEY_T,             SDLK_t   },
-    { PD_KEY_U,             SDLK_u   },
-    { PD_KEY_V,             SDLK_v   },
-    { PD_KEY_W,             SDLK_w   },
-    { PD_KEY_X,             SDLK_x   },
-    { PD_KEY_Y,             SDLK_y   },
-    { PD_KEY_Z,             SDLK_z   },
-    { PD_KEY_SEMICOLON,     SDLK_SEMICOLON   },
-    { PD_KEY_EQUAL,         SDLK_EQUALS },
-    { PD_KEY_UNKNOWN,       SDLK_UNKNOWN },
-    { PD_KEY_ENTER,         SDLK_RETURN },
-    { PD_KEY_ESCAPE,        SDLK_ESCAPE },
-    { PD_KEY_BACKSPACE,     SDLK_BACKSPACE },
-    { PD_KEY_TAB,           SDLK_TAB },
-    { PD_KEY_SPACE,         SDLK_SPACE },
-    { PD_KEY_EXCLAIM,       SDLK_EXCLAIM },
-    { PD_KEY_DOUBLEQUOTE,   SDLK_QUOTEDBL  },
-    { PD_KEY_HASH,          SDLK_HASH },
-    { PD_KEY_PERCENT,       SDLK_PERCENT },
-    { PD_KEY_DOLLAR,        SDLK_DOLLAR },
-    { PD_KEY_AMPERSAND,     SDLK_AMPERSAND },
-    { PD_KEY_APOSTROPHE,    SDLK_QUOTE },
-    { PD_KEY_LEFTPAREN,     SDLK_LEFTPAREN },
-    { PD_KEY_RIGHTPAREN,    SDLK_RIGHTPAREN },
-    { PD_KEY_ASTERISK,      SDLK_ASTERISK },
-    { PD_KEY_PLUS,          SDLK_PLUS },
-    { PD_KEY_COMMA,         SDLK_COMMA },
-    { PD_KEY_MINUS,         SDLK_MINUS },
-    { PD_KEY_PERIOD,        SDLK_PERIOD },
-    { PD_KEY_SLASH,         SDLK_SLASH },
-    { PD_KEY_COLON,         SDLK_COLON },
-    { PD_KEY_SEMICOLON,     SDLK_SEMICOLON },
-    { PD_KEY_LESS,          SDLK_LESS },
-    { PD_KEY_GREATER,       SDLK_GREATER },
-    { PD_KEY_QUESTION,      SDLK_QUESTION },
-    { PD_KEY_AT,            SDLK_AT },
-    { PD_KEY_LEFTBRACKET,   SDLK_LEFTBRACKET },
-    { PD_KEY_BACKSLASH,     SDLK_BACKSLASH },
-    { PD_KEY_RIGHTBRACKET,  SDLK_RIGHTBRACKET },
-    { PD_KEY_CARET,         SDLK_CARET },
-    { PD_KEY_UNDERSCORE,    SDLK_UNDERSCORE },
-    { PD_KEY_GRAVEACCENT,   SDLK_BACKQUOTE },
-    { PD_KEY_F1,            SDLK_F1 },
-    { PD_KEY_F2,            SDLK_F2 },
-    { PD_KEY_F3,            SDLK_F3 },
-    { PD_KEY_F4,            SDLK_F4 },
-    { PD_KEY_F5,            SDLK_F5 },
-    { PD_KEY_F6,            SDLK_F6 },
-    { PD_KEY_F7,            SDLK_F7 },
-    { PD_KEY_F8,            SDLK_F8 },
-    { PD_KEY_F9,            SDLK_F9 },
-    { PD_KEY_F10,           SDLK_F10 },
-    { PD_KEY_F11,           SDLK_F11 },
-    { PD_KEY_F12,           SDLK_F12 },
-    { PD_KEY_PRINTSCREEN,   SDLK_PRINTSCREEN },
-    { PD_KEY_CAPSLOCK,      SDLK_CAPSLOCK },
-    { PD_KEY_SCROLLLOCK,    SDLK_SCROLLLOCK },
-    { PD_KEY_PAUSE,         SDLK_PAUSE },
-    { PD_KEY_INSERT,        SDLK_INSERT },
-    { PD_KEY_HOME,          SDLK_HOME },
-    { PD_KEY_PAGEUP,        SDLK_PAGEUP },
-    { PD_KEY_DELETE,        SDLK_DELETE },
-    { PD_KEY_END,           SDLK_END },
-    { PD_KEY_PAGEDOWN,      SDLK_PAGEDOWN },
-    { PD_KEY_RIGHT,         SDLK_RIGHT },
-    { PD_KEY_LEFT,          SDLK_LEFT },
-    { PD_KEY_DOWN,          SDLK_DOWN },
-    { PD_KEY_UP,            SDLK_UP },
-    { PD_KEY_NUMLOCK,       SDLK_NUMLOCKCLEAR },
-
-    { PD_KEY_KPDIVIDE,     SDLK_KP_DIVIDE },
-    { PD_KEY_KPMULTIPLY,   SDLK_KP_MULTIPLY },
-    { PD_KEY_KPSUBTRACT,   SDLK_KP_MINUS },
-    { PD_KEY_KPADD,        SDLK_KP_PLUS },
-    { PD_KEY_KPENTER,      SDLK_KP_ENTER },
-    { PD_KEY_KPPERIOD,     SDLK_KP_PERIOD },
-
-    { PD_KEY_KP1,          SDLK_KP_1 },
-    { PD_KEY_KP2,          SDLK_KP_2 },
-    { PD_KEY_KP3,          SDLK_KP_3 },
-    { PD_KEY_KP5,          SDLK_KP_5 },
-    { PD_KEY_KP7,          SDLK_KP_7 },
-    { PD_KEY_KP9,          SDLK_KP_9 },
-    { PD_KEY_KP0,          SDLK_KP_0 },
-
-    { PD_KEY_LEFTCONTROL,   SDLK_LCTRL },
-    { PD_KEY_LEFTSHIFT,     SDLK_LSHIFT },
-    { PD_KEY_LEFTALT,       SDLK_LALT },
-    { PD_KEY_LEFTGUI,       SDLK_LGUI },
-    { PD_KEY_RIGHTGUI,      SDLK_RGUI },
-    { PD_KEY_RIGHTCONTROL,  SDLK_RCTRL },
-    { PD_KEY_RIGHTSHIFT,    SDLK_RSHIFT },
-    { PD_KEY_RIGHTALT,      SDLK_RALT }
-};
-
-static std::unordered_map<uint32_t, Dewpsi::KeyCode> KeyCodeMap = {
-    { SDLK_0,               PD_KEY_0 },
-    { SDLK_1,               PD_KEY_1 },
-    { SDLK_2,               PD_KEY_2 },
-    { SDLK_3,               PD_KEY_3 },
-    { SDLK_4,               PD_KEY_4 },
-    { SDLK_5,               PD_KEY_5 },
-    { SDLK_6,               PD_KEY_6 },
-    { SDLK_7,               PD_KEY_7 },
-    { SDLK_8,               PD_KEY_8 },
-    { SDLK_9,               PD_KEY_9 },
-    { SDLK_a,               PD_KEY_A },
-    { SDLK_b,               PD_KEY_B },
-    { SDLK_c,               PD_KEY_C },
-    { SDLK_d,               PD_KEY_D },
-    { SDLK_e,               PD_KEY_E },
-    { SDLK_f,               PD_KEY_F },
-    { SDLK_g,               PD_KEY_G },
-    { SDLK_h,               PD_KEY_H },
-    { SDLK_i,               PD_KEY_I },
-    { SDLK_j,               PD_KEY_J },
-    { SDLK_k,               PD_KEY_K },
-    { SDLK_l,               PD_KEY_L },
-    { SDLK_m,               PD_KEY_M },
-    { SDLK_n,               PD_KEY_N },
-    { SDLK_o,               PD_KEY_O },
-    { SDLK_p,               PD_KEY_P },
-    { SDLK_q,               PD_KEY_Q },
-    { SDLK_r,               PD_KEY_R },
-    { SDLK_s,               PD_KEY_S },
-    { SDLK_t,               PD_KEY_T },
-    { SDLK_u,               PD_KEY_U },
-    { SDLK_v,               PD_KEY_V },
-    { SDLK_w,               PD_KEY_W },
-    { SDLK_x,               PD_KEY_X },
-    { SDLK_y,               PD_KEY_Y },
-    { SDLK_z,               PD_KEY_Z },
-    { SDLK_SEMICOLON,       PD_KEY_SEMICOLON },
-    { SDLK_EQUALS,          PD_KEY_EQUAL },
-    { SDLK_UNKNOWN,         PD_KEY_UNKNOWN },
-    { SDLK_RETURN,          PD_KEY_ENTER },
-    { SDLK_ESCAPE,          PD_KEY_ESCAPE },
-    { SDLK_BACKSPACE,       PD_KEY_BACKSPACE },
-    { SDLK_TAB,             PD_KEY_TAB },
-    { SDLK_SPACE,           PD_KEY_SPACE },
-    { SDLK_EXCLAIM,         PD_KEY_EXCLAIM },
-    { SDLK_QUOTEDBL,        PD_KEY_DOUBLEQUOTE },
-    { SDLK_HASH,            PD_KEY_HASH },
-    { SDLK_PERCENT,         PD_KEY_PERCENT },
-    { SDLK_DOLLAR,          PD_KEY_DOLLAR },
-    { SDLK_AMPERSAND,       PD_KEY_AMPERSAND },
-    { SDLK_QUOTE,           PD_KEY_APOSTROPHE },
-    { SDLK_LEFTPAREN,       PD_KEY_LEFTPAREN },
-    { SDLK_RIGHTPAREN,      PD_KEY_RIGHTPAREN },
-    { SDLK_ASTERISK,        PD_KEY_ASTERISK },
-    { SDLK_PLUS,            PD_KEY_PLUS },
-    { SDLK_COMMA,           PD_KEY_COMMA },
-    { SDLK_MINUS,           PD_KEY_MINUS },
-    { SDLK_PERIOD,          PD_KEY_PERIOD },
-    { SDLK_SLASH,           PD_KEY_SLASH },
-    { SDLK_COLON,           PD_KEY_COLON },
-    { SDLK_SEMICOLON,       PD_KEY_SEMICOLON },
-    { SDLK_LESS,            PD_KEY_LESS },
-    { SDLK_EQUALS,          PD_KEY_EQUAL },
-    { SDLK_GREATER,         PD_KEY_GREATER },
-    { SDLK_QUESTION,        PD_KEY_QUESTION },
-    { SDLK_AT,              PD_KEY_AT },
-    { SDLK_LEFTBRACKET,     PD_KEY_LEFTBRACKET },
-    { SDLK_BACKSLASH,       PD_KEY_BACKSLASH },
-    { SDLK_RIGHTBRACKET,    PD_KEY_RIGHTBRACKET },
-    { SDLK_CARET,           PD_KEY_CARET },
-    { SDLK_UNDERSCORE,      PD_KEY_UNDERSCORE },
-    { SDLK_BACKQUOTE,       PD_KEY_GRAVEACCENT },
-    { SDLK_F1,              PD_KEY_F1 },
-    { SDLK_F2,              PD_KEY_F2 },
-    { SDLK_F3,              PD_KEY_F3 },
-    { SDLK_F4,              PD_KEY_F4 },
-    { SDLK_F5,              PD_KEY_F5 },
-    { SDLK_F6,              PD_KEY_F6 },
-    { SDLK_F7,              PD_KEY_F7 },
-    { SDLK_F8,              PD_KEY_F8 },
-    { SDLK_F9,              PD_KEY_F9 },
-    { SDLK_F10,             PD_KEY_F10 },
-    { SDLK_F11,             PD_KEY_F11 },
-    { SDLK_F12,             PD_KEY_F12 },
-    { SDLK_PRINTSCREEN,     PD_KEY_PRINTSCREEN },
-    { SDLK_CAPSLOCK,        PD_KEY_CAPSLOCK },
-    { SDLK_SCROLLLOCK,      PD_KEY_SCROLLLOCK },
-    { SDLK_PAUSE,           PD_KEY_PAUSE },
-    { SDLK_INSERT,          PD_KEY_INSERT },
-    { SDLK_HOME,            PD_KEY_HOME },
-    { SDLK_PAGEUP,          PD_KEY_PAGEUP },
-    { SDLK_DELETE,          PD_KEY_DELETE },
-    { SDLK_END,             PD_KEY_END },
-    { SDLK_PAGEDOWN,        PD_KEY_PAGEDOWN },
-    { SDLK_RIGHT,           PD_KEY_RIGHT },
-    { SDLK_LEFT,            PD_KEY_LEFT },
-    { SDLK_DOWN,            PD_KEY_DOWN },
-    { SDLK_UP,              PD_KEY_UP },
-    { SDLK_NUMLOCKCLEAR,    PD_KEY_NUMLOCK },
-
-    { SDLK_KP_DIVIDE,       PD_KEY_KPDIVIDE },
-    { SDLK_KP_MULTIPLY,     PD_KEY_KPMULTIPLY },
-    { SDLK_KP_MINUS,        PD_KEY_KPSUBTRACT },
-    { SDLK_KP_PLUS,         PD_KEY_KPADD },
-    { SDLK_KP_ENTER,        PD_KEY_KPENTER },
-    { SDLK_KP_PERIOD,       PD_KEY_KPPERIOD },
-
-    { SDLK_KP_1,            PD_KEY_KP1 },
-    { SDLK_KP_2,            PD_KEY_KP2 },
-    { SDLK_KP_3,            PD_KEY_KP3 },
-    { SDLK_KP_4,            PD_KEY_KP4 },
-    { SDLK_KP_5,            PD_KEY_KP5 },
-    { SDLK_KP_6,            PD_KEY_KP6 },
-    { SDLK_KP_7,            PD_KEY_KP7 },
-    { SDLK_KP_8,            PD_KEY_KP8 },
-    { SDLK_KP_9,            PD_KEY_KP9 },
-    { SDLK_KP_0,            PD_KEY_KP0 },
-
-    { SDLK_LCTRL,           PD_KEY_LEFTCONTROL },
-    { SDLK_LSHIFT,          PD_KEY_LEFTSHIFT },
-    { SDLK_LALT,            PD_KEY_LEFTALT },
-    { SDLK_LGUI,            PD_KEY_LEFTGUI },
-    { SDLK_RGUI,            PD_KEY_RIGHTGUI },
-    { SDLK_RCTRL,           PD_KEY_RIGHTCONTROL },
-    { SDLK_RSHIFT,          PD_KEY_RIGHTSHIFT },
-    { SDLK_RALT,            PD_KEY_RIGHTALT }
-};
+#include "Dewpsi_KeyCodeMap.cxx"
 
 #ifdef PD_DEBUG
     #ifdef PD_PRINT_WINDOW
@@ -303,7 +52,7 @@ int Dewpsi2SDLMouseCode(Dewpsi::MouseCode mc);
 namespace Dewpsi {
 
 SDL2Window::SDL2Window(const WindowProps& props)
-    : m_window(nullptr), m_data(), m_clearColor()
+    : m_Window(nullptr), m_data(), m_clearColor()
 {
     Init(props);
 }
@@ -316,14 +65,12 @@ SDL2Window::~SDL2Window()
 void SDL2Window::OnUpdate()
 {
     SDL_PumpEvents();
-
-    glViewport(0, 0, (int) m_data.width, (int) m_data.height); // TODO: this is temporary, remove later
-    SDL_GL_SwapWindow(m_window);
+    m_Context->SwapBuffers();
 }
 
 bool SDL2Window::IsValid() const
 {
-    return ((m_window != nullptr) && (m_context != nullptr));
+    return ((m_Window != nullptr) && m_Context);
 }
 
 void SDL2Window::SetVSync(bool bEnable)
@@ -357,13 +104,12 @@ void SDL2Window::Clear()
 void SDL2Window::Init(const WindowProps& props)
 {
     PD_CORE_ASSERT(! SDL_WasInit(SDL_INIT_VIDEO), "SDL2 already initialized");
-    PD_CORE_ASSERT(! m_window, "Window already created");
+    PD_CORE_ASSERT(! m_Window, "Window already created");
 
     const char* cpExcept = "SDL2 could not be initialized";
+    constexpr PDuint uiSDLFlags = SDL_INIT_VIDEO;
 
     m_data = props;
-
-    constexpr PDuint uiSDLFlags = SDL_INIT_VIDEO;
 
     // initialize SDL2 video
     if (SDL_Init(uiSDLFlags) != 0)
@@ -445,59 +191,55 @@ void SDL2Window::Init(const WindowProps& props)
         auto itrSDLFlag = vSDLFlags.begin();
         for (auto itrWinFlag : vWinFlags)
         {
-            // if the Dewpsi window bit is set,
-            // the corresponding SDL window flag is set
+            /* If the Dewpsi window bit is set,
+               the corresponding SDL window flag is set. */
             if (props.flags & itrWinFlag)
                 uiFlags |= *itrSDLFlag;
             ++itrSDLFlag;
         }
 
         // create a window (SDL_WINDOWPOS_CENTERED = center)
-        m_window = SDL_CreateWindow(props.title.c_str(), props.x, props.y,
+        m_Window = SDL_CreateWindow(props.title.c_str(), props.x, props.y,
                                     props.width, props.height, uiFlags);
-
-        PD_CORE_ASSERT(m_window, "Failed to create window: {0}", SDL_GetError());
-        if (! m_window)
+        if (! m_Window)
         {
             PD_CORE_CRITICAL("Failed to create window: {0}", SDL_GetError());
             throw DewpsiError(cpExcept);
         }
+        m_data.windowID = SDL_GetWindowID(m_Window);
 
-        m_data.windowID = SDL_GetWindowID(m_window);
-
-        #if defined(PD_DEBUG) && defined(PD_PRINT_WINDOW)
-        print_window_information(props, m_window);
-        #endif
+#if defined(PD_DEBUG) && defined(PD_PRINT_WINDOW)
+        print_window_information(props, m_Window);
+#endif
     }
 
     // mark vsync as enabled
     if (props.flags & RendererVSync)
         m_data.vsync = true;
 
-    // OpenGL context
-    // load default opengl library
-    SDL_GL_LoadLibrary(nullptr);
+    m_Context = RenderContext::Create(m_Window);
 
-    // new OpenGL context
-    m_context = SDL_GL_CreateContext(m_window);
-    PD_CORE_ASSERT(m_context, "Failed to create OpenGL context: {0}", SDL_GetError());
-
-    // associate window with context
-    SDL_GL_MakeCurrent(m_window, m_context);
-
-    // GLAD loader
-    int iCode = gladLoadGLLoader(SDL_GL_GetProcAddress);
-    PD_CORE_ASSERT(iCode, "Failed to load GLAD");
-    PD_CORE_ASSERT(! SDL_GL_Loader(), "Failed to load other GL functions");
+    // initialize context
+    if (m_Context->Init() != PD_OKAY)
+    {
+        std::stringstream ss;
+        ss << "Failed to initialize OpenGL context: " << Dewpsi::GetError();
+        throw DewpsiError(ss.str());
+    }
 
     // enable vsync
     if (m_data.vsync)
-        SDL_GL_SetSwapInterval(1);
+    {
+        if (props.flags & WindowOpenGL)
+            SDL_GL_SetSwapInterval(1);
+        else if (props.flags & WindowVulkan)
+            throw DewpsiError("Vulkan support is not currently implemented");
+    }
 
     // get width and height of window
     {
-        int w = 0, h = 0;
-        SDL_GetWindowSize(m_window, &w, &h);
+        int w, h;
+        SDL_GetWindowSize(m_Window, &w, &h);
         PD_CORE_ASSERT(w && h, "Failed to get window size: {0}", SDL_GetError());
         glViewport(0, 0, w, h);
         m_data.width = w;
@@ -517,7 +259,7 @@ void SDL2Window::Init(const WindowProps& props)
     // get the dimensions and format of the window
     {
         SDL_DisplayMode mode;
-        int temp = SDL_GetWindowDisplayMode(m_window, &mode);
+        int temp = SDL_GetWindowDisplayMode(m_Window, &mode);
         PD_CORE_ASSERT(temp >= 0, "Failed to derive window information: {0}", SDL_GetError());
 
         m_data.width  = mode.w;
@@ -531,17 +273,14 @@ void SDL2Window::Init(const WindowProps& props)
 
 void SDL2Window::Shutdown()
 {
-    if (m_context)
-    {
-        SDL_GL_DeleteContext(m_context);
-        m_context = nullptr;
-        SDL_GL_UnloadLibrary();
-    }
+    // delete the OpenGL context
+    m_Context.reset();
 
-    if (m_window)
+    // delete window
+    if (m_Window)
     {
-        SDL_DestroyWindow(m_window);
-        m_window = nullptr;
+        SDL_DestroyWindow(m_Window);
+        m_Window = nullptr;
     }
 }
 
@@ -1080,12 +819,6 @@ void print_opengl_attributes(SDL_Window* win)
 #endif /* PD_PRINT_OPENGL_ATTRIBUTES */
 
 #endif /* PD_DEBUG */
-
-int SDL_GL_Loader()
-{
-    #include "Dewpsi_GLFuncs.h"
-    return 0;
-}
 
 #undef space1
 #undef space2
