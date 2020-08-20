@@ -1,3 +1,67 @@
+function decideStaticSharedLib(dir, libname)
+    local libfile = (dir .. "/lib" .. libname .. ".a")
+    local isfile = os.isfile(libfile)
+
+    if not (isfile) then
+        libfile = (libname)
+    end
+
+    return (libfile)
+end
+
+function removeIfExists(path)
+    if os.isfile(path) then
+        os.remove(path)
+        print("Removed file: " .. path)
+    elseif os.isdir(path) then
+        os.rmdir(path)
+        print("Removed dir: " .. path)
+    else
+        --print("Not removing " .. path)
+    end
+end
+
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+srcdir = "%{prj.location}/src"
+
+targetdir_prefix = ("bin/" .. outputdir)
+objdir_prefix = ("bin-int/" .. outputdir)
+
+function staticLibPath(prefix, libname)
+    local result = ""
+
+    if (prefix) then
+        result = string.format("%s/bin/%s/%s", prefix, outputdir, libname)
+    else
+        result = string.format("bin/%s/%s", outputdir_sub, libname)
+    end
+
+    return(result)
+end
+
+newaction {
+    trigger = "clean",
+    description = "Clean the workspace",
+    execute = function()
+        local _dirs = {}
+        _dirs[1] = "."
+        _dirs[2] = "Dewpsi"
+        _dirs[3] = "Dewpsi/vendor/imgui"
+        _dirs[4] = "Dewpsi/vendor/glad"
+        _dirs[5] = "Dewpsi/vendor/spdlog"
+        _dirs[6] = "Dewpsi/vendor/getopt"
+        _dirs[7] = "Dewpsi/vendor/glm"
+        _dirs[8] = "Sandbox"
+        for i=1,8,1 do
+            local _path = _dirs[i]
+            removeIfExists(path.join(_path, "Makefile"))
+            removeIfExists(path.join(_path, "bin"))
+            removeIfExists(path.join(_path, "bin-int"))
+        end
+        print("finished cleaning the project")
+    end
+}
+
 workspace "Dewpsi"
     configurations {
         "Debug",
@@ -8,13 +72,7 @@ workspace "Dewpsi"
     startproject "sandbox"
     flags "MultiProcessorCompile"
 
-outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-
-sdl2dir = os.findlib("SDL2")
-sndiodir = os.findlib("sndio")
-
-srcdir = "%{prj.location}/src"
-
+-- inclusion directories
 IncludeDir = {}
 IncludeDir["spdlog"] = "Dewpsi/vendor/spdlog/include"
 IncludeDir["imgui"] = "Dewpsi/vendor/imgui"
@@ -33,10 +91,10 @@ project "dewpsi"
     location "Dewpsi"
     kind "SharedLib"
     language "C++"
-    cppdialect "C++14"
+    cppdialect "C++17"
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+    targetdir (targetdir_prefix .. "/%{prj.name}")
+    objdir (objdir_prefix .. "/%{prj.name}")
     files {
         (srcdir .. "/*.cc"),
         (srcdir .. "/events/*.cc"),
@@ -53,12 +111,10 @@ project "dewpsi"
     }
     pchheader "pdpch.h"
     pchsource "Dewpsi/src/pdpch.cpp"
-
     defines {
         "SPDLOG_COMPILED_LIB",
         "_REENTRANT"
     }
-
     includedirs {
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.imgui}",
@@ -69,17 +125,10 @@ project "dewpsi"
         (srcdir .. "/debug"),
         (srcdir .. "/events"),
         (srcdir .. "/ImGui"),
-        (srcdir .. "/os"),
-        (srcdir .. "/shapes")
-    }
-    libdirs {
-        (sdl2dir),
-        (sndiodir)
+        (srcdir .. "/os")
     }
     links {
         "spdlog",
-        "sndio",
-        "m",
         "ImGui",
         "Glad",
         "getopt"
@@ -90,28 +139,29 @@ project "dewpsi"
         "{MKDIR} ../Sandbox/src/dewpsi-include/imgui",
 
         ("{COPY} " .. srcdir .. "/*.h ../Sandbox/src/dewpsi-include"),
-        --("{COPY} " .. srcdir .. "/bits/*.h  ../Sandbox/src/dewpsi-include/bits"),
         ("{COPY} " .. srcdir .. "/debug/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/ImGui/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
 
         "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h",
-        "{COPY} %{prj.location}/vendor/getopt/include/my_getopt.h ../Sandbox/src/dewpsi-include/my_getopt.h",
-        --"{COPY} %{prj.location}/vendor/imgui/imgui.h ../Sandbox/src/dewpsi-include/imgui.h",
-        --"{COPY} %{prj.location}/vendor/imgui/imconfig.h ../Sandbox/src/dewpsi-include/imconfig.h",
+        "{COPY} %{prj.location}/vendor/getopt/include/my_getopt.h ../Sandbox/src/dewpsi-include/my_getopt.h"
     }
 
 -- Windows
 filter "system:windows"
     defines {
         "PD_PLATFORM_WINDOWS",
-        "IMGUI_API=__declspec(dllimport)",
         "PD_BUILD_DLL",
+        "PD_EXPORT_DLL"
+    }
+    links {
+        "SDL2:static",
+        "SDL2main:static"
     }
 
--- Linux
-filter "system:linux"
+-- Linux, GCC
+filter {"system:linux", "toolset:gcc"}
     defines {
         "PD_PLATFORM_LINUX",
         "PD_BUILD_SOLIB"
@@ -119,25 +169,22 @@ filter "system:linux"
     includedirs {
         (srcdir .. "/platform/sdl")
     }
-    links "dl"
+    links {
+        "dl",
+        "sndio",
+        "m:static",
+        "SDL2:static"
+    }
     files {
         (srcdir .. "/platform/sdl/Dewpsi_*.cc"),
-        --(srcdir .. "/platform/sdl/Dewpsi_*.cpp"),
         (srcdir .. "/platform/sdl/Dewpsi_*.h")
+    }
+    linkoptions {
+        "-Wl,--enable-new-dtags",
+        "-pthread"
     }
     postbuildcommands {
         ("{COPY} " .. srcdir .. "/platform/sdl/*.h ../Sandbox/src/dewpsi-include")
-    }
-
--- GCC compiler
-filter "toolset:gcc"
-    linkoptions {
-        "-Wl,--enable-new-dtags",
-        ("-Wl,-rpath," .. sdl2dir),
-        "-Wl,--no-undefined",
-        "-pthread",
-        "-lSDL2",
-        "-z undefs"
     }
 
 -- different configurations
@@ -174,7 +221,7 @@ project "sandbox"
     cppdialect "C++14"
     staticruntime "On"
 
-    links { "dewpsi", "SDL2" }
+    links { "dewpsi" }
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -192,7 +239,10 @@ project "sandbox"
     }
     pchheader "pdpch.h"
     pchsource "pdpch.cpp"
-    defines "SPDLOG_COMPILED_LIB"
+    defines {
+        "SPDLOG_COMPILED_LIB",
+        "PD_IMPORT_ALIB",
+    }
 
 -- Linux build
 filter "system:linux"

@@ -65,6 +65,49 @@
 /// Convert an lvalue to an rvalue.
 #define PD_MOVE(e)  std::move(e)
 
+/** @defgroup func_attrs Function Attributes
+*	In order to use attributes, use the PD_ATTR macro. It accepts a list
+*	of attributes that are to be applied to a function or other declaration.
+*   @ingroup core
+*	@{
+*/
+
+#ifndef PD_ATTR
+    #if defined(__GNUC__)
+        /** Define a list of attributes for a function or variable.
+        *   @param ... One or more attributes to apply
+        *	@note For a list of attributes, see your compiler's documentation.
+        */
+        #define PD_ATTR(...) __attribute__((__VA_ARGS__))
+    #elif defined(_MSC_VER) || defined(__BORLANDC__)
+        #define PD_ATTR(...) __declspec(__VA_ARGS__)
+    #else
+        #error "This compiler is not supported"
+    #endif
+#endif
+
+/**
+*   @def    PD_COLD
+*   @brief  Mark a function as cold.
+*   @code
+    int add(int a, int b) PD_ATTR(PD_COLD);
+*   @endcode
+*/
+#ifndef PD_COLD
+    #define PD_COLD cold
+#endif
+
+/**
+*   @def    PD_HOT
+*   @brief  Mark a function as hot.
+*   @code
+    int add(int a, int b) PD_ATTR(PD_HOT);
+*   @endcode
+*/
+#ifndef PD_HOT
+    #define PD_HOT hot
+#endif
+
 /**
 *   @def    PD_INLINE
 *   @brief  Marks a function as inline.
@@ -115,34 +158,51 @@
 #endif
 
 /**
-*   @def    PD_COLD
-*   @brief  Mark a function as hot.
-*   @code
-    int add(int a, int b) PD_COLD;
-*   @endcode
+*   @def        PD_CALL
+*   @brief      Prefix to the declaration of a non-static non-member function.
+*	It expands to different things depending on the platform and how the library
+*	is being built. (Currently it does not mean anything.)
 */
-#ifndef PD_COLD
-    #ifdef __GNUC__
-        #define PD_COLD  __attribute__ ((hot))
+#if (defined(PD_PLATFORM_LINUX) || defined(__linux__) || defined(__gnu_linux__)) \
+         && (defined(__GNU__) || defined(__GNUG__))
+    #define PD_CALL extern
+#elif defined(PD_PLATFORM_WINDOWS) || defined(_WIN32)
+    #if defined(PD_EXPORT_DLL)
+        #define PD_CALL     __declspec(dllexport)
+    #elif defined(PD_IMPORT_DLL)
+        #define PD_CALL     __declspec(dllimport)
     #else
-        #define PD_COLD
+        #define PD_CALL
+        #error "Define either PD_EXPORT_DLL or PD_IMPORT_DLL"
     #endif
+#else
+    #define PD_CALL
+    #error "This platform is not supported!"
 #endif
 
 /**
-*   @def    PD_HOT
-*   @brief  Mark a function as hot.
+*   @def    PD_APIENTRY
+*   @brief  Used to declare a function pointer an exported symbol.
 *   @code
-    int add(int a, int b) PD_HOT;
+    int (PD_APIENTRY * func)(int);
 *   @endcode
 */
-#ifndef PD_HOT
-    #ifdef __GNUC__
-        #define PD_HOT  __attribute__ ((hot))
+#define PD_APIENTRY
+
+/*#ifdef __GNUC__
+    #define PD_APIENTRY extern
+#elif defined(_MSC_VER)
+    #if defined(PD_EXPORT_DLL)
+        #define PD_APIENTRY __declspec(dllexport)
+    #elif defined(PD_IMPORT_DLL)
+        #define PD_APIENTRY __declspec(dllimport)
     #else
-        #define PD_HOT
+        #define PD_APIENTRY extern
     #endif
-#endif
+#endif*/
+
+/// @}
+// end of group core -> "Function Attributes"
 
 /** Get the byte offset of a member of a structure or class.
 *   @param  type    A type that is a structure or class
@@ -170,36 +230,6 @@
 *   Indicates that a function or variable is @c constexpr.
 */
 #define PD_CONSTEXPR constexpr
-
-/**
-*   @def        PD_CALL
-*   @brief      Prefix to the declaration of a non-static non-member function.
-*/
-#if (defined(PD_PLATFORM_LINUX) || defined(__linux__) || defined(__gnu_linux__)) \
-         && (defined(__GNU__) || defined(__GNUG__))
-    #define PD_CALL         extern
-#elif defined(PD_PLATFORM_WINDOWS) || defined(_WIN32)
-    #ifdef PD_BUILD_DLL
-        #define PD_CALL     __declspec(dllexport)
-    #else
-        #define PD_CALL     __declspec(dllimport)
-    #endif
-#else
-    #define PD_CALL
-    #error This platform is not supported!
-#endif
-
-/**
-*   @def    PD_APIENTRY
-*   @brief  As far as I can tell, it's used for function pointers.
-*   @todo   Research more about this.
-*   @par    Example
-*   Define a function pointer in a header
-*   @code
-    int (PD_APIENTRY * func)(int);
-*   @endcode
-*/
-#define PD_APIENTRY
 
 /**
 *   @def        PD_DEBUGBREAK

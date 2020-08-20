@@ -30,7 +30,7 @@
 #define SDL_PROC_UNUSED(ret,func,params)
 
 #if defined(PD_GL_FUNC_DECLS)
-    #define SDL_PROC(ret,func,params)   PD_CALL ret (PD_APIENTRY * func) params;
+    #define SDL_PROC(ret,func,params)   extern ret (PD_APIENTRY * func) params;
     #undef PD_GL_FUNC_DECLS
 #elif defined(PD_GL_FUNC_DEFS)
     #define SDL_PROC(ret,func,params)   ret (*func) params = nullptr;
