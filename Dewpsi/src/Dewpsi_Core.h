@@ -168,9 +168,9 @@
     #define PD_CALL extern
 #elif defined(PD_PLATFORM_WINDOWS) || defined(_WIN32)
     #if defined(PD_EXPORT_DLL)
-        #define PD_CALL     __declspec(dllexport)
+        #define PD_CALL     __declspec(dllexport) extern
     #elif defined(PD_IMPORT_DLL)
-        #define PD_CALL     __declspec(dllimport)
+        #define PD_CALL     __declspec(dllimport) extern
     #else
         #define PD_CALL
         #error "Define either PD_EXPORT_DLL or PD_IMPORT_DLL"

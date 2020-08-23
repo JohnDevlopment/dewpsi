@@ -30,8 +30,7 @@ bool SandboxLayer::OnKeyPressed(Dewpsi::KeyPressedEvent& keyEvent)
 
 void SandboxLayer::OnImGuiRender()
 {
-    ImGui::Begin("Sandbox Layer");
-    ImGui::End();
+    
 }
 
 // sandbox app

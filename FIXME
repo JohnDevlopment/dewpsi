@@ -1,0 +1,2 @@
+#1: Application::OnWindowClosed : window-close event is not detected on release
+builds.

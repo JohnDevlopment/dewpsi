@@ -5,9 +5,37 @@
 #include "Dewpsi_Window.h"
 #include "Dewpsi_ApplicationEvent.h"
 #include "Dewpsi_ImGuiLayer.h"
+#include "Dewpsi_Except.h"
+#include "Dewpsi_String.h"
 
 #include <SDL.h>
 #include <stdexcept>
+#include "Dewpsi_OpenGL.h"
+#include "Dewpsi_Shader.h"
+
+static constexpr Dewpsi::StaticString _VertShader = R"(
+    #version 430 core
+    layout(location = 0) in vec3 In_Position;
+    out vec3 V_Position;
+    void main() {
+        V_Position = vec3(In_Position.x, In_Position.y + 0.5, In_Position.z);
+        gl_Position = vec4(V_Position, 1.0);
+    }
+)";
+
+static constexpr Dewpsi::StaticString _FragShader = R"(
+    #version 430 core
+    layout(location = 0) out vec4 FragColor;
+    in vec3 V_Position;
+    void main() {
+        //FragColor = vec4(0.0, 0.5, 0.2, 1.0);
+        FragColor = vec4(V_Position * 0.5 + 0.5, 1.0);
+    }
+)";
+
+static PDuint _VAO, _VBO, _IBO;
+
+static Dewpsi::Scope<Dewpsi::Shader> _Program;
 
 namespace Dewpsi {
 
@@ -33,13 +61,37 @@ Application::Application(const std::string& sName)
     // push ImGui layer
     m_guiLayer = new ImGuiLayer(m_UserData);
     PushOverlay(m_guiLayer);
+
+    // TODO: remove this section
+    glGenVertexArrays(1, &_VAO);
+    glBindVertexArray(_VAO);
+
+    glGenBuffers(1, &_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, _VBO);
+
+    float faVerticies[9] = {
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f, 0.5f, 0.0f
+    };
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(faVerticies), faVerticies, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
+
+    glGenBuffers(1, &_IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBO);
+
+    const PDuint uiaIndices[] = { 0, 1, 2 };
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uiaIndices), uiaIndices, GL_STATIC_DRAW);
+
+    using Dewpsi::Shader;
+    _Program = Dewpsi::CreateScope<Shader>(_VertShader.get(), _FragShader.get());
 }
 
 Application::~Application()
 {
     PD_PROFILE_FUNCTION();
-    // delete m_window
-    // delete m_guiLayer
     SDL_Quit();
 }
 
@@ -82,6 +134,13 @@ void Application::Run()
         // TODO: this window-clear function should be moved to a renderer API
         m_window->Clear();
 
+        // TODO: remove this later
+        _Program->Bind();
+
+        // TODO: remove the next couple lines
+        glBindVertexArray(_VAO);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+
         // update each layer
         for (auto itr = m_layerStack.begin(); itr != m_layerStack.end(); ++itr)
             (*itr)->OnUpdate(delta);
@@ -94,11 +153,16 @@ void Application::Run()
 
         // update the window
         m_window->OnUpdate();
+
+        // TODO: remove this later
+        _Program->UnBind();
     }
 }
- 
+
 bool Application::OnWindowClosed(WindowCloseEvent& e)
 {
+    // FIXME: #1 Event not detected on Release builds
+
     /*  It's possible for there to be multiple windows to be closed,
         so the application must know whether it's the main window being
         closed. As such, check the ID of the window being closed to

@@ -5,7 +5,7 @@
 *   @file   Dewpsi_OpenGL.h
 *   @brief  A header for the Dewpsi engine.
 *   This header is relevent only for platforms that use SDL. Consequently, when SDL is used
-*   OpenGL can be used as well. If 
+*   OpenGL can be used as well. If
 *
 *   @defgroup sdl SDL
 *   SDL-specific declarations and functions
@@ -14,8 +14,6 @@
 
 #include <Dewpsi_Core.h>
 //#include <Dewpsi_Application.h>
-#include <Dewpsi_ImGui_OpenGL3.h>
-#include <glad/glad.h>
 
 namespace Dewpsi_ImGui_Impl {
     // OpenGL data structure
@@ -34,7 +32,7 @@ namespace Dewpsi_ImGui_Impl {
         PDuint elementsHandle;
         char glslVersionString[32];  // Specified by user or detected based on compile time GL settings.
     };
-    
+
     // OpenGL state structure
     struct OpenGLState {
         PDuint lastActiveTexture;
@@ -60,43 +58,10 @@ namespace Dewpsi_ImGui_Impl {
         bool isDepthTest;
         bool isScissorTest;
     };
-    
-    // delete a list of shaders
-    template<typename... Args>
-    void DeleteShaders(PDuint& shader, Args&&... args)
-    {
-        if (shader)
-        {
-            glDeleteShader(shader);
-            shader = 0;
-        }
-        DeleteShaders(std::forward<Args>(args)...);
-    }
 
-    template<>
-    inline void DeleteShaders(PDuint& shader)
-    {
-        if (shader)
-        {
-            glDeleteShader(shader);
-            shader = 0;
-        }
-    }
     
-    // shader source strings
-    struct ShaderProgramSource {
-        std::string vertex;
-        std::string fragment;
-        std::string geometry;
-    };
-    
-    // shader type
-    enum class ShaderType {
-        None     = -1,
-        Vertex   =  0,
-        Fragment =  1,
-        Geometry =  2
-    };
+
+
 
     ShaderProgramSource ParseShaderFile(const std::string& filename);
     void ResizeErrorPtr(unsigned int len);
@@ -108,30 +73,30 @@ namespace Dewpsi_ImGui_Impl {
 
 namespace Dewpsi {
     using Dewpsi_ImGui_Impl::OpenGLState;
-    
+
     /// @addtogroup sdl
     /// @{
-    
+
     /** Initialize OpenGL shaders.
     *   @param  shaderFile  A string containing the path to a shader file
     *   @return             True if successful or false on failure
     */
     PD_CALL bool OpenGL_InitShaders(const char* shaderFile);
-    
+
     /** Frees all memory associated with the shaders created through OpenGL_InitShaders().
     *   Should be called when shutting down the program provided OpenGL_InitShaders() was called.
     */
     PD_CALL void OpenGL_DeInitShaders();
-    
+
     /// Returns the shader program.
     PD_CALL PDuint OpenGL_GetShader();
-    
+
     /// Backup the GL state.
     PD_CALL void OpenGL_BackupState(OpenGLState* state);
-    
+
     /// Restore the GL state.
     PD_CALL void OpenGL_RestoreState(const OpenGLState* state);
-    
+
     /// @}
 }
 

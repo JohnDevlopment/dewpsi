@@ -30,7 +30,7 @@ namespace Dewpsi {
 
     template<typename _Tp>
     struct _MakeScope<_Tp[]> {
-        typedef Scope<_Tp> __array;
+        typedef Scope<_Tp[]> __array;
     };
 
     template<typename _Tp, size_t _Bound>

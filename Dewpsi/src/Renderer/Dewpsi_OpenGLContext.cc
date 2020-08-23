@@ -35,11 +35,14 @@ int OpenGLContext::Init()
         Dewpsi::SetError("GLAD loader returned an error status");
         return PD_INVALID;
     }
-    if (SDL_GL_Loader())
+    /*if (SDL_GL_Loader())
     {
         Dewpsi::SetError("Failed to load other GL functions");
         return PD_INVALID;
-    }
+    }*/
+
+    PD_CORE_INFO("OpenGL context\n  vendor: {0}\n  renderer: {1}\n  version: {2}",
+                    glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
 
     return PD_OKAY;
 }
@@ -50,9 +53,9 @@ void OpenGLContext::SwapBuffers()
 }
 
 }
-
+/*
 int SDL_GL_Loader()
 {
     #include "Dewpsi_GLFuncs.h"
     return 0;
-}
+}*/
