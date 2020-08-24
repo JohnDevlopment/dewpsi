@@ -1,17 +1,6 @@
 #ifndef DEWPSI_OPENGL_H
 #define DEWPSI_OPENGL_H
 
-/**
-*   @file   Dewpsi_OpenGL.h
-*   @brief  A header for the Dewpsi engine.
-*   This header is relevent only for platforms that use SDL. Consequently, when SDL is used
-*   OpenGL can be used as well. If
-*
-*   @defgroup sdl SDL
-*   SDL-specific declarations and functions
-*   @ingroup platforms
-*/
-
 #include <Dewpsi_Core.h>
 //#include <Dewpsi_Application.h>
 
@@ -59,7 +48,7 @@ namespace Dewpsi_ImGui_Impl {
         bool isScissorTest;
     };
 
-    
+
 
 
 

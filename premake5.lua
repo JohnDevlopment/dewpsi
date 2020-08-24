@@ -1,39 +1,4 @@
--- add functions to "string"
-string["char"] = function(self, idx)
-    assert(type(idx) == "number", idx .. " is not a valid integer!")
-    return self:sub(idx, idx)
-end
-
-string["append"] = function(self, str)
-    self = self .. str
-    return self
-end
-
-string["length"] = function(self)
-    return #self
-end
-
--- add functions to "io"
-io["writef"] = function(out, fmt, ...)
-    local str = string.format(fmt, ...)
-    out:write(str)
-end
-
-io["cout"] = function(...)
-    local stdout = io.stdout
-    local nextarg
-    local str = ""
-
-    local n = select("#", ...)
-    for i=1,n,1 do
-        str = str .. tostring(select(i, ...))
-    end
-    io.write(str)
-end
-
-cout = io.cout
-cin = io.read
-fprintf = io.writef
+dofile("./scripts/ext.lua")
 
 function replaceChars(str, ch, with)
     local len = str:length()
@@ -81,20 +46,6 @@ srcdir = "%{prj.location}/src"
 targetdir_prefix = ("bin/" .. outputdir)
 objdir_prefix = ("bin-int/" .. outputdir)
 
---[[
-function staticLibPath(prefix, libname)
-    local result = ""
-
-    if (prefix) then
-        result = string.format("%s/bin/%s/%s", prefix, outputdir, libname)
-    else
-        result = string.format("bin/%s/%s", outputdir_sub, libname)
-    end
-
-    return(result)
-end
-]]
-
 newaction {
     trigger = "clean",
     description = "Clean the workspace",
@@ -118,76 +69,13 @@ newaction {
     end
 }
 
+-- pretend block
 newaction {
     trigger = "newheader",
     description = "Writes a new header",
-    execute = function()
-        local _subdir, _file, _id
-
-        cout('Enter the relative path of the file: ')
-        _subdir = io.stdin:read('l')
-
-        cout('Enter the name of the file: ')
-        _file = cin('l')
-
-        -- open file; buffers until end-of-line
-        _id = io.open(path.join('.', _subdir, _file), 'w')
-        _id:setvbuf("line")
-
-        -- header guard name
-        local _fdefname = string.upper(_file)
-        _fdefname = replaceChars(_fdefname, '.', '_')
-
-        -- header include tables
-        local _sysincs = {}
-        local _localincs = {}
-
-        do
-            fprintf(_id, "#ifndef %s\n#define %s\n\n", _fdefname, _fdefname)
-
-            local _locx, _sysx = 1, 1
-
-            cout("\nHeaders: each local header is prefixed with a 'l_'. ")
-            cout("Each system header is not.\n")
-
-            local _done = false
-            while not(done) do
-                cout("Input: ")
-                local _answer = cin('l')
-
-                -- break loop
-                if _answer == "" then break end
-
-                -- local for system header?
-                if _answer:sub(1, 2) == 'l_' then
-                    _localincs[_locx] = _answer:sub(3)
-                    _locx = _locx + 1
-                else
-                    _sysincs[_sysx] = _answer
-                    _sysx = _sysx + 1
-                end
-            end
-        end
-        -- end do
-
-        -- print each system header first
-        for i,v in ipairs(_sysincs) do
-            fprintf(_id, "#include <%s>\n", v)
-        end
-
-        -- print each local header
-        if #_sysincs > 0 then
-            fprintf(_id, "\n")
-            for i,v in ipairs(_localincs) do
-                fprintf(_id, "#include \"%s\"\n", v)
-            end
-        end
-
-        fprintf(_id, "\n#endif /* %s */", _fdefname)
-
-        _id:close()
-    end
+    execute = _loadfile("./scripts/action_newheader.lua")
 }
+-------------------------------------------
 
 workspace "Dewpsi"
     configurations {
@@ -315,7 +203,7 @@ filter {"system:linux", "toolset:gcc"}
     }
     postbuildcommands {
         ("{COPY} " .. srcdir .. "/platform/sdl/*.h ../Sandbox/src/dewpsi-include"),
-        ("{COPY} " .. srcdir .. "/Renderer/Dewpsi_OpenGLContext.h ../Sandbox/src/dewpsi-include")
+        ("{COPY} " .. srcdir .. "/Renderer/Dewpsi_*.h ../Sandbox/src/dewpsi-include")
     }
 
 -- different configurations

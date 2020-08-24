@@ -83,6 +83,10 @@
 #include <stdint.h>     // intptr_t
 #endif
 
+#define GLFW_INCLUDE_NONE
+#define IMGUI_IMPL_OPENGL_LOADER_GLAD
+#undef IMGUI_IMPL_OPENGL_LOADER_GLEW
+#undef IMGUI_IMPL_OPENGL_LOADER_GLAD2
 
 // GL includes
 #if defined(IMGUI_IMPL_OPENGL_ES2)

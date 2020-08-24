@@ -1,7 +1,7 @@
 #!/bin/bash
 
 shopt -s expand_aliases extglob
-alias grep='grep --color=auto -no'
+alias egrep='grep --color=auto -sno'
 
 pattern="'// ${1:?provide a word}.*\$'"
 
@@ -11,27 +11,39 @@ error() {
     echo "$@" >&2
 }
 
+subdirs=(debug events ImGui matrices os)
+
 select startdir in Dewpsi "Dewpsi/vendor/getopt" Sandbox
 do
     case "$startdir" in
         Dewpsi)
             prefix="$rootdir/$startdir"
-            eval grep -e "$pattern" "$prefix/src/platform/sdl/Dewpsi_*.h"
-            for subdir in bits debug events ImGui matrices os shapes; do
-                eval grep -e "$pattern" "$prefix/src/$subdir/Dewpsi_*.h"
+
+            # src
+            eval egrep -e "$pattern" "$prefix/src/Dewpsi_*.h"\
+                "$prefix/src/Dewpsi_*.cc"
+
+            # platform/sdl
+            eval egrep -e "$pattern" "$prefix/src/platform/sdl/Dewpsi_*.h"\
+                "$prefix/src/platform/sdl/Dewpsi_*.cc"
+
+            # src/*
+            for subdir in ${subdirs[*]}; do
+                eval egrep -e "$pattern" "$prefix/src/$subdir/Dewpsi_*.h"\
+                    "$prefix/src/$subdir/Dewpsi_*.cc"
             done
             break
             ;;
 
         */getopt)
             prefix="$rootdir/$startdir"
-            eval grep -r -e "$pattern" "$prefix/*"
+            eval egrep -r -e "$pattern" "$prefix/*"
             break
             ;;
 
         Sandbox)
             prefix="$rootdir/$startdir"
-            eval grep -e "$pattern" "$prefix/src/*.[hc]"
+            eval egrep -e "$pattern" "$prefix/src/*.[hc]"
             break
             ;;
 

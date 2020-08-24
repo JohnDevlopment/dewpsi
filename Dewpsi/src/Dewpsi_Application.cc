@@ -1,4 +1,4 @@
-#define _PD_DEBUG_DEFINE_VARS
+//#define _PD_DEBUG_DEFINE_VARS
 #include "Dewpsi_Application.h"
 #include "Dewpsi_Platform.h"
 #include "Dewpsi_Debug.h"
@@ -7,18 +7,21 @@
 #include "Dewpsi_ImGuiLayer.h"
 #include "Dewpsi_Except.h"
 #include "Dewpsi_String.h"
+#include "Dewpsi_WhichOS.h"
 
 #include <SDL.h>
 #include <stdexcept>
 #include "Dewpsi_OpenGL.h"
 #include "Dewpsi_Shader.h"
 
+using Dewpsi::Scope;
+
 static constexpr Dewpsi::StaticString _VertShader = R"(
     #version 430 core
     layout(location = 0) in vec3 In_Position;
     out vec3 V_Position;
     void main() {
-        V_Position = vec3(In_Position.x, In_Position.y + 0.5, In_Position.z);
+        V_Position = In_Position;
         gl_Position = vec4(V_Position, 1.0);
     }
 )";
@@ -33,9 +36,11 @@ static constexpr Dewpsi::StaticString _FragShader = R"(
     }
 )";
 
-static PDuint _VAO, _VBO, _IBO;
+static PDuint _VAO;
 
-static Dewpsi::Scope<Dewpsi::Shader> _Program;
+static Scope<Dewpsi::Shader> _Program;
+static Scope<Dewpsi::VertexBuffer> _VBO;
+static Scope<Dewpsi::IndexBuffer> _IBO;
 
 namespace Dewpsi {
 
@@ -66,27 +71,21 @@ Application::Application(const std::string& sName)
     glGenVertexArrays(1, &_VAO);
     glBindVertexArray(_VAO);
 
-    glGenBuffers(1, &_VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-
     float faVerticies[9] = {
         -0.5f, -0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
         0.0f, 0.5f, 0.0f
     };
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(faVerticies), faVerticies, GL_STATIC_DRAW);
+    _VBO.reset(VertexBuffer::Create(sizeof(faVerticies), faVerticies));
+
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
 
-    glGenBuffers(1, &_IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBO);
-
     const PDuint uiaIndices[] = { 0, 1, 2 };
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uiaIndices), uiaIndices, GL_STATIC_DRAW);
+    _IBO.reset(IndexBuffer::Create(PD_ARRAYSIZE(uiaIndices), uiaIndices));
 
-    using Dewpsi::Shader;
-    _Program = Dewpsi::CreateScope<Shader>(_VertShader.get(), _FragShader.get());
+    _Program.reset(Shader::Create(_VertShader.get(), _FragShader.get()));
 }
 
 Application::~Application()
@@ -139,7 +138,7 @@ void Application::Run()
 
         // TODO: remove the next couple lines
         glBindVertexArray(_VAO);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, _IBO->GetCount(), GL_UNSIGNED_INT, nullptr);
 
         // update each layer
         for (auto itr = m_layerStack.begin(); itr != m_layerStack.end(); ++itr)
