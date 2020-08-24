@@ -2,9 +2,9 @@
 doc/
 bin/
 bin-int/
-Dewpsi/vendor/spdlog
-Sandbox/vendor
-Sandbox/src/dewpsi-include
+Dewpsi/vendor/spdlog/
+Sandbox/vendor/
+Sandbox/src/dewpsi-include/
 vendor/lua
 .internal/
 temp/

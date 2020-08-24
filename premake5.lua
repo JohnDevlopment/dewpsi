@@ -94,6 +94,7 @@ IncludeDir["imgui"] = "Dewpsi/vendor/imgui"
 IncludeDir["glad"] = "Dewpsi/vendor/glad/include"
 IncludeDir["getopt"] = "Dewpsi/vendor/getopt/include"
 IncludeDir["glm"] = "Dewpsi/vendor/glm/glm"
+IncludeDir["inifile"] = "Dewpsi/vendor/inifile"
 
 group "Dependencies"
     include "Dewpsi/vendor/imgui"
@@ -137,6 +138,7 @@ project "dewpsi"
         "%{IncludeDir.glad}",
         "%{IncludeDir.getopt}",
         "%{IncludeDir.glm}",
+        "%{IncludeDir.inifile}",
         (srcdir),
         (srcdir .. "/debug"),
         (srcdir .. "/events"),
@@ -253,6 +255,7 @@ project "sandbox"
         "%{IncludeDir.imgui}",
         "%{IncludeDir.getopt}",
         "%{IncludeDir.glm}",
+        "%{IncludeDir.inifile}",
         "%{prj.location}/src",
         "%{prj.location}/src/dewpsi-include"
     }

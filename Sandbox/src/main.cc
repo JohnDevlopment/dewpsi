@@ -7,14 +7,6 @@
 #include <Dewpsi_Debug.h>
 #include <spdlog/sinks/stdout_sinks.h>
 
-// glm
-#include <vec3.hpp> // glm::vec3
-#include <vec4.hpp> // glm::vec4
-#include <mat4x4.hpp> // glm::mat4
-#include <ext/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale
-#include <ext/matrix_clip_space.hpp> // glm::perspective
-#include <ext/scalar_constants.hpp> // glm::pi
-
 using Dewpsi::StaticString;
 
 static bool g_bOnce = false;
@@ -114,9 +106,15 @@ void forcequit(int sig)
 static constexpr StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
 static constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
 
-static constexpr StaticString Usage = \
-    "sandbox -h    Display this help message\n" \
-    "sandbox [-g]  Launch sandbox application, optionally disable gui layer";
+static constexpr StaticString Usage = R"(
+    sandbox -h
+    sandbox [-g] [-i FILE]
+
+Options:
+    -h      Display this help message.
+    -g      Disable the ImGui layer.
+    -i FILE Read the ini file FILE. <NULL>
+)";
 
 int parseArguments(int argc, const char* argv[], SandboxData* data)
 {
@@ -145,7 +143,7 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
 
     do
     {
-        iCode = Dewpsi::GetOption(argc, (char**) argv, ":a:bgh");
+        iCode = Dewpsi::GetOption(argc, (char**) argv, ":a:ghi:");
         if (iCode > 0)
         {
             switch (iCode)
@@ -156,9 +154,12 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
                     break;
 
                 case 'h':
-                    //printUsage(cpBaseName);
                     cout << Usage.get() << endl;
                     return PD_INVALID;
+                    break;
+
+                case 'i':
+                    cout << "Read " << optarg << std::endl;
                     break;
 
                 case ':':
