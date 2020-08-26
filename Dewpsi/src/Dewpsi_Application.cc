@@ -19,28 +19,55 @@ using Dewpsi::Scope;
 static constexpr Dewpsi::StaticString _VertShader = R"(
     #version 430 core
     layout(location = 0) in vec3 In_Position;
+    layout(location = 1) in vec3 In_Color;
     out vec3 V_Position;
+    out vec3 V_Color;
     void main() {
         V_Position = In_Position;
+        V_Color = In_Color;
         gl_Position = vec4(V_Position, 1.0);
     }
 )";
 
 static constexpr Dewpsi::StaticString _FragShader = R"(
     #version 430 core
-    layout(location = 0) out vec4 FragColor;
+    out vec4 FragColor;
     in vec3 V_Position;
+    in vec3 V_Color;
     void main() {
-        //FragColor = vec4(0.0, 0.5, 0.2, 1.0);
-        FragColor = vec4(V_Position * 0.5 + 0.5, 1.0);
+        FragColor = vec4(V_Color.xyz, 1.0);
     }
 )";
 
-static PDuint _VAO;
-
 static Scope<Dewpsi::Shader> _Program;
+static Scope<Dewpsi::VertexArrayBuffer> _VAO;
 static Scope<Dewpsi::VertexBuffer> _VBO;
 static Scope<Dewpsi::IndexBuffer> _IBO;
+
+static GLenum ShaderType2OpenGLEnum(Dewpsi::ShaderDataType type)
+{
+    using Dewpsi::ShaderDataType;
+
+    switch (type)
+    {
+        case ShaderDataType::Float:
+        case ShaderDataType::Float2:
+        case ShaderDataType::Float3:
+        case ShaderDataType::Float4:
+        case ShaderDataType::Mat3:
+        case ShaderDataType::Mat4:
+            return GL_FLOAT;
+        case ShaderDataType::Int:
+        case ShaderDataType::Int2:
+        case ShaderDataType::Int3:
+        case ShaderDataType::Int4:
+            return GL_INT;
+        case ShaderDataType::Bool:
+            return GL_BOOL;
+    }
+
+    return (GLenum) 0;
+}
 
 namespace Dewpsi {
 
@@ -68,19 +95,38 @@ Application::Application(const std::string& sName)
     PushOverlay(m_guiLayer);
 
     // TODO: remove this section
-    glGenVertexArrays(1, &_VAO);
-    glBindVertexArray(_VAO);
+    _VAO.reset(VertexArrayBuffer::Create());
 
-    float faVerticies[9] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
+    float faVerticies[] = {
+        -0.5f, -0.5f, 0.0f, 0.2f, 0 , 0.3f,
+        0.5f, -0.5f, 0.0f, 0.2f, 0.5f , 0.3f,
+        0.0f, 0.5f, 0.0f, 0.2f, 0 , 0.3f
     };
 
     _VBO.reset(VertexBuffer::Create(sizeof(faVerticies), faVerticies));
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
+    {
+        BufferLayout layout = {
+            { ShaderDataType::Float3, "In_Position" },
+            { ShaderDataType::Float3, "In_Color" }
+        };
+        _VBO->SetLayout(layout);
+    }
+
+    {
+        PDuint32 uiOffset = 0;
+        const BufferLayout& layout = _VBO->GetLayout();
+
+        for (const auto& element : layout)
+        {
+            glEnableVertexAttribArray(uiOffset);
+            glVertexAttribPointer(uiOffset, element.GetComponentCount(),
+                                  ShaderType2OpenGLEnum(element.type),
+                                  element.normalized ? GL_TRUE : GL_FALSE, layout.GetStride(),
+                                  (void*) element.offset);
+            ++uiOffset;
+        }
+    }
 
     const PDuint uiaIndices[] = { 0, 1, 2 };
     _IBO.reset(IndexBuffer::Create(PD_ARRAYSIZE(uiaIndices), uiaIndices));
@@ -133,12 +179,11 @@ void Application::Run()
         // TODO: this window-clear function should be moved to a renderer API
         m_window->Clear();
 
-        // TODO: remove this later
+        // TODO: remove this section
         _Program->Bind();
-
-        // TODO: remove the next couple lines
-        glBindVertexArray(_VAO);
+        _VAO->Bind();
         glDrawElements(GL_TRIANGLES, _IBO->GetCount(), GL_UNSIGNED_INT, nullptr);
+        ///////////////////////////////////
 
         // update each layer
         for (auto itr = m_layerStack.begin(); itr != m_layerStack.end(); ++itr)
@@ -153,8 +198,10 @@ void Application::Run()
         // update the window
         m_window->OnUpdate();
 
-        // TODO: remove this later
+        // TODO: remove this section
         _Program->UnBind();
+        _VAO->UnBind();
+        //////////////////////////////////
     }
 }
 

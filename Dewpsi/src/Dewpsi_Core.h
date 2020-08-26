@@ -55,6 +55,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <algorithm>
 #include <stdexcept>
 //#define _IMPORT_MY_GETOPT
 #include <my_getopt.h>

@@ -55,4 +55,29 @@ void OpenGLIndexBuffer::UnBind() const
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Vertex Array Buffer /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+OpenGLVertexArrayBuffer::OpenGLVertexArrayBuffer()
+{
+    glGenVertexArrays(1, &m_ArrayID);
+    glBindVertexArray(m_ArrayID);
+}
+
+OpenGLVertexArrayBuffer::~OpenGLVertexArrayBuffer()
+{
+    glDeleteBuffers(1, &m_ArrayID);
+}
+
+void OpenGLVertexArrayBuffer::Bind() const
+{
+    glBindVertexArray(m_ArrayID);
+}
+
+void OpenGLVertexArrayBuffer::UnBind() const
+{
+    glBindVertexArray(0);
+}
+
 }

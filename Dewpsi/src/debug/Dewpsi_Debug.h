@@ -67,6 +67,17 @@ bool g_bDewpsiBreaks = false;
 */
 #define PD_ENABLE_BREAKS(n)     ::Dewpsi::DebugBreakEnabler n(__FILE__,__LINE__)
 
+#ifdef PD_DEBUG
+    /** Creates a breakpoint object.
+    *   @ingroup debug
+    */
+    #define PD_CREATE_BREAKER() ::Dewpsi::DebugBreaker _DEBUG_BREAKER(__FILE__,__LINE__);
+    /** Executes the breakpoint defined with PD_CREATE_BREAKER().
+    *   @ingroup debug
+    */
+    #define PD_BREAKER_EXEC()   _DEBUG_BREAKER.BreakHere(__LINE__);
+#endif
+
 namespace Dewpsi {
     using FloatMicroSeconds = std::chrono::duration<double, std::micro>;
 
@@ -99,6 +110,27 @@ namespace Dewpsi {
         const char* m_cpFile;
         int m_iLine;
     };
+
+#ifdef PD_DEBUG
+    class DebugBreaker {
+    public:
+        DebugBreaker(const char* file, int line)
+            : m_File(file), m_Line(line)
+        {
+            PD_CORE_TRACE("Debug breaker defined at {0}:{1}", m_File, m_Line);
+        }
+
+        void BreakHere(int line)
+        {
+            PD_CORE_TRACE("Breakpoint at {0}:{1}", m_File, line-m_Line);
+            std::raise(SIGINT);
+        }
+
+    private:
+        const char* m_File;
+        int m_Line;
+    };
+#endif
 }
 
 #if PD_PROFILE > 0

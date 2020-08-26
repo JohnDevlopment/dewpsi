@@ -11,6 +11,7 @@
 */
 
 #include <cstdint>
+#include <string>
 
 /// An unsigned type used to represent the size of objects
 typedef size_t PDsizei;
@@ -79,6 +80,9 @@ enum PDenum : PDuint32 {
 
 /// User data type
 typedef void* PDuserdata;
+
+/// String class
+typedef std::string PDstring;
 
 /// @}
 
