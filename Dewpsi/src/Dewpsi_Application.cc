@@ -1,4 +1,3 @@
-//#define _PD_DEBUG_DEFINE_VARS
 #include "Dewpsi_Application.h"
 #include "Dewpsi_Platform.h"
 #include "Dewpsi_Debug.h"
@@ -8,13 +7,13 @@
 #include "Dewpsi_Except.h"
 #include "Dewpsi_String.h"
 #include "Dewpsi_WhichOS.h"
+#include "Dewpsi_Color.h"
 
 #include <SDL.h>
 #include <stdexcept>
-#include "Dewpsi_OpenGL.h"
-#include "Dewpsi_Shader.h"
 
 using Dewpsi::Scope;
+using Dewpsi::Ref;
 
 static constexpr Dewpsi::StaticString _VertShader = R"(
     #version 430 core
@@ -39,35 +38,9 @@ static constexpr Dewpsi::StaticString _FragShader = R"(
     }
 )";
 
-static Scope<Dewpsi::Shader> _Program;
-static Scope<Dewpsi::VertexArrayBuffer> _VAO;
-static Scope<Dewpsi::VertexBuffer> _VBO;
-static Scope<Dewpsi::IndexBuffer> _IBO;
-
-static GLenum ShaderType2OpenGLEnum(Dewpsi::ShaderDataType type)
-{
-    using Dewpsi::ShaderDataType;
-
-    switch (type)
-    {
-        case ShaderDataType::Float:
-        case ShaderDataType::Float2:
-        case ShaderDataType::Float3:
-        case ShaderDataType::Float4:
-        case ShaderDataType::Mat3:
-        case ShaderDataType::Mat4:
-            return GL_FLOAT;
-        case ShaderDataType::Int:
-        case ShaderDataType::Int2:
-        case ShaderDataType::Int3:
-        case ShaderDataType::Int4:
-            return GL_INT;
-        case ShaderDataType::Bool:
-            return GL_BOOL;
-    }
-
-    return (GLenum) 0;
-}
+// TODO: Remove these
+static Ref<Dewpsi::Shader> _Program;
+static Ref<Dewpsi::VertexArray> _VAO;
 
 namespace Dewpsi {
 
@@ -95,42 +68,51 @@ Application::Application(const std::string& sName)
     PushOverlay(m_guiLayer);
 
     // TODO: remove this section
-    _VAO.reset(VertexArrayBuffer::Create());
-
-    float faVerticies[] = {
-        -0.5f, -0.5f, 0.0f, 0.2f, 0 , 0.3f,
-        0.5f, -0.5f, 0.0f, 0.2f, 0.5f , 0.3f,
-        0.0f, 0.5f, 0.0f, 0.2f, 0 , 0.3f
-    };
-
-    _VBO.reset(VertexBuffer::Create(sizeof(faVerticies), faVerticies));
+    _VAO.reset(VertexArray::Create());
 
     {
+            // create vertex buffer and associate with vertex array
+        _VAO->Bind();
+        FColor cs[] = {
+            DefineColor(239, 41, 41),
+            DefineColor(239, 173, 41),
+            DefineColor(0, 157, 40),
+            DefineColor(157, 157, 40)
+        };
+        /*
+        const float faVerticies[] = {
+           -0.5f, -0.5f, 0.0f,   cs[0].red, cs[0].green, cs[0].blue,
+            0.5f, -0.5f, 0.0f,   cs[1].red, cs[1].green, cs[1].blue,
+            0.0f,  0.5f, 0.0f,   cs[2].red, cs[2].green, cs[2].blue,
+           -0.5f,  0.5f, 0.0f,   cs[2].red, cs[2].green, cs[2].blue,
+        };
+        */
+        const float faVerticies[] = {
+           -0.75f, -0.5f, 0.0f,   cs[0].red, cs[0].green, cs[0].blue,
+            0.75f, -0.5f, 0.0f,   cs[1].red, cs[1].green, cs[1].blue,
+            0.75f,  0.5f, 0.0f,   cs[2].red, cs[2].green, cs[2].blue,
+           -0.75f,  0.5f, 0.0f,   cs[3].red, cs[3].green, cs[3].blue,
+        };
+        Ref<VertexBuffer> vbo(VertexBuffer::Create(sizeof(faVerticies), faVerticies));
+
+            // set layout
         BufferLayout layout = {
             { ShaderDataType::Float3, "In_Position" },
             { ShaderDataType::Float3, "In_Color" }
         };
-        _VBO->SetLayout(layout);
+        vbo->SetLayout(layout);
+        _VAO->AddVertexBuffer(vbo);
     }
 
     {
-        PDuint32 uiOffset = 0;
-        const BufferLayout& layout = _VBO->GetLayout();
-
-        for (const auto& element : layout)
-        {
-            glEnableVertexAttribArray(uiOffset);
-            glVertexAttribPointer(uiOffset, element.GetComponentCount(),
-                                  ShaderType2OpenGLEnum(element.type),
-                                  element.normalized ? GL_TRUE : GL_FALSE, layout.GetStride(),
-                                  (void*) element.offset);
-            ++uiOffset;
-        }
+            // create index buffer
+        const PDuint uiaIndices[] = { 0, 1, 2, 2, 3, 0 };
+        Ref<IndexBuffer> ibo(IndexBuffer::Create(PD_ARRAYSIZE(uiaIndices), uiaIndices));
+        _VAO->SetIndexBuffer(ibo);
+        _VAO->UnBind();
     }
 
-    const PDuint uiaIndices[] = { 0, 1, 2 };
-    _IBO.reset(IndexBuffer::Create(PD_ARRAYSIZE(uiaIndices), uiaIndices));
-
+        // create shader
     _Program.reset(Shader::Create(_VertShader.get(), _FragShader.get()));
 }
 
@@ -182,7 +164,9 @@ void Application::Run()
         // TODO: remove this section
         _Program->Bind();
         _VAO->Bind();
-        glDrawElements(GL_TRIANGLES, _IBO->GetCount(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES,
+                      _VAO->GetIndexBuffer()->GetCount(),
+                      GL_UNSIGNED_INT, nullptr);
         ///////////////////////////////////
 
         // update each layer

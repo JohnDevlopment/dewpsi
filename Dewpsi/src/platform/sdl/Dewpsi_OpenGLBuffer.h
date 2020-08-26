@@ -45,17 +45,7 @@ namespace Dewpsi {
         PDuint32 m_Count;
     };
 
-    class OpenGLVertexArrayBuffer : public VertexArrayBuffer {
-    public:
-        OpenGLVertexArrayBuffer();
-        virtual ~OpenGLVertexArrayBuffer();
-
-        virtual void Bind() const override;
-        virtual void UnBind() const override;
-
-    private:
-        PDuint32 m_ArrayID;
-    };
+    
 }
 
 #endif /* DEWPSI_OPENGLBUFFER_H */

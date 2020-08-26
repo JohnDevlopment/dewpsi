@@ -9,7 +9,6 @@
 
 #define NEW_VERTEX_BUFFER(type, ...) static_cast<VertexBuffer*>(new type(__VA_ARGS__));
 #define NEW_INDEX_BUFFER(type, ...) static_cast<IndexBuffer*>(new type(__VA_ARGS__));
-#define NEW_VERTEX_ARRAY_BUFFER(type) static_cast<VertexArrayBuffer*>(new type());
 
 namespace Dewpsi {
 
@@ -138,30 +137,6 @@ IndexBuffer* IndexBuffer::Create(PDsizei size, const PDuint32* data)
 
     case RendererAPI::OpenGL:
         return NEW_INDEX_BUFFER(OpenGLIndexBuffer, size, data);
-        break;
-
-    default: break;
-    }
-
-    throw DewpsiError(_ERROR("unrecognized API"));
-
-    return nullptr;
-
-    #undef _ERROR
-}
-
-VertexArrayBuffer* VertexArrayBuffer::Create()
-{
-    #define _ERROR(msg) "VertexArrayBuffer::Create: " msg
-
-    switch (Renderer::GetAPI())
-    {
-    case RendererAPI::None:
-        throw DewpsiError(_ERROR("Renderer API is set to none"));
-        break;
-
-    case RendererAPI::OpenGL:
-        return NEW_VERTEX_ARRAY_BUFFER(OpenGLVertexArrayBuffer);
         break;
 
     default: break;

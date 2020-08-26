@@ -173,21 +173,6 @@ namespace Dewpsi {
         static IndexBuffer* Create(PDsizei count, const PDuint32* data);
     };
 
-    /// Vertex array buffer.
-    class VertexArrayBuffer {
-    public:
-        virtual ~VertexArrayBuffer() {  }
-
-        /// Bind the vertex array.
-        virtual void Bind() const = 0;
-
-        /// Unbind the vertex array.
-        virtual void UnBind() const = 0;
-
-        /// Create a vertex array object.
-        static VertexArrayBuffer* Create();
-    };
-
     /// @}
 }
 
