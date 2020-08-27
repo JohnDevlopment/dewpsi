@@ -11,6 +11,7 @@
     #include <Dewpsi_OpenGLBuffer.h>
     #include <Dewpsi_OpenGLVertexArray.h>
     #include <Dewpsi_OpenGLShader.h>
+    #include <Dewpsi_OpenGLRendererAPI.h>
 #else
     #error Currently only Linux is supported
 #endif

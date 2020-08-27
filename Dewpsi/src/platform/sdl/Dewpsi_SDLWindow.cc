@@ -88,19 +88,6 @@ bool SDL2Window::IsVSync() const
     return m_data.vsync;
 }
 
-void SDL2Window::SetClearColor(const Color& color)
-{
-    m_clearColor = color;
-
-    FColor clearColor = color;
-    glClearColor(clearColor.red, clearColor.green, clearColor.blue, 1.0f);
-}
-
-void SDL2Window::Clear()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-}
-
 void SDL2Window::Init(const WindowProps& props)
 {
     PD_CORE_ASSERT(! SDL_WasInit(SDL_INIT_VIDEO), "SDL2 already initialized");
@@ -245,9 +232,6 @@ void SDL2Window::Init(const WindowProps& props)
         m_data.width = w;
         m_data.height = h;
     }
-
-    // set initial background color
-    SetClearColor(DefineColor(PD_COLOR_BLACK));
 
     // TODO: remove or edit this block
     glDisable(GL_DEPTH_TEST);

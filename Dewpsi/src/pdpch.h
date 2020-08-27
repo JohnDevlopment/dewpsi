@@ -15,6 +15,5 @@
 #include <alloca.h>
 
 #include "Dewpsi_Log.h"
-#include "Dewpsi_WhichOS.h"
 
 #endif /* PDPCH_H */

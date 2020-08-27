@@ -4,10 +4,12 @@
 /**
 *   @file Dewpsi_VertexArray.h
 *	@brief @doxfb
+*   Contains the vertex array definition. Include this file to also include
+*   %Dewpsi_Buffer.h.
 *	@ingroup renderer
 */
 
-#include <Dewpsi_Core.h>
+#include <Dewpsi_Memory.h>
 #include <Dewpsi_Buffer.h>
 
 namespace Dewpsi {

@@ -1,13 +1,15 @@
 #include "Dewpsi_Application.h"
 #include "Dewpsi_Platform.h"
-#include "Dewpsi_Debug.h"
 #include "Dewpsi_Window.h"
 #include "Dewpsi_ApplicationEvent.h"
 #include "Dewpsi_ImGuiLayer.h"
 #include "Dewpsi_Except.h"
 #include "Dewpsi_String.h"
-#include "Dewpsi_WhichOS.h"
-#include "Dewpsi_Color.h"
+#include "Dewpsi_Renderer.h"
+
+#ifdef PD_DEBUG
+#include "Dewpsi_Debug.h"
+#endif
 
 #include <SDL.h>
 #include <stdexcept>
@@ -62,6 +64,9 @@ Application::Application(const std::string& sName)
     // create the window
     m_window = Window::Create(_WindowProperties);
     m_window->SetEventCallback(PD_BIND_EVENT_FN(Application::OnEvent));
+
+    // set the clear color
+    RenderCommand::SetClearColor(DefineColor(127, 127, 127));
 
     // push ImGui layer
     m_guiLayer = new ImGuiLayer(m_UserData);
@@ -158,16 +163,15 @@ void Application::Run()
         Timestep delta = fTime - m_fLastFrameTime;
         m_fLastFrameTime = fTime;
 
-        // TODO: this window-clear function should be moved to a renderer API
-        m_window->Clear();
+        // clear buffers
+        RenderCommand::Clear();
 
-        // TODO: remove this section
-        _Program->Bind();
-        _VAO->Bind();
-        glDrawElements(GL_TRIANGLES,
-                      _VAO->GetIndexBuffer()->GetCount(),
-                      GL_UNSIGNED_INT, nullptr);
-        ///////////////////////////////////
+        Renderer::BeginScene();
+        {
+            _Program->Bind();
+            Renderer::Submit(_VAO);
+        }
+        Renderer::EndScene();
 
         // update each layer
         for (auto itr = m_layerStack.begin(); itr != m_layerStack.end(); ++itr)
@@ -181,11 +185,6 @@ void Application::Run()
 
         // update the window
         m_window->OnUpdate();
-
-        // TODO: remove this section
-        _Program->UnBind();
-        _VAO->UnBind();
-        //////////////////////////////////
     }
 }
 

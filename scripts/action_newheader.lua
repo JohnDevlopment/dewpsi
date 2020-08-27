@@ -8,23 +8,30 @@ do
 
     function _check(str, name)
         assert(name and name ~= "", "Invalid 'name' parameter")
-        assert(str and str ~= "", "Invalid 'str' parameter")
+        assert(str and str ~= "", "You did not enter anything for the '" .. name .. "' field")
     end
 
+    -- subdirectory
     cout('Enter the relative path of the file: ')
-    _subdir = io.stdin:read('l')
+    _subdir = cin('l')
     _check(_subdir, "subdir")
+    _subdir = path.join('..', _subdir)
+    assert(os.isdir(_subdir), _subdir .. " doesn't exist")
 
+    -- file
     cout('Enter the name of the file: ')
     _file = cin('l')
     _check(_file, "file")
+    _fdefname = _file
+    _file = path.join(_subdir, _file)
+    assert(not(os.isfile(_file)), _file .. " already exists")
 
     -- open file; buffers until end-of-line
-    _id = io.open(path.join('.', _subdir, _file), 'w')
+    _id = io.open(_file, 'w')
     _id:setvbuf("line")
 
     -- header guard name
-    _fdefname = string.upper(_file)
+    _fdefname = string.upper(_fdefname)
     _fdefname = replaceChars(_fdefname, '.', '_')
 end
 
@@ -75,6 +82,7 @@ do
 end
 -- end do
 
+--[[
 collectgarbage()
 
 cout("You have the option of defining a class. Do you want a class? (Y/n) ")
@@ -159,6 +167,7 @@ if string.lower(_answer) == 'y' then
 
     fprintf(_id, "};\n")
 end
+]]
 
 ::QuitClass::
 

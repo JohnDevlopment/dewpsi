@@ -63,12 +63,6 @@ int main (int argc, char const* argv[])
     // start client application
     App = Dewpsi::NewApplication(appData.get());
 
-    // set window clear color
-    {
-        Dewpsi::Window& rWindow = Dewpsi::Application::Get().GetWindow();
-        rWindow.SetClearColor(Dewpsi::DefineColor(0.5f, 0.5f, 0.5f));
-    }
-
     // run main loop
     App->Run();
 

@@ -1,5 +1,4 @@
 #include "Dewpsi_WhichOS.h"
-//#include "Dewpsi_OpenGLBuffer.h"
 #include "Dewpsi_VertexArray.h"
 #include "Dewpsi_Renderer.h"
 #include "Dewpsi_Except.h"
@@ -14,11 +13,11 @@ VertexArray* VertexArray::Create()
 
     switch (Renderer::GetAPI())
     {
-    case RendererAPI::None:
+    case RendererAPI::API::None:
         throw DewpsiError(_ERROR("Renderer API is set to none"));
         break;
 
-    case RendererAPI::OpenGL:
+    case RendererAPI::API::OpenGL:
         return NEW_VERTEX_ARRAY(OpenGLVertexArray);
         break;
 

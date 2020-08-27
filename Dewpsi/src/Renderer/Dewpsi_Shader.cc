@@ -14,11 +14,11 @@ Shader* Shader::Create(const std::string& vertSrc, const std::string& fragSrc)
 
     switch (Renderer::GetAPI())
     {
-    case RendererAPI::None:
+    case RendererAPI::API::None:
         throw DewpsiError(_ERROR("Renderer API is set to none"));
         break;
 
-    case RendererAPI::OpenGL:
+    case RendererAPI::API::OpenGL:
         return NEW_SHADER(OpenGLShader, vertSrc, fragSrc);
         break;
 

@@ -8,34 +8,28 @@
 *	@ingroup  core
 */
 
-#include <Dewpsi_Core.h>
+#include <Dewpsi_Memory.h>
+#include <Dewpsi_RenderCommand.h>
 
 namespace Dewpsi {
     /** @addtogroup renderer
     *   @{
     */
 
-    /// Rendering API
-    enum class RendererAPI {
-        None,       ///< No API selected
-        OpenGL      ///< OpenGL API
-    };
-
-    /** Rendering interface.
-    *   Selects the API used internally.
+    /** High-level rendering interface.
+    *   This class interprets high-level data constructs from
+    *   %Dewpsi and delegates taks down the hierchy down to the
+    *   actual rendering API.
     */
     class Renderer {
     public:
-        /// Returns the current API.
-        static RendererAPI GetAPI() { return s_API; }
+        static void BeginScene();
+        static void EndScene();
 
-        /// Changes the API that is used.
-        static void SetAPI(RendererAPI api) {
-            s_API = api;
-        }
+        static void Submit(const Ref<VertexArray>& vertexArray);
 
-    private:
-        static RendererAPI s_API;
+        /// Returns the current rendering API.
+        static RendererAPI::API GetAPI() {return RendererAPI::GetAPI();}
     };
 
     /// @}

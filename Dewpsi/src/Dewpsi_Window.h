@@ -198,14 +198,6 @@ namespace Dewpsi {
         /// Returns the ID of the window.
         virtual PDuint32 GetWindowID() const = 0;
 
-        /** Sets the window clear color.
-        *   @param color What color to clear the window with
-        */
-        virtual void SetClearColor(const Color& color) = 0; // TODO: move to a renderer class
-
-        /// Clears the window.
-        virtual void Clear() = 0; // TODO: move to a renderer class
-
         /// Creates an instance of the window.
         static Scope<Window> Create(const WindowProps& props);
 

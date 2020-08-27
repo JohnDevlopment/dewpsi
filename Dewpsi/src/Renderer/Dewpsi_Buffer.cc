@@ -1,5 +1,4 @@
 #include "Dewpsi_WhichOS.h"
-//#include "Dewpsi_OpenGLBuffer.h"
 #include "Dewpsi_Buffer.h"
 #include "Dewpsi_Renderer.h"
 #include "Dewpsi_Except.h"
@@ -107,11 +106,11 @@ VertexBuffer* VertexBuffer::Create(PDsizei size, const PDfloat* data)
 
     switch (Renderer::GetAPI())
     {
-    case RendererAPI::None:
+    case RendererAPI::API::None:
         throw DewpsiError(_ERROR("Renderer API is set to none"));
         break;
 
-    case RendererAPI::OpenGL:
+    case RendererAPI::API::OpenGL:
         return NEW_VERTEX_BUFFER(OpenGLVertexBuffer, size, data);
         break;
 
@@ -131,11 +130,11 @@ IndexBuffer* IndexBuffer::Create(PDsizei size, const PDuint32* data)
 
     switch (Renderer::GetAPI())
     {
-    case RendererAPI::None:
+    case RendererAPI::API::None:
         throw DewpsiError(_ERROR("Renderer API is set to none"));
         break;
 
-    case RendererAPI::OpenGL:
+    case RendererAPI::API::OpenGL:
         return NEW_INDEX_BUFFER(OpenGLIndexBuffer, size, data);
         break;
 

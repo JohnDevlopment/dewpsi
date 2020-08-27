@@ -90,14 +90,6 @@ namespace Dewpsi {
             return m_data.windowID;
         }
 
-        /// Set the clear color.
-        /// @todo move to a renderer class
-        virtual void SetClearColor(const Color& color) override; // TODO: move to a renderer class
-
-        /// Clears the window.
-        /// @todo move to a renderer class
-        virtual void Clear() override; // TODO: move to a renderer class
-
         /// Get the window display format of type @c SDL_PixelFormatEnum.
         uint32_t GetFormat() const
         { return m_data.format; }
