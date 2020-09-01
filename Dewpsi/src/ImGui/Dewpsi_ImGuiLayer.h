@@ -33,7 +33,7 @@ namespace Dewpsi {
         virtual void OnDetach() override;
 
         /// Draws ImGui layer.
-        virtual void OnImGuiRender() override;
+        //virtual void OnImGuiRender() override;
 
         /// Begin an ImGui frame.
         void Begin();

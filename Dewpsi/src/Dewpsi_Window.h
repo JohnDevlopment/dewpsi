@@ -46,7 +46,7 @@ namespace Dewpsi {
     *   @note       Check (https://wiki.libsdl.org/SDL_GLattr?highlight=%28%5CbCategoryEnum%5Cb%29%7C%28CategoryVideo%29)
     *               for a full list of SDL OpenGL attributes.
     */
-    enum OpenGLAttributes {
+    enum WindowAttribute {
         Empty                   = -1,   ///< Set no attribute
         Depth                   = 0,    ///< Set the bit depth
         DoubleBuffer            = 1,    ///< Enable/disable a double buffer
@@ -215,18 +215,18 @@ namespace Dewpsi {
 
     /** Sets a window OpenGL attribute.
     *   @param  props   A WindowProps structure that is filled with OpenGL attributes
-    *   @param  attr    An OpenGL attribute of the enumeration OpenGLAttributes
+    *   @param  attr    An OpenGL attribute of the enumeration WindowAttribute
     *   @param  val     A value to set the given attribute to
     */
-    PD_CALL void SetWindowOpenGLAttribute(WindowProps& props, OpenGLAttributes attr, int val);
+    PD_CALL void SetWindowAttribute(WindowProps& props, WindowAttribute attr, int val);
 
     /** Retrieves a window OpenGL attribute.
     *   @param  props   A WindowProps structure that was previously filled with information from SetWindowOpenGLAttribute()
     *   @param  pAttr   Filled with the attribute set at @a index position within the array
     *   @param  pVal    Filled with the value of the attribute
-    *   @param  index   The index of the attribute to set, must be less than OpenGLAttributes::Count
+    *   @param  index   The index of the attribute to set, must be less than WindowAttribute::Count
     */
-    PD_CALL void GetWindowOpenGLAttribute(const WindowProps& props, OpenGLAttributes& pAttr, int& pVal, unsigned int index);
+    PD_CALL void GetWindowAttribute(const WindowProps& props, WindowAttribute& pAttr, int& pVal, unsigned int index);
 
     /// @}
 }

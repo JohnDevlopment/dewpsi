@@ -48,8 +48,8 @@ void ImGuiLayer::OnAttach()
     //io.ConfigViewportsNoTaskBarIcon = true;
 
     // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
+    //ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     {
@@ -84,14 +84,6 @@ void ImGuiLayer::OnDetach()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-}
-
-void ImGuiLayer::OnImGuiRender()
-{
-    ImGui::Begin("Example Window");
-    if (ImGui::Button("Click me"))
-        PD_CORE_INFO("ImGui layer button pressed");
-    ImGui::End();
 }
 
 void ImGuiLayer::Begin()

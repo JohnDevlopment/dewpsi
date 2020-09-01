@@ -83,6 +83,8 @@
 #include <stdint.h>     // intptr_t
 #endif
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #define GLFW_INCLUDE_NONE
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #undef IMGUI_IMPL_OPENGL_LOADER_GLEW
@@ -268,6 +270,7 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
     float T = draw_data->DisplayPos.y;
     float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
     if (!clip_origin_lower_left) { float tmp = T; T = B; B = tmp; } // Swap top and bottom if origin is upper left
+    /*
     const float ortho_projection[4][4] =
     {
         { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
@@ -275,6 +278,8 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
         { 0.0f,         0.0f,        -1.0f,   0.0f },
         { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
     };
+    */
+    glm::mat4 ortho_projection = glm::ortho(L, R, B, T);
     glUseProgram(g_ShaderHandle);
     glUniform1i(g_AttribLocationTex, 0);
     glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
