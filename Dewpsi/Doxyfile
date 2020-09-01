@@ -238,7 +238,10 @@ TAB_SIZE               = 4
 # "Side Effects:". You can put \n's in the value part of an alias to insert
 # newlines.
 
-ALIASES                = "doxfb=A header for the Dewpsi engine."
+ALIASES                = "doxfb=A header for the Dewpsi engine." \
+                         "doxcout=@note This type can be passed to cout, cerr, and other output streams." \
+                         "doxtype{1}=@c %\1" \
+                         "doxfunc{1}=@a %\1()"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -794,7 +797,9 @@ INPUT                  = src \
                          src/events \
                          src/debug \
                          src/platform/sdl \
-                         src/Renderer
+                         src/Renderer \
+                         src/bits/Dewpsi_Bits_Vec2.hpp \
+                         src/bits/Dewpsi_Bits_Vec3.hpp
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -2035,7 +2040,7 @@ EXPAND_ONLY_PREDEF     = NO
 # The default value is: YES.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-SEARCH_INCLUDES        = YES
+SEARCH_INCLUDES        = NO
 
 # The INCLUDE_PATH tag can be used to specify one or more directories that
 # contain include files that are not input files but should be processed by the
@@ -2050,7 +2055,7 @@ INCLUDE_PATH           =
 # used.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-INCLUDE_FILE_PATTERNS  = 
+INCLUDE_FILE_PATTERNS  = *.unused
 
 # The PREDEFINED tag can be used to specify one or more macro names that are
 # defined before the preprocessor is started (similar to the -D option of e.g.
@@ -2060,7 +2065,9 @@ INCLUDE_FILE_PATTERNS  =
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             = PD_DEBUG=1
+PREDEFINED             = PD_DEBUG=1 \
+                         _DOXYGEN_DO_INCLUDE=1 \
+                         _DOXYGEN_DONT_INCLUDE=0
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

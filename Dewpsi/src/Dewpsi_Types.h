@@ -22,6 +22,9 @@ typedef int PDint;
 /// A signed long integer
 typedef long int PDlong;
 
+/// A signed double-long integer
+typedef long long PDllong;
+
 /// A signed short integer
 typedef short int PDshort;
 
@@ -45,6 +48,9 @@ typedef unsigned int PDuint;
 
 /// An unsigned long integer
 typedef unsigned long int PDulong;
+
+/// An unsigned double-long integer
+typedef unsigned long long PDullong;
 
 /// An unsigned short
 typedef unsigned short PDushort;

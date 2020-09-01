@@ -17,33 +17,6 @@
 using Dewpsi::Scope;
 using Dewpsi::Ref;
 
-static constexpr Dewpsi::StaticString _VertShader = R"(
-    #version 430 core
-    layout(location = 0) in vec3 In_Position;
-    layout(location = 1) in vec3 In_Color;
-    out vec3 V_Position;
-    out vec3 V_Color;
-    void main() {
-        V_Position = In_Position;
-        V_Color = In_Color;
-        gl_Position = vec4(V_Position, 1.0);
-    }
-)";
-
-static constexpr Dewpsi::StaticString _FragShader = R"(
-    #version 430 core
-    out vec4 FragColor;
-    in vec3 V_Position;
-    in vec3 V_Color;
-    void main() {
-        FragColor = vec4(V_Color.xyz, 1.0);
-    }
-)";
-
-// TODO: Remove these
-static Ref<Dewpsi::Shader> _Program;
-static Ref<Dewpsi::VertexArray> _VAO;
-
 namespace Dewpsi {
 
 static WindowProps _WindowProperties;
@@ -54,8 +27,6 @@ Application::Application(const std::string& sName)
     : m_bRunning(true), m_window(), m_guiLayer(), m_fLastFrameTime(0.0f),
       m_UserData(nullptr)
 {
-    PD_PROFILE_FUNCTION();
-
     if (! Log::IsInit())
         throw std::runtime_error("Logger has not been initialized prior to application start");
 
@@ -71,59 +42,10 @@ Application::Application(const std::string& sName)
     // push ImGui layer
     m_guiLayer = new ImGuiLayer(m_UserData);
     PushOverlay(m_guiLayer);
-
-    // TODO: remove this section
-    _VAO.reset(VertexArray::Create());
-
-    {
-            // create vertex buffer and associate with vertex array
-        _VAO->Bind();
-        FColor cs[] = {
-            DefineColor(239, 41, 41),
-            DefineColor(239, 173, 41),
-            DefineColor(0, 157, 40),
-            DefineColor(157, 157, 40)
-        };
-        /*
-        const float faVerticies[] = {
-           -0.5f, -0.5f, 0.0f,   cs[0].red, cs[0].green, cs[0].blue,
-            0.5f, -0.5f, 0.0f,   cs[1].red, cs[1].green, cs[1].blue,
-            0.0f,  0.5f, 0.0f,   cs[2].red, cs[2].green, cs[2].blue,
-           -0.5f,  0.5f, 0.0f,   cs[2].red, cs[2].green, cs[2].blue,
-        };
-        */
-        const float faVerticies[] = {
-           -0.75f, -0.5f, 0.0f,   cs[0].red, cs[0].green, cs[0].blue,
-            0.75f, -0.5f, 0.0f,   cs[1].red, cs[1].green, cs[1].blue,
-            0.75f,  0.5f, 0.0f,   cs[2].red, cs[2].green, cs[2].blue,
-           -0.75f,  0.5f, 0.0f,   cs[3].red, cs[3].green, cs[3].blue,
-        };
-        Ref<VertexBuffer> vbo(VertexBuffer::Create(sizeof(faVerticies), faVerticies));
-
-            // set layout
-        BufferLayout layout = {
-            { ShaderDataType::Float3, "In_Position" },
-            { ShaderDataType::Float3, "In_Color" }
-        };
-        vbo->SetLayout(layout);
-        _VAO->AddVertexBuffer(vbo);
-    }
-
-    {
-            // create index buffer
-        const PDuint uiaIndices[] = { 0, 1, 2, 2, 3, 0 };
-        Ref<IndexBuffer> ibo(IndexBuffer::Create(PD_ARRAYSIZE(uiaIndices), uiaIndices));
-        _VAO->SetIndexBuffer(ibo);
-        _VAO->UnBind();
-    }
-
-        // create shader
-    _Program.reset(Shader::Create(_VertShader.get(), _FragShader.get()));
 }
 
 Application::~Application()
 {
-    PD_PROFILE_FUNCTION();
     SDL_Quit();
 }
 
@@ -154,24 +76,14 @@ void Application::PushOverlay(Layer* overlay)
 
 void Application::Run()
 {
-    PD_PROFILE_FUNCTION();
-
     while (m_bRunning)
     {
-        PD_PROFILE_SCOPE("RunLoop");
         float fTime = Platform::GetTime();
         Timestep delta = fTime - m_fLastFrameTime;
         m_fLastFrameTime = fTime;
 
         // clear buffers
         RenderCommand::Clear();
-
-        Renderer::BeginScene();
-        {
-            _Program->Bind();
-            Renderer::Submit(_VAO);
-        }
-        Renderer::EndScene();
 
         // update each layer
         for (auto itr = m_layerStack.begin(); itr != m_layerStack.end(); ++itr)
@@ -220,7 +132,6 @@ bool Application::OnWindowResized(WindowResizeEvent& e)
 {
     _WindowProperties.width = e.GetWidth();
     _WindowProperties.height = e.GetHeight();
-    PD_CORE_INFO("Window resized to {0}x{1}", _WindowProperties.width, _WindowProperties.height); // TODO: remove (PD_CORE_INFO)
 
     return false;
 }

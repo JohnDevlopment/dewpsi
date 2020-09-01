@@ -4,6 +4,7 @@
 #include "sandbox.h"
 
 // Dewpsi
+#define PD_PROFILE 1
 #include <Dewpsi_Debug.h>
 #include <spdlog/sinks/stdout_sinks.h>
 
@@ -22,6 +23,8 @@ int main (int argc, char const* argv[])
 {
     Dewpsi::Scope<SandboxData> appData = Dewpsi::CreateScope<SandboxData>();
 
+    PD_PROFILE_BEGIN_SESSION("Startup", "results_startup.json");
+
     // parse arguments in another function
     if (parseArguments(argc, argv, appData.get()) != PD_OKAY)
         return 1;
@@ -33,41 +36,36 @@ int main (int argc, char const* argv[])
     std::atexit(quit);
 
     {
-        using Dewpsi::SetWindowOpenGLAttribute;
+        using Dewpsi::SetWindowAttribute;
         Dewpsi::WindowProps props;
-
-        if (argc > 1)
-        {
-            if (std::strcmp(argv[1], "-l") == 0)
-                props.title = "list renderers";
-            else
-                props.title = "Client Dewpsi Application";
-        }
-        else
-            props.title = "Client Dewpsi Application";
 
         props.x = PD_WINDOWPOS_CENTERED;
         props.y = PD_WINDOWPOS_CENTERED;
         props.width = 640;
         props.height = 480;
         props.index = 0;
+        props.title = "Sandbox Application";
         props.flags = Dewpsi::RendererVSync | Dewpsi::WindowOpenGL | Dewpsi::WindowResizable;
-        SetWindowOpenGLAttribute(props, Dewpsi::MajorVersion, 3);
-        SetWindowOpenGLAttribute(props, Dewpsi::MinorVersion, 3);
-        SetWindowOpenGLAttribute(props, Dewpsi::Depth, 24);
-        SetWindowOpenGLAttribute(props, Dewpsi::DoubleBuffer, 1);
-        SetWindowOpenGLAttribute(props, Dewpsi::StencilSize, 8);
+        SetWindowAttribute(props, Dewpsi::MajorVersion, 3);
+        SetWindowAttribute(props, Dewpsi::MinorVersion, 3);
+        SetWindowAttribute(props, Dewpsi::Depth, 24);
+        SetWindowAttribute(props, Dewpsi::DoubleBuffer, 1);
+        SetWindowAttribute(props, Dewpsi::StencilSize, 8);
         Dewpsi::SetWindowProps(props);
     }
 
     // start client application
     App = Dewpsi::NewApplication(appData.get());
 
+    PD_PROFILE_END_SESSION();
+
     // run main loop
     App->Run();
 
+    PD_PROFILE_BEGIN_SESSION("Shutdown", "results_shutdown.json");
     delete App;
     App = nullptr;
+    PD_PROFILE_END_SESSION();
     return 0;
 }
 
