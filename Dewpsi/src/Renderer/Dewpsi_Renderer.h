@@ -23,10 +23,17 @@ namespace Dewpsi {
     */
     class Renderer {
     public:
+        /// Begins a scene.
         static void BeginScene();
+
+        /// Ends a scene.
         static void EndScene();
 
+        /// Submits a vertex array to the render queue.
         static void Submit(const Ref<VertexArray>& vertexArray);
+
+        /// Sets the current rendering API.
+        static void SetAPI(RendererAPI::API api) {RendererAPI::SetAPI(api);}
 
         /// Returns the current rendering API.
         static RendererAPI::API GetAPI() {return RendererAPI::GetAPI();}
