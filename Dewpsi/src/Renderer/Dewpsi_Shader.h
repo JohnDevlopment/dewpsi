@@ -1,9 +1,8 @@
 #ifndef DEWPSI_SHADER_H
 #define DEWPSI_SHADER_H
 
-/** @file    Dewpsi_Shader.h
-*	@brief   @doxfb
-*	@ingroup renderer
+/** @file Dewpsi_Shader.h
+*	@ref renderer
 */
 
 #include <Dewpsi_Core.h>
@@ -24,6 +23,9 @@ namespace Dewpsi {
         /// Unbinds the shader.
         virtual void UnBind() const = 0;
 
+
+        virtual void UploadUniformMat4(const PDstring& name, const float* values) = 0;
+
         /** Creates a shader program and returns a pointer to it.
         *	The exact kind of shader that is created, and what language the
         *	source code is in, depends on the currently selected API.
@@ -32,7 +34,7 @@ namespace Dewpsi {
         *	@return           A pointer to the platform-dependent shader object
         *	@throw    DewpsiError     Thrown if an unsupported API is detected.
         */
-        static Shader* Create(const std::string& vertSrc, const std::string& fragSrc);
+        static Shader* Create(const PDstring& vertSrc, const PDstring& fragSrc);
     };
 
     /// A chunk with the source code for shaders.

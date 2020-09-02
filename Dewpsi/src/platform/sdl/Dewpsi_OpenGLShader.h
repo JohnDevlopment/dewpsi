@@ -8,10 +8,12 @@ namespace Dewpsi {
     class OpenGLShader : public Shader {
     public:
         OpenGLShader(const std::string& vertexSrc, const std::string& fragmentSrc);
-        ~OpenGLShader();
+        virtual ~OpenGLShader();
 
-        void Bind() const;
-        void UnBind() const;
+        virtual void Bind() const override;
+        virtual void UnBind() const override;
+
+        virtual void UploadUniformMat4(const PDstring& name, const float* values) override;
 
     private:
         PDuint m_ShaderID;

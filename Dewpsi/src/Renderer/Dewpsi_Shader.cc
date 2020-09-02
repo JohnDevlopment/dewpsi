@@ -32,7 +32,7 @@ static constexpr Dewpsi::StaticString _OpenGL_FragShader = R"(
 
 namespace Dewpsi {
 
-Shader* Shader::Create(const std::string& vertSrc, const std::string& fragSrc)
+Shader* Shader::Create(const PDstring& vertSrc, const PDstring& fragSrc)
 {
     #define _ERROR(msg) "Shader::CreateShader: " msg
 
