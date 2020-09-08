@@ -23,7 +23,10 @@ namespace Dewpsi {
         /// Unbinds the shader.
         virtual void UnBind() const = 0;
 
-
+        /** Use this function to upload a 4x4 matrix into your shader.
+        *   @param name The name of the uniform
+        *   @param values A pointer to the floating-point data
+        */
         virtual void UploadUniformMat4(const PDstring& name, const float* values) = 0;
 
         /** Creates a shader program and returns a pointer to it.

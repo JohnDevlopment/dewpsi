@@ -7,177 +7,194 @@
 namespace Dewpsi {
 #endif /* _DOXYGEN_DO_INCLUDE */
 
-/** @class Dewpsi::TVector2D
-*   @brief A 2D vector (x, y)
-*   @tparam Type An integral or floating-point type
-*   @ingroup vectors
+/** @class      Dewpsi::TVector2D
+*   @brief      A 2D vector (x, y).
+*
+*   @tparam     Type        An integral or floating-point type
+*   @section    sec_ctors   Constructor
+*   @include    vector2_ctor.cpp
+*   Each constructor does the following:
+*   -# Constructs a vector that's initialized to zero.
+*   -# Constructs a copy of @a rhs.
+*   -# Aquires the contents of @a rhs.
+*   -# Constructs a vector initialized to @a x and @a y.
+*   -# Constructs a vector initialized to @a val.
+*   -# Copies one or two values in @a il to the vector, in order.
+*
+*   @par Relational Operators
+*   The ==, !=, <, >, <=, and >= operators are supported.
+*   @include vector2_relops.cpp
+*   -# Checks for the equality of two vectors.
+*   -# Checks for the inequality of two vectors.
+*   -# Checks if the vector is less than @a rhs.
+*   -# Checks if the vector is less than or equal to @a rhs.
+*   -# Checks if the vector is greater than @a rhs.
+*   -# Checks if the vector is greater than or equal to @a rhs.
+*
+*   @par Arithmetic Operators
+*   @include vector2_mathops.cpp
+*   The math operators +, -, *, and / are supported for arithmetic between a vector
+*   and a vector and between a vector and a value. The compound assignment operators
+*   +=, -=, *=, and /= are supported for between a vector and another vector.
+*
+*   @ingroup    vectors
 */
 template<typename Type>
 struct TVector2D {
-    /// Constructs an empty vector.
-    TVector2D() : x(0), y(0)
-    {  }
+    /// An alias of @c Type.
+    typedef Type value_type;
 
-    /** Initializes a vector with @a x, @a y, and @a z components.
-    *
-    *   @param  _x  The X component
-    *   @param  _y  The Y component
-    */
-    TVector2D(Type _x, Type _y) : x(_x), y(_y)
-    {  }
-
-    /// Destroys the object.
-    ~TVector2D() {}
-
-    /// Copy constructor
+    TVector2D() : x(0), y(0) {}
+    TVector2D(const value_type& _x, const value_type& _y) : x(_x), y(_y) {}
+    TVector2D(const value_type& _val) : x(_val), y(_val) {}
     TVector2D(const TVector2D& rhs) : x(rhs.x), y(rhs.y) {}
-
-    /// Move constructor
     TVector2D(TVector2D&& rhs) : x(rhs.x), y(rhs.y) {}
-
-    /** Initialize vector with a list of values.
-    *   @snippet vectors.cpp Initialize Vector
-    */
     TVector2D(std::initializer_list<Type> il) : x(0), y(0)
     {
         PDuint i = 0;
 
-        const Type* const end = il.end();
-        for (const Type* itr = il.begin(); itr != end; ++itr)
+        const value_type* const end = il.end();
+        for (const value_type* itr = il.begin(); itr != end; ++itr)
         {
             if (i >= 2) break;
-            reinterpret_cast<Type*>(&x)[i++] = *itr;
+            reinterpret_cast<value_type*>(&x)[i++] = *itr;
         }
     }
 
-    /** Add two vectors together.
-    *
-    *   @snippet vectors.cpp Add Vectors
-    */
+    // Default destructor.
+    ~TVector2D() = default;
+
+
     TVector2D operator+(const TVector2D& rhs) const
     {
-        TVector2D res = {x, y};
-        res.x += rhs.x;
-        res.y += rhs.y;
+        TVector2D res = {x + rhs.x, y + rhs.y};
         return res;
     }
-
-    /** Subtract two vectors.
-    *
-    *   @snippet vectors.cpp Subtract Vectors
-    */
     TVector2D operator-(const TVector2D& rhs) const
     {
-        TVector2D res = {x, y};
-        res.x -= rhs.x;
-        res.y -= rhs.y;
+        TVector2D res = {x - rhs.x, y - rhs.y};
         return res;
     }
-
-    /** Multiply two vectors.
-    *
-    *   @snippet vectors.cpp Multiply Vectors
-    */
     TVector2D operator*(const TVector2D& rhs) const
     {
-        TVector2D res = {x, y};
-        res.x *= rhs.x;
-        res.y *= rhs.y;
+        TVector2D res = {x * rhs.x, y * rhs.y};
         return res;
     }
 
-    /** Divide two vectors.
-    *
-    *   @snippet vectors.cpp Divide Vectors
-    */
     TVector2D operator/(const TVector2D& rhs) const
     {
-        TVector2D res = {x, y};
-
+        TVector2D res;
         res.x = (res.x && rhs.x) ? (res.x / rhs.x) : 0;
         res.y = (res.y && rhs.y) ? (res.y / rhs.y) : 0;
 
         return res;
     }
 
-    /// Compond addition
-    TVector2D& operator+=(const TVector2D& rhs) {
-        x = x + rhs.x;
-        y = y + rhs.y;
+    TVector2D operator+(const value_type& rhs) const
+    {
+        return {x + rhs, y + rhs};
+    }
+
+    TVector2D operator-(const value_type& rhs) const
+    {
+        return {x - rhs, y - rhs};
+    }
+    TVector2D operator*(const value_type& rhs) const
+    {
+        return {x * rhs, y * rhs};
+    }
+
+    TVector2D operator/(const value_type& rhs) const
+    {
+        TVector2D res;
+        if (rhs)
+        {
+            res.x = x ? (x / rhs) : 0;
+            res.y = y ? (y / rhs) : 0;
+        }
+
+        return res;
+    }
+
+    // Compound assignment
+
+    TVector2D& operator+=(const TVector2D& rhs)
+    {
+        x += rhs.x;
+        y += rhs.y;
 
     return *this;
     }
-
-    /// Compond subtraction
-    TVector2D& operator-=(const TVector2D& rhs) {
-        x = x - rhs.x;
-        y = y - rhs.y;
-
-    return *this;
-    }
-
-    /// Compond multiplication
-    TVector2D& operator*=(const TVector2D& rhs) {
-        x = x * rhs.x;
-        y = y * rhs.y;
+    TVector2D& operator-=(const TVector2D& rhs)
+    {
+        x -= rhs.x;
+        y -= rhs.y;
 
     return *this;
     }
+    TVector2D& operator*=(const TVector2D& rhs)
+    {
+        x *= rhs.x;
+        y *= rhs.y;
 
-    /// Compond division
-    TVector2D& operator/=(const TVector2D& rhs) {
+    return *this;
+    }
+    TVector2D& operator/=(const TVector2D& rhs)
+    {
         x = (x && rhs.x) ? (x / rhs.x) : 0;
         y = (y && rhs.y) ? (y / rhs.y) : 0;
 
     return *this;
     }
 
-    /// Returns true if two vectors are equal.
-    bool operator==(const TVector2D& rhs) const {
-        return (x == rhs.x) && (y == rhs.y);
+    TVector2D& operator+=(const value_type& rhs)
+    {
+        x += rhs;
+        y += rhs;
+
+    return *this;
+    }
+    TVector2D& operator-=(const value_type& rhs)
+    {
+        x -= rhs;
+        y -= rhs;
+
+    return *this;
+    }
+    TVector2D& operator*=(const value_type& rhs)
+    {
+        x *= rhs;
+        y *= rhs;
+
+    return *this;
+    }
+    TVector2D& operator/=(const value_type& rhs)
+    {
+        x = (x && rhs) ? (x / rhs) : 0;
+        y = (y && rhs) ? (y / rhs) : 0;
+
+    return *this;
     }
 
-    /// Returns true if two vectors are not equal.
-    bool operator!=(const TVector2D& rhs) const {
-        return (x != rhs.x) && (y != rhs.y);
-    }
 
-    /** Returns true if the vector is less than @a rhs.
-    *   @snippet vectors.cpp Bool Less
-    */
-    bool operator<(const TVector2D& rhs) const {
-        return (x < rhs.x) && (y < rhs.y);
-    }
 
-    /** Returns true if the vector is less than or equal to @a rhs.
-    *   @snippet vectors.cpp Bool LessEqual
-    */
-    bool operator<=(const TVector2D& rhs) const {
-        return x <= rhs.x && y <= rhs.y;
-    }
+    // Relational operators
 
-    /** Returns true if the vector is greater than @a rhs.
-    *   @snippet vectors.cpp Bool Great
-    */
-    bool operator>(const TVector2D& rhs) const {
-        return x > rhs.x && y > rhs.y;
-    }
+    bool operator==(const TVector2D& rhs) const {return x == rhs.x && y == rhs.y;}
+    bool operator!=(const TVector2D& rhs) const {return x != rhs.x && y != rhs.y;}
+    bool operator<(const TVector2D& rhs) const {return x < rhs.x && y < rhs.y;}
+    bool operator<=(const TVector2D& rhs) const {return x <= rhs.x && y <= rhs.y;}
+    bool operator>(const TVector2D& rhs) const {return x > rhs.x && y > rhs.y;}
+    bool operator>=(const TVector2D& rhs) const {return x >= rhs.x && y >= rhs.y;}
 
-    /** Returns true if the vector is greater than or equal to @a rhs.
-    *   @snippet vectors.cpp Bool GreatEqual
-    */
-    bool operator>=(const TVector2D& rhs) const {
-        return x >= rhs.x && y >= rhs.y;
-    }
+    // Assignment operators
 
-    /// Assignment operator
     TVector2D& operator=(const TVector2D& rhs)
     {
         Copy(rhs);
         return *this;
     }
 
-    /// Assignment operator
     TVector2D& operator=(TVector2D&& rhs)
     {
         Copy(rhs);
@@ -236,20 +253,6 @@ void TVector2D<_Tp>::Divide(float val)
 *   @ingroup vectors
 */
 typedef TVector2D<float> Vector2D;
-
-/** Constructs a 2D vector with X and Y components of type @c T.
-*
-*   @param  x   The X component
-*   @param  y   The Y component
-*   @return     TVector2D of type @a T
-*   @ingroup    vectors
-*/
-template<typename T>
-TVector2D<T> MakeVector2D(T x, T y)
-{
-    TVector2D<T> vec = {x, y};
-    return vec;
-}
 
 #ifdef _DOXYGEN_DO_INCLUDE
 }

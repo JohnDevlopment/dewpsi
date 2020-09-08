@@ -18,6 +18,11 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include <cassert>
+
+#ifndef PD_DEBUG
+# define NDEBUG
+#endif
 
 #ifndef PD_ENABLE_DEBUG_BREAKS
 # define PD_ENABLE_DEBUG_BREAKS 0
@@ -242,7 +247,7 @@ namespace Dewpsi {
     #define PD_PROFILE_FUNCTION()                   PD_PROFILE_SCOPE(PD_FUNCTION_SIG)
 #else
     #define PD_PROFILE_BEGIN_SESSION(name, file)
-    #define PD_PROFILE_END_SESSION(name, file)
+    #define PD_PROFILE_END_SESSION()
     #define PD_PROFILE_SCOPE_LINE2(name, line)
     #define PD_PROFILE_SCOPE_LINE(name, line)
     #define PD_FUNCTION_SIG                     "Unknown PD_FUNCTION_SIG"

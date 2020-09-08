@@ -1,0 +1,12 @@
+(1) TVector2D operator+(const TVector2D& rhs) const;
+    TVector2D operator+(const value_type& rhs) const;
+(2) TVector2D operator-(const TVector2D& rhs) const;
+    TVector2D operator-(const value_type& rhs) const;
+(3) TVector2D operator*(const TVector2D& rhs) const;
+    TVector2D operator*(const value_type& rhs) const;
+(4) TVector2D operator/(const TVector2D& rhs) const;
+    TVector2D operator/(const value_type& rhs) const;
+(5) TVector2D& operator+=(const TVector2D& rhs);
+(6) TVector2D& operator-=(const TVector2D& rhs);
+(7) TVector2D& operator*=(const TVector2D& rhs);
+(8) TVector2D& operator/=(const TVector2D& rhs);

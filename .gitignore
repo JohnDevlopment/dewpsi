@@ -16,6 +16,7 @@ Dewpsi/src/platform/sdl/close_code.h
 index.html
 imgui.ini
 results_*.json
+*.log
 
 # Make files
 *.make

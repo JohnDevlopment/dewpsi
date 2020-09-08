@@ -7,134 +7,134 @@
 namespace Dewpsi {
 #endif /* _DOXYGEN_DO_INCLUDE */
 
-/** @class Dewpsi::TVector3D
-*   @brief A 3D vector (x, y, z)
-*   @tparam Type An integral or floating-point type
-*   @ingroup vectors
+/** @class      Dewpsi::TVector3D
+*   @brief      A 3D vector (x, y, z)
+*   @tparam     Type An integral or floating-point type
+*   @par        Constructor
+*   @include    vector3_ctor.cpp
+*   Each constructor does the following:
+*   -# Constructs a vector that's initialized to zero.
+*   -# Constructs a copy of @a rhs.
+*   -# Aquires the contents of @a rhs.
+*   -# Constructs a vector initialized to @a x and @a y.
+*   -# Constructs a vector initialized to @a val.
+*   -# Copies one or three values in @a il to the vector, in order.
+*
+*   @par Relational Operators
+*   The ==, !=, <, >, <=, and >= operators are supported.
+*   @include vector3_relops.cpp
+*   -# Checks for the equality of three vectors.
+*   -# Checks for the inequality of three vectors.
+*   -# Checks if the vector is less than @a rhs.
+*   -# Checks if the vector is less than or equal to @a rhs.
+*   -# Checks if the vector is greater than @a rhs.
+*   -# Checks if the vector is greater than or equal to @a rhs.
+*
+*   @par Arithmetic Operators
+*   @include vector3_mathops.cpp
+*   The math operators +, -, *, and / are supported for arithmetic between a vector
+*   and a vector and between a vector and a value. The compound assignment operators
+*   +=, -=, *=, and /= are supported for between a vector and another vector.
+*
+*   @ingroup    vectors
 */
 template<typename Type>
 struct TVector3D {
-    /// Constructs an empty vector.
-    TVector3D() : x(0), y(0), z(0)
-    {  }
+    /// Type of the vector components
+    typedef Type value_type;
 
-    /** Initializes a vector with @a x, @a y, and @a z components.
-    *
-    *   @param  _x  The X component
-    *   @param  _y  The Y component
-    *   @param  _z  The Z component
-    */
-    TVector3D(Type _x, Type _y, Type _z) : x(_x), y(_y), z(_z)
-    {  }
-
-    /// Destroys the object.
-    ~TVector3D() {}
-
-    /// Copy constructor
-    TVector3D(const TVector3D& rhs) : x(rhs.x), y(rhs.y)
-    {  }
-
-    /// Move constructor
-    TVector3D(TVector3D&& rhs) : x(rhs.x), y(rhs.y)
-    {  }
-
-    /** Initialize vector with a list of values.
-    *   @snippet vectors.cpp Initialize Vector
-    */
+    TVector3D() : x(0), y(0), z(0) {}
+    TVector3D(const TVector3D& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {}
+    TVector3D(TVector3D&& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {}
+    TVector3D(const value_type& _x, const value_type& _y, const value_type& _z)
+    : x(_x), y(_y), z(_z) {}
+    TVector3D(const value_type& _val) : x(_val), y(_val), z(_val) {}
     TVector3D(std::initializer_list<Type> il) : x(0), y(0), z(0)
     {
         PDuint i = 0;
 
-        const Type* const end = il.end();
-        for (const Type* itr = il.begin(); itr != end; ++itr)
+        const value_type* const end = il.end();
+        for (const value_type* itr = il.begin(); itr != end; ++itr)
         {
             if (i >= 3) break;
-            reinterpret_cast<Type*>(&x)[i++] = *itr;
+            reinterpret_cast<value_type*>(&x)[i++] = *itr;
         }
     }
 
-    /** Add two vectors together.
-    *
-    *   @snippet vectors.cpp Add Vectors
-    */
+    /// Default destructor.
+    ~TVector3D() = default;
+
     TVector3D operator+(const TVector3D& rhs) const
     {
-        TVector3D res = {x, y, z};
-        res.x += rhs.x;
-        res.y += rhs.y;
-        res.z += rhs.z;
+        TVector3D res = {x + rhs.x, y + rhs.y, z + rhs.z};
         return res;
     }
-
-    /** Subtract two vectors.
-    *
-    *   @snippet vectors.cpp Subtract Vectors
-    */
     TVector3D operator-(const TVector3D& rhs) const
     {
-        TVector3D res = {x, y, z};
-        res.x -= rhs.x;
-        res.y -= rhs.y;
-        res.z -= rhs.z;
+        TVector3D res = {x - rhs.x, y - rhs.y, z - rhs.z};
         return res;
     }
-
-    /** Multiply two vectors.
-    *
-    *   @snippet vectors.cpp Multiply Vectors
-    */
     TVector3D operator*(const TVector3D& rhs) const
     {
-        TVector3D res = {x, y, z};
-        res.x *= rhs.x;
-        res.y *= rhs.y;
-        res.z *= rhs.z;
+        TVector3D res = {x * rhs.x, y * rhs.y, z * rhs.z};
         return res;
     }
-
-    /** Divide two vectors.
-    *
-    *   @snippet vectors.cpp Divide Vectors
-    */
     TVector3D operator/(const TVector3D& rhs) const
     {
-        TVector3D res = {x, y, z};
-
+        TVector3D res;
         res.x = (res.x && rhs.x) ? (res.x / rhs.x) : 0;
         res.y = (res.y && rhs.y) ? (res.y / rhs.y) : 0;
         res.z = (res.z && rhs.z) ? (res.z / rhs.z) : 0;
 
         return res;
     }
+    TVector3D operator+(const value_type& rhs) const
+    {
+        return {x + rhs, y + rhs, z + rhs};
+    }
+    TVector3D operator-(const value_type& rhs) const
+    {
+        return {x - rhs, y - rhs, z - rhs};
+    }
+    TVector3D operator*(const value_type& rhs) const
+    {
+        return {x * rhs, y * rhs, z * rhs};
+    }
 
-    /// Compond addition
+    TVector3D operator/(const value_type& rhs) const
+    {
+        TVector3D res;
+        if (rhs)
+        {
+            res.x = x ? (x / rhs) : 0;
+            res.y = y ? (y / rhs) : 0;
+            res.z = z ? (z / rhs) : 0;
+        }
+
+        return res;
+    }
+
     TVector3D& operator+=(const TVector3D& rhs) {
-        x = x + rhs.x;
-        y = y + rhs.y;
-        z = z + rhs.z;
+        x += rhs.x;
+        y += rhs.y;
+        z += rhs.z;
 
     return *this;
     }
-
-    /// Compond subtraction
     TVector3D& operator-=(const TVector3D& rhs) {
-        x = x - rhs.x;
-        y = y - rhs.y;
-        z = z - rhs.z;
+        x -= rhs.x;
+        y -= rhs.y;
+        z -= rhs.z;
 
     return *this;
     }
-
-    /// Compond multiplication
     TVector3D& operator*=(const TVector3D& rhs) {
-        x = x * rhs.x;
-        y = y * rhs.y;
-        z = z * rhs.z;
+        x *= rhs.x;
+        y *= rhs.y;
+        z *= rhs.z;
 
     return *this;
     }
-
-    /// Compond division
     TVector3D& operator/=(const TVector3D& rhs) {
         x = (x && rhs.x) ? (x / rhs.x) : 0;
         y = (y && rhs.y) ? (y / rhs.y) : 0;
@@ -143,52 +143,41 @@ struct TVector3D {
     return *this;
     }
 
-    /// Returns true if two vectors are equal.
-    bool operator==(const TVector3D& rhs) const {
+    // Relational operators
+
+    bool operator==(const TVector3D& rhs) const
+    {
         return x == rhs.x && y == rhs.y && z == rhs.z;
     }
-
-    /// Returns true if two vectors are not equal.
-    bool operator!=(const TVector3D& rhs) const {
+    bool operator!=(const TVector3D& rhs) const
+    {
         return x != rhs.x && y != rhs.y;
     }
-
-    /** Returns true if the vector is less than @a rhs.
-    *   @snippet vectors.cpp Bool Less
-    */
-    bool operator<(const TVector3D& rhs) const {
+    bool operator<(const TVector3D& rhs) const
+    {
         return x < rhs.x && y < rhs.y && z < rhs.z;
     }
-
-    /** Returns true if the vector is less than or equal to @a rhs.
-    *   @snippet vectors.cpp Bool LessEqual
-    */
-    bool operator<=(const TVector3D& rhs) const {
+    bool operator<=(const TVector3D& rhs) const
+    {
         return x <= rhs.x && y <= rhs.y && z <= rhs.z;
     }
-
-    /** Returns true if the vector is greater than @a rhs.
-    *   @snippet vectors.cpp Bool Great
-    */
-    bool operator>(const TVector3D& rhs) const {
+    bool operator>(const TVector3D& rhs) const
+    {
         return x > rhs.x && y > rhs.y && z > rhs.z;
     }
-
-    /** Returns true if the vector is greater than or equal to @a rhs.
-    *   @snippet vectors.cpp Bool GreatEqual
-    */
-    bool operator>=(const TVector3D& rhs) const {
+    bool operator>=(const TVector3D& rhs) const
+    {
         return x >= rhs.x && y >= rhs.y && z >= rhs.z;
     }
 
-    /// Assignment operator
+    // Assignment
+
     TVector3D& operator=(const TVector3D& rhs)
     {
         Copy(rhs);
         return *this;
     }
 
-    /// Assignment operator
     TVector3D& operator=(TVector3D&& rhs)
     {
         Copy(rhs);

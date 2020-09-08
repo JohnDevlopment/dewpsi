@@ -44,6 +44,15 @@ void OpenGLShader::UnBind() const
     glUseProgram(0);
 }
 
+void OpenGLShader::UploadUniformMat4(const PDstring& name, const float* values)
+{
+    PD_CORE_ASSERT(values, "NULL 'values' parameter");
+    glUseProgram(m_ShaderID);
+    GLint temp = glGetUniformLocation(m_ShaderID, name.c_str());
+    PD_CORE_ASSERT(temp >= 0, "Invalid shader program");
+    glUniformMatrix4fv(temp, 1, GL_FALSE, values);
+}
+
 }
 
 // INTERNAL

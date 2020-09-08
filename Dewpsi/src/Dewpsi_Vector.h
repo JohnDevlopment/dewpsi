@@ -4,7 +4,7 @@
 #include <Dewpsi_Core.h>
 #include <initializer_list>
 #include <cmath>
-
+#include <Dewpsi_Traits.h>
 
 /**
 *   @file       Dewpsi_Vector.h
@@ -20,6 +20,39 @@ namespace Dewpsi {
     #include <bits/Dewpsi_Bits_Vec3.hpp>
     #include <bits/Dewpsi_Bits_Vec2.hpp>
     /// @endcond
+
+    template<typename To, typename From>
+    TVector2D<To> VectorCast(const TVector2D<From>& vct)
+    {
+        return {static_cast<To>(vct.x), static_cast<To>(vct.y)};
+    }
+
+    /** Creates a 2D vector.
+    *   @param  x   X component
+    *   @param  y   Y component
+    *   @return     A @doxtype{TVector2D} with the X and Y components
+    *   @ingroup    vectors
+    */
+    template<typename T>
+    TVector2D<T> Create2DVector(T x, T y)
+    {
+        return TVector2D<T>(x, y);
+    }
+
+    /** Constructs a 2D vector.
+    *   @param  xy  Used to initialize the X and Y components
+    *   @return     A @doxtype{TVector2D} with the X and Y components
+    *   @ingroup    vectors
+    */
+    template<typename T>
+    TVector2D<T> Create2DVector(T xy)
+    {
+        return TVector2D<T>(xy, xy);
+    }
+
+    /// This function is disabled.
+    template<typename T>
+    TVector2D<T> Create2DVector() = delete;
 }
 
 /// Extraction operator between @c std::ostream and TVector3D.
