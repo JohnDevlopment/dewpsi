@@ -89,9 +89,9 @@ namespace Dewpsi {
     template<>
     inline Color DefineColor<float>(float red, float green, float blue)
     {
-        Color temp((uint8_t) Clamp(0, 255, static_cast<int>(red * 255.0f)),
-                    (uint8_t) Clamp(0, 255, static_cast<int>(green * 255.0f)),
-                    (uint8_t) Clamp(0, 255, static_cast<int>(blue * 255.0f)),
+        Color temp((uint8_t) clamp(0, 255, static_cast<int>(red * 255.0f)),
+                    (uint8_t) clamp(0, 255, static_cast<int>(green * 255.0f)),
+                    (uint8_t) clamp(0, 255, static_cast<int>(blue * 255.0f)),
                     255);
 
         return temp;

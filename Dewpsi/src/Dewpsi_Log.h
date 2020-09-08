@@ -13,9 +13,12 @@
 */
 
 #include <Dewpsi_Core.h>
+#include <Dewpsi_Memory.h>
 #include <memory>
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
+#include <spdlog/sinks/stdout_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 namespace Dewpsi {
     /** Main logger interface.
@@ -27,28 +30,19 @@ namespace Dewpsi {
         static void Init();
 
         /// Returns true if the logger is initialized.
-        static bool IsInit()
-        {
-            return s_Initted;
-        }
+        static bool IsInit() {return s_Initted;}
 
         /// Returns a pointer to the core logger.
-        static std::shared_ptr<spdlog::logger>& GetCoreLogger()
-        {
-            return s_CoreLogger;
-        }
+        static std::shared_ptr<spdlog::logger>& GetCoreLogger() {return s_CoreLogger;}
 
         /// Returns a pointer to the client logger.
-        static std::shared_ptr<spdlog::logger>& GetClientLogger()
-        {
-            return s_ClientLogger;
-        }
+        static std::shared_ptr<spdlog::logger>& GetClientLogger() {return s_ClientLogger;}
 
-        /// Creates a generic stdout logger.
-        static std::shared_ptr<spdlog::logger> NewStdoutLogger(const std::string& name);
-
-        /// Creates a generic stderr logger.
-        static std::shared_ptr<spdlog::logger> NewStderrLogger(const std::string& name);
+        /** Creates a new file logger.
+        *   @param  file    A string containing the path to a file to write to
+        *   @return         A shared pointer to the file logger
+        */
+        static std::shared_ptr<spdlog::logger> NewFileLogger(const PDstring& name, const PDstring& file);
 
     private:
         static std::shared_ptr<spdlog::logger> s_CoreLogger;

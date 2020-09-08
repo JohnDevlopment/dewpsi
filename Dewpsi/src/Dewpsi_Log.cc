@@ -4,7 +4,6 @@
 #include <cstdarg>
 #include <cstdio>
 
-
 static std::unique_ptr<char[]> g_pError(new char[500]);
 
 namespace Dewpsi {
@@ -27,16 +26,9 @@ void Log::Init()
     s_Initted = true;
 }
 
-std::shared_ptr<spdlog::logger> Log::NewStdoutLogger(const std::string& name)
+std::shared_ptr<spdlog::logger> Log::NewFileLogger(const PDstring& name, const PDstring& file)
 {
-    auto retval = spdlog::stdout_logger_mt(name);
-    return retval;
-}
-
-std::shared_ptr<spdlog::logger> Log::NewStderrLogger(const std::string& name)
-{
-    auto retval = spdlog::stderr_logger_mt(name);
-    return retval;
+    return std::shared_ptr<spdlog::logger>(spdlog::basic_logger_mt(name, file, true));
 }
 
 void SetError(const char* fmt, ...)

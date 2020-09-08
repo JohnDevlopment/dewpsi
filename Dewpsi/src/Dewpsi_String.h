@@ -24,40 +24,31 @@ namespace Dewpsi {
     */
     class StaticString {
     public:
+        typedef const char* iterator; ///< Iterator type
+
         /// Statically links @a str into the code.
         template<size_t N>
-        constexpr StaticString(const char (&str)[N]) : m_string(str), m_length(N)
+        constexpr StaticString(const char (&str)[N]) : m_String(str), m_Length(N)
         {  }
 
         /// Returns the a string.
         constexpr const char* get() const
-        { return m_string; }
+        { return m_String; }
 
         /// Returns the length of the string.
         constexpr size_t size() const
-        { return m_length; }
+        { return m_Length; }
+
+        /// Returns an iterator to the beginning of the string.
+        constexpr iterator begin() const {return m_String;}
+
+        /// Returns an iterator to the end of the string.
+        constexpr iterator end() const {return m_String + m_Length;}
 
     private:
-        const char* m_string;
-        const size_t m_length;
+        const char* m_String;
+        const size_t m_Length;
     };
-
-    /*template<class T, size_t N>
-    class StaticDArray {
-    public:
-        typedef std::decay<T>::type Type;
-
-        StaticDArray()
-            : m_pElements(new Type[N]),
-              m_szLen(N)
-        {
-            // ctor
-        }
-
-    private:
-        Type * m_pElements;
-        const size_t m_szLen;
-    };*/
 
     namespace String {
         /** Returns the first occurrence of @a ch in @a str.
@@ -82,6 +73,26 @@ namespace Dewpsi {
             return ::std::strrchr(str, ch);
         }
 
+        /** Convert a lowercase character to an uppercase character.
+        *   @param  ch  Character to be converted casted as an integer
+        *   @return     The uppercase equivalent of @a ch, if there is one, or @a ch otherwise
+        */
+        PD_FORCE_INLINE char ToUpper(int ch)
+        {
+            constexpr char diff = 'a' - 'A';
+            return ((char) ch >= 'a') && ((char) ch <= 'z') ? (char) ch - diff : (char) ch;
+        }
+
+        /** Convert a uppercase character to an lowercase character.
+        *   @param  ch  Character to be converted casted as an integer
+        *   @return     The uppercase equivalent of @a ch, if there is one, or @a ch otherwise
+        */
+        PD_FORCE_INLINE char ToLower(int ch)
+        {
+            constexpr char diff = 'a' - 'A';
+            return ((char) ch >= 'A') && ((char) ch <= 'Z') ? (char) ch + diff : (char) ch;
+        }
+
         /** Returns the length of the string @a str.
         *
         *   @param  str A string, must not be @c NULL
@@ -93,6 +104,35 @@ namespace Dewpsi {
             return ::std::strlen(str);
         }
 
+        /** Parses the C-string @a str, interpreting it as an integer.
+        *   @param  str A C-string with the characters to be interpreted as digits. Depending
+        *               on the first two characters, the string can be interpreted in one of three
+        *               ways: 1. if the first two characters are "0x", interpret as a hexadecimal
+        *               string; 2. if the first character is a zero, and the second isn't 'x',
+        *               interpret as an octal number; 3. if all other tests fail, interpret as a
+        *               decimal number.
+        *   @return     A %c long %c int containing the converted number. If the result is zero,
+        *               and the string contained non-zero digits, then that means the string
+        *               exceeded the integer range. Call GetError() to retrieve the error message.
+        */
+        PD_CALL long int StringToLong(const char* str);
+
+        /** Parses the C-string @a str, interpreting it as an integer.
+        *   @param  str A C-string with the characters to be interpreted as digits. Depending
+        *               on the first two characters, the string can be interpreted in one of three
+        *               ways: 1. if the first two characters are "0x", interpret as a hexadecimal
+        *               string; 2. if the first character is a zero, and the second isn't 'x',
+        *               interpret as an octal number; 3. if all other tests fail, interpret as a
+        *               decimal number.
+        *   @return     An %c int containing the converted number. If the result is zero,
+        *               and the string contained non-zero digits, then that means the string
+        *               exceeded the integer range. Call GetError() to retrieve the error message.
+        */
+        PD_FORCE_INLINE int StringToInt(const char* str)
+        {
+            return static_cast<int>(StringToLong(str));
+        }
+
         /** Fills a block of memory with the constant byte @a byte.
         *   This function sets the first @a len bytes in the memory
         *   area pointed to by @a dst with the constant byte @a byte.
@@ -101,6 +141,7 @@ namespace Dewpsi {
         *   @param[in]  byte    The value to set each byte to
         *   @param[in]  len     Length of the memory area to fill
         *   @return             @a Dst is returned
+        *   @ingroup            strings
         */
         PD_CALL void MemSet(void* dst, int byte, size_t len);
 
@@ -120,7 +161,7 @@ namespace Dewpsi {
         *   @param  maxlen  The maximum number of characters to copy
         *   @param  mode    The only recognized value is PD_ALLOC
         *   @return         The number of characters copied or PD_INVALID on failure
-        *   @ingroup strings
+        *   @ingroup        strings
         */
         PD_CALL size_t Copy(char* dst, const char* src, size_t maxlen = -1, PDenum mode = PD_NULL);
 
@@ -151,8 +192,7 @@ namespace Dewpsi {
         *   @param  cnt String character length
         *   @param  ch  Fill character
         *   @return     A pointer to the allocated array or @c NULL if it ran out of memory
-
-        *   @ingroup strings
+        *   @ingroup    strings
         */
         PD_CALL char* New(const size_t cnt, char ch = '\0');
 

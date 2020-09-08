@@ -109,7 +109,6 @@ namespace Dewpsi {
         PDuint32 width;         ///< The width in pixels
         PDuint32 height;        ///< The height in pixels
         PDuint32 flags;         ///< Window/renderer flags
-        PDint32  index;         ///< Rendering device index (or -1 for first available device that supports all options)
         PDint32 openglattr[13]; ///< An array of OpenGL attributes (0 indicates no attribute)
 
         /// Constructs an empty structure

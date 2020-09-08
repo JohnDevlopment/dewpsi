@@ -5,21 +5,21 @@ namespace Dewpsi {
 
 WindowProps* Window::s_pWindowState = nullptr;
 
-WindowProps::WindowProps() : title(), width(0), height(0), flags(0), index(0), openglattr {0}
+WindowProps::WindowProps() : title(), width(0), height(0), flags(0), openglattr {0}
 {
     std::fill_n(openglattr, PD_ARRAYSIZE(openglattr), static_cast<int32_t>(WindowAttribute::Empty));
 }
 
 WindowProps::WindowProps(const WindowProps& src)
     : title(src.title), width(src.width), height(src.height), flags(src.flags),
-      index(src.index), openglattr {0}
+      openglattr {0}
 {
     std::copy_n(src.openglattr, PD_ARRAYSIZE(openglattr), openglattr);
 }
 
 WindowProps::WindowProps(WindowProps&& src)
     : title(PD_MOVE(src.title)), width(src.width), height(src.height),
-      flags(src.flags), index(src.index), openglattr()
+      flags(src.flags), openglattr()
 {
     std::copy_n(src.openglattr, PD_ARRAYSIZE(openglattr), openglattr);
 }
@@ -32,7 +32,6 @@ WindowProps& WindowProps::operator=(const WindowProps& rhs)
     width = rhs.width;
     height = rhs.height;
     flags = rhs.flags;
-    index = rhs.index;
     std::copy_n(openglattr, PD_ARRAYSIZE(openglattr), openglattr);
     return *this;
 }
@@ -45,7 +44,6 @@ WindowProps& WindowProps::operator=(WindowProps&& rhs)
     width = rhs.width;
     height = rhs.height;
     flags = rhs.flags;
-    index = rhs.index;
     std::copy_n(openglattr, PD_ARRAYSIZE(openglattr), openglattr);
     return *this;
 }

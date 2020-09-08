@@ -22,6 +22,7 @@
 #include <Dewpsi_Types.h>
 #include <Dewpsi_Log.h>
 #include <utility>
+#include <Dewpsi_Traits.h>
 
 /**
 *   @def    PD_APIENTRY
