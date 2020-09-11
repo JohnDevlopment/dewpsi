@@ -39,7 +39,7 @@ static constexpr Dewpsi::StaticString FalseTrueStrings[2] = { "false", "true" };
     #endif
 #endif
 
-static SDL_GLattr Dewpsi2SDL_GL_Attrib(Dewpsi::OpenGLAttributes attr);
+static SDL_GLattr Dewpsi2SDL_GL_Attrib(Dewpsi::WindowAttribute attr);
 static void SeparateFormat(PDuint32, Dewpsi::WindowModeInfo&);
 static int SDL_GL_Loader();
 
@@ -106,19 +106,19 @@ void SDL2Window::Init(const WindowProps& props)
     }
 
     // set OpenGL flags prior to window creation
-    for (int x = 0; x < int(OpenGLAttributes::Count); ++x)
+    for (int x = 0; x < int(WindowAttribute::Count); ++x)
     {
         int iAttrVal = 0;
         SDL_GLattr eAttr;
-        OpenGLAttributes eMyAttr;
+        WindowAttribute eMyAttr;
 
-        GetWindowOpenGLAttribute(props, eMyAttr, iAttrVal, static_cast<unsigned int>(x));
+        GetWindowAttribute(props, eMyAttr, iAttrVal, static_cast<unsigned int>(x));
 
         // no attribute given
-        if (eMyAttr == OpenGLAttributes::Empty)
+        if (eMyAttr == WindowAttribute::Empty)
             continue;
 
-        // convert Dewpsi::OpenGLAttributes to SDL_GLattr
+        // convert Dewpsi::WindowAttribute to SDL_GLattr
         eAttr = Dewpsi2SDL_GL_Attrib(eMyAttr);
         if ((int) eAttr >= 0)
             SDL_GL_SetAttribute(eAttr, iAttrVal);
@@ -232,13 +232,6 @@ void SDL2Window::Init(const WindowProps& props)
         m_data.width = w;
         m_data.height = h;
     }
-
-    // TODO: remove or edit this block
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_FRAMEBUFFER_SRGB);
-    glCullFace(GL_BACK);
-    ///////////////////////////////////////////////////////////////
 
     // get the dimensions and format of the window
     {
@@ -506,62 +499,62 @@ uint32_t Dewpsi2SDLKeyCode(Dewpsi::KeyCode code)
     return uiKey;
 }
 
-SDL_GLattr Dewpsi2SDL_GL_Attrib(Dewpsi::OpenGLAttributes attr)
+SDL_GLattr Dewpsi2SDL_GL_Attrib(Dewpsi::WindowAttribute attr)
 {
-    using Dewpsi::OpenGLAttributes;
+    using Dewpsi::WindowAttribute;
     SDL_GLattr eAttr;
 
     switch (attr)
     {
-    case OpenGLAttributes::Depth:
+    case WindowAttribute::Depth:
         eAttr = SDL_GL_DEPTH_SIZE;
         break;
 
-    case OpenGLAttributes::DoubleBuffer:
+    case WindowAttribute::DoubleBuffer:
         eAttr = SDL_GL_DOUBLEBUFFER;
         break;
 
-    case OpenGLAttributes::RedSize:
+    case WindowAttribute::RedSize:
         eAttr = SDL_GL_RED_SIZE;
         break;
 
-    case OpenGLAttributes::GreenSize:
+    case WindowAttribute::GreenSize:
         eAttr = SDL_GL_GREEN_SIZE;
         break;
 
-    case OpenGLAttributes::BlueSize:
+    case WindowAttribute::BlueSize:
         eAttr = SDL_GL_BLUE_SIZE;
         break;
 
-    case OpenGLAttributes::AlphaSize:
+    case WindowAttribute::AlphaSize:
         eAttr = SDL_GL_ALPHA_SIZE;
         break;
 
-    case OpenGLAttributes::AccelerationRequired:
+    case WindowAttribute::AccelerationRequired:
         eAttr = SDL_GL_ACCELERATED_VISUAL;
         break;
 
-    case OpenGLAttributes::MajorVersion:
+    case WindowAttribute::MajorVersion:
         eAttr = SDL_GL_CONTEXT_MAJOR_VERSION;
         break;
 
-    case OpenGLAttributes::MinorVersion:
+    case WindowAttribute::MinorVersion:
         eAttr = SDL_GL_CONTEXT_MINOR_VERSION;
         break;
 
-    case OpenGLAttributes::ContextFlags:
+    case WindowAttribute::ContextFlags:
         eAttr = SDL_GL_CONTEXT_FLAGS;
         break;
 
-    case OpenGLAttributes::BufferSize:
+    case WindowAttribute::BufferSize:
         eAttr = SDL_GL_BUFFER_SIZE;
         break;
 
-    case OpenGLAttributes::StencilSize:
+    case WindowAttribute::StencilSize:
         eAttr = SDL_GL_STENCIL_SIZE;
         break;
 
-    case OpenGLAttributes::ShareContext:
+    case WindowAttribute::ShareContext:
         eAttr = SDL_GL_SHARE_WITH_CURRENT_CONTEXT;
         break;
 

@@ -4,6 +4,7 @@
 #include "Dewpsi_String.h"
 #include "Dewpsi_OpenGL.h"
 #include "_Dewpsi_Int_Shader.h"
+#include "Dewpsi_Except.h"
 
 using Dewpsi::Internal::ShaderProgramSource;
 using Dewpsi::Internal::ShaderType;
@@ -24,6 +25,8 @@ OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string& frag
     ShaderProgramSource sources = { vertexSrc, fragmentSrc };
     m_ShaderID = CreateShader(sources);
     PD_CORE_ASSERT(m_ShaderID, "Failed to link shader program");
+    if (! m_ShaderID)
+        throw DewpsiError("OpenGL shader has failed to compile");
 }
 
 OpenGLShader::~OpenGLShader()
@@ -39,6 +42,15 @@ void OpenGLShader::Bind() const
 void OpenGLShader::UnBind() const
 {
     glUseProgram(0);
+}
+
+void OpenGLShader::UploadUniformMat4(const PDstring& name, const float* values)
+{
+    PD_CORE_ASSERT(values, "NULL 'values' parameter");
+    glUseProgram(m_ShaderID);
+    GLint temp = glGetUniformLocation(m_ShaderID, name.c_str());
+    PD_CORE_ASSERT(temp >= 0, "Invalid shader program");
+    glUniformMatrix4fv(temp, 1, GL_FALSE, values);
 }
 
 }

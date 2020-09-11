@@ -1,0 +1,12 @@
+(1) TVector3D operator+(const TVector3D& rhs) const;
+    TVector3D operator+(const value_type& rhs) const;
+(2) TVector3D operator-(const TVector3D& rhs) const;
+    TVector3D operator-(const value_type& rhs) const;
+(3) TVector3D operator*(const TVector3D& rhs) const;
+    TVector3D operator*(const value_type& rhs) const;
+(4) TVector3D operator/(const TVector3D& rhs) const;
+    TVector3D operator/(const value_type& rhs) const;
+(5) TVector3D& operator+=(const TVector3D& rhs);
+(6) TVector3D& operator-=(const TVector3D& rhs);
+(7) TVector3D& operator*=(const TVector3D& rhs);
+(8) TVector3D& operator/=(const TVector3D& rhs);

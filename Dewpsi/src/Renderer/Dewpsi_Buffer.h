@@ -13,7 +13,14 @@ namespace Dewpsi {
     /// @addtogroup renderer
     /// @{
 
-    /// Shader data type
+    /** Shader data type.
+    *   Values of this type must be scoped in @doxtype{ShaderDataType}.
+    *   See the example to see it in action:
+    *   @code{.cpp}
+        Dewpsi::ShaderDataType type = Dewpsi::ShaderDataType::float3;
+    *   @endcode
+    *   Valid constants of this type are as follows:
+    */
     enum class ShaderDataType : PDuint8 {
         Float,    ///< Single float
         Float2,	  ///< Two-component float
@@ -71,8 +78,8 @@ namespace Dewpsi {
     };
 
     /** Buffer layout description.
-    *	@note All data members are private.
-    *	@ingroup renderer
+    *   This is passed to the @doxtype{VertexBuffer} to format its data.
+    *   For an example on how to use this class, see the main page.
     */
     class BufferLayout {
         /// Vector type
@@ -128,12 +135,13 @@ namespace Dewpsi {
     /// Vertex buffer.
     class VertexBuffer {
     public:
-        virtual ~VertexBuffer() {  }
+        VertexBuffer() = default;
+        virtual ~VertexBuffer() {}
 
-        /// Bind the vertex array.
+        /// Bind the vertex buffer.
         virtual void Bind() const = 0;
 
-        /// Unbind the vertex array.
+        /// Unbind the vertex buffer.
         virtual void UnBind() const = 0;
 
         /// Get the layout of the vertex buffer.
@@ -143,6 +151,10 @@ namespace Dewpsi {
         virtual void SetLayout(const BufferLayout& layout) = 0;
 
         /** Creates a vertex buffer.
+        *   The API-specific vertex buffer is bound (according to the method of the API)
+        *   when this is created. Depending on the API, this is neccessary to supply that
+        *   API with the data.
+        *
         *	@param size  The size of the array pointed to by @a data in bytes
         *	@param data  A pointer to an array of floats that represent vertices
         *	@return      A pointer to the API and platform-specific vertex buffer

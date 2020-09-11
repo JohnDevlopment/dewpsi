@@ -93,8 +93,9 @@ IncludeDir["spdlog"] = "Dewpsi/vendor/spdlog/include"
 IncludeDir["imgui"] = "Dewpsi/vendor/imgui"
 IncludeDir["glad"] = "Dewpsi/vendor/glad/include"
 IncludeDir["getopt"] = "Dewpsi/vendor/getopt/include"
-IncludeDir["glm"] = "Dewpsi/vendor/glm/glm"
+IncludeDir["glm"] = "Dewpsi/vendor/glm"
 IncludeDir["inifile"] = "Dewpsi/vendor/inifile"
+IncludeDir["dm"] = "Dewpsi/vendor/dm"
 
 group "Dependencies"
     include "Dewpsi/vendor/imgui"
@@ -139,6 +140,7 @@ project "dewpsi"
         "%{IncludeDir.getopt}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.inifile}",
+        "%{IncludeDir.dm}",
         (srcdir),
         (srcdir .. "/debug"),
         (srcdir .. "/events"),
@@ -162,6 +164,7 @@ project "dewpsi"
         ("{COPY} " .. srcdir .. "/events/*.h ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/ImGui/*.h  ../Sandbox/src/dewpsi-include"),
         ("{COPY} " .. srcdir .. "/os/*.h  ../Sandbox/src/dewpsi-include"),
+        ("{COPY} " .. srcdir .. "/bits/*  ../Sandbox/src/dewpsi-include/bits"),
         ("{COPY} " .. srcdir .. "/Renderer/Dewpsi_RenderContext.h ../Sandbox/src/dewpsi-include"),
 
         "{COPY} %{prj.location}/vendor/glad/include/glad/glad.h ../Sandbox/src/dewpsi-include/glad/glad.h",
@@ -256,6 +259,7 @@ project "sandbox"
         "%{IncludeDir.getopt}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.inifile}",
+        "%{IncludeDir.dm}",
         "%{prj.location}/src",
         "%{prj.location}/src/dewpsi-include"
     }

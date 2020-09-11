@@ -4,8 +4,11 @@
 #include "sandbox.h"
 
 // Dewpsi
+#define PD_PROFILE 0
 #include <Dewpsi_Debug.h>
-#include <spdlog/sinks/stdout_sinks.h>
+#include <Dewpsi_Math.h>
+
+#include <DewpsiMath_Vec2.hpp>
 
 using Dewpsi::StaticString;
 
@@ -20,54 +23,52 @@ static Dewpsi::Application* App = nullptr;
 
 int main (int argc, char const* argv[])
 {
+    PD_PROFILE_BEGIN_SESSION("Startup", "results_startup.json");
+
+    // initialize the logging system
+    Dewpsi::Log::Init();
+
     Dewpsi::Scope<SandboxData> appData = Dewpsi::CreateScope<SandboxData>();
 
     // parse arguments in another function
     if (parseArguments(argc, argv, appData.get()) != PD_OKAY)
         return 1;
 
-    // initialize the logging system
-    Dewpsi::Log::Init();
-
     std::signal(SIGINT, forcequit);
     std::atexit(quit);
 
     {
-        using Dewpsi::SetWindowOpenGLAttribute;
+        using Dewpsi::SetWindowAttribute;
         Dewpsi::WindowProps props;
 
-        if (argc > 1)
-        {
-            if (std::strcmp(argv[1], "-l") == 0)
-                props.title = "list renderers";
-            else
-                props.title = "Client Dewpsi Application";
-        }
-        else
-            props.title = "Client Dewpsi Application";
-
-        props.x = PD_WINDOWPOS_CENTERED;
-        props.y = PD_WINDOWPOS_CENTERED;
-        props.width = 640;
-        props.height = 480;
-        props.index = 0;
+        props.x = appData->windowDim.x;
+        props.y = appData->windowDim.y;
+        props.width = appData->windowDim.w;
+        props.height = appData->windowDim.h;
+        props.title = appData->title;
         props.flags = Dewpsi::RendererVSync | Dewpsi::WindowOpenGL | Dewpsi::WindowResizable;
-        SetWindowOpenGLAttribute(props, Dewpsi::MajorVersion, 3);
-        SetWindowOpenGLAttribute(props, Dewpsi::MinorVersion, 3);
-        SetWindowOpenGLAttribute(props, Dewpsi::Depth, 24);
-        SetWindowOpenGLAttribute(props, Dewpsi::DoubleBuffer, 1);
-        SetWindowOpenGLAttribute(props, Dewpsi::StencilSize, 8);
+        appData->sizeRatio = Dewpsi::VectorCast<PDfloat>(Dewpsi::ratio(props.width, props.height));
+        SetWindowAttribute(props, Dewpsi::MajorVersion, 3);
+        SetWindowAttribute(props, Dewpsi::MinorVersion, 3);
+        SetWindowAttribute(props, Dewpsi::Depth, 24);
+        SetWindowAttribute(props, Dewpsi::DoubleBuffer, 1);
+        SetWindowAttribute(props, Dewpsi::StencilSize, 8);
         Dewpsi::SetWindowProps(props);
     }
 
     // start client application
     App = Dewpsi::NewApplication(appData.get());
+    PD_PROFILE_END_SESSION();
 
+    PD_PROFILE_BEGIN_SESSION("Update", "results_update.json");
     // run main loop
     App->Run();
+    PD_PROFILE_END_SESSION();
 
+    PD_PROFILE_BEGIN_SESSION("Shutdown", "results_shutdown.json");
     delete App;
     App = nullptr;
+    PD_PROFILE_END_SESSION();
     return 0;
 }
 
@@ -102,12 +103,11 @@ static constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
 
 static constexpr StaticString Usage = R"(
     sandbox -h
-    sandbox [-g] [-i FILE]
+    sandbox [-t title]
 
 Options:
-    -h      Display this help message.
-    -g      Disable the ImGui layer.
-    -i FILE Read the ini file FILE. <NULL>
+    -h          Display this help message.
+    -t TITLE    Set the title of the window (49 char max)
 )";
 
 int parseArguments(int argc, const char* argv[], SandboxData* data)
@@ -116,8 +116,6 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
     using std::cerr;
     using std::endl;
 
-    data->enableImGui = 1;
-
     // base name of the program
     const char* cpBaseName = Dewpsi::String::StringRevChar(argv[0], '/');
     if (! cpBaseName)
@@ -125,11 +123,16 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
     else
         ++cpBaseName;
 
-    // error logger
-    auto err_logger = Dewpsi::Log::NewStderrLogger("Argument Error");
-    err_logger->set_level(spdlog::level::info);
+    // default window title
+    Dewpsi::String::Copy(data->title, "Sandbox Application");
 
     int iCode = 1;
+
+    // window size
+    data->windowDim.x = PD_WINDOWPOS_CENTERED;
+    data->windowDim.y = PD_WINDOWPOS_CENTERED;
+    data->windowDim.w = 640U;
+    data->windowDim.h = 480U;
 
     // ImGui information
     data->guiInit.glslPath = ImGuiShaderPath.get();
@@ -137,44 +140,71 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
 
     do
     {
-        iCode = Dewpsi::GetOption(argc, (char**) argv, ":a:ghi:");
+        iCode = Dewpsi::GetOption(argc, (char**) argv, ":?t:x:y:w:h:");
         if (iCode > 0)
         {
             switch (iCode)
             {
-                case 'g':
-                    cout << "Disable Dear ImGui layer\n";
-                    data->enableImGui = 0;
-                    break;
-
-                case 'h':
+                case '?':
                     cout << Usage.get() << endl;
                     return PD_INVALID;
                     break;
 
-                case 'i':
-                    cout << "Read " << optarg << std::endl;
+                case 't':
+                    Dewpsi::String::Copy(data->title, optarg, 50);
                     break;
 
+                case 'x':
+                    {
+                        int temp = Dewpsi::String::StringToInt(optarg);
+                        if (temp > 0)
+                        {
+                            data->windowDim.x = (PDuint) temp;
+                        }
+                        break;
+                    }
+
+                case 'y':
+                    {
+                        int temp = Dewpsi::String::StringToInt(optarg);
+                        if (temp > 0)
+                        {
+                            data->windowDim.y = (PDuint) temp;
+                        }
+                        break;
+                    }
+
+                case 'w':
+                    {
+                        int temp = Dewpsi::String::StringToInt(optarg);
+                        if (temp > 0)
+                        {
+                            data->windowDim.w = (PDuint) temp;
+                        }
+                        break;
+                    }
+
+                case 'h':
+                    {
+                        int temp = Dewpsi::String::StringToInt(optarg);
+                        if (temp > 0)
+                        {
+                            data->windowDim.h = (PDuint) temp;
+                        }
+                        break;
+                    }
+
                 case ':':
-                    err_logger->error("Missing argument for '-{0}'", (char) optopt);
+                    PD_CORE_ERROR("Missing argument for '-{}'", optopt);
                     break;
 
                 default:
-                    err_logger->error("Unrecognized option '-{0}'", (char) iCode);
+                    PD_CORE_ERROR("Unrecognized option '-{}'", optopt);
                     break;
             }
         } // end if (iCode > 0)
     }
     while (iCode > 0);
-
-    if (optind < argc)
-        cout << "Printing non-options\n";
-
-    while (optind < argc)
-    {
-        cout << "argv[" << optind << "] = " << argv[optind++] << '\n';
-    }
 
     return PD_OKAY;
 }

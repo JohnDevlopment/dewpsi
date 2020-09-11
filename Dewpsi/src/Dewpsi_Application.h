@@ -46,9 +46,72 @@
 *   to the derived class as the client wills. It can be used, for example,
 *	to hold parameters used to initialize the @c Sandbox application.
 *
-*   @section    flow_sec Flow of the Application
-*   Calling Application::Run() initiates the main loop of the application.
-*   (1) All the registered layers are processed in sequential order.
+*   @section    render_sec Setting Up The Renderer
+*   @parblock
+*   All these steps are done after creating the window.
+*
+*   The first step is to initialize the renderer by telling it what API to use. Then you
+*   create the shader, as shown below:
+*   @dontinclude render.cpp
+*   @until delete
+*
+*   Dewpsi::Shader::Create() accepts two parameters, strings, that contain the source code of the
+*   vertex shader and fragment shader. The function returns a pointer to the base class
+*   Dewpsi::Shader. If the shader fails to compile, an exception is thrown and an error message
+*   is printed to the standard error channel (see information on std::cerr or stderr). In any case,
+*   if the function returns successfully then you have a valid shader object. The window must be
+*   created before a shader can be compiled. That is because when the window is created in %Dewpsi,
+*   a rendering context is also created. And this context loads the library the whatever API.
+*
+*   Now a note on shaders: The shader source code is in the language that the underlying API uses
+*   for its shaders. For example, if using OpenGL the shader is written in GLSL.
+*
+*   The next step is creating the vertex array. Vertex arrays must be bound prior to making the
+*   vertex and index buffers.
+*   @skip Vertex array
+*   @until Bind
+*   Dewpsi::VertexArray::Create() accepts no parameters and returns a pointer to the base class
+*   @doxtype{Dewpsi::VertexArray}. As noted in the documentation, the vertex array is not bound
+*   automatically after creation. You must bind it yourself by calling @doxfunc{VertexArray::Bind}.
+*
+*   After the vertex array is created and bound, the vertex buffer can be created. As a side-note,
+*   you can create a vertex buffer and index buffer in either order; they just have to be added to
+*   the vertex array at roughly the same time.
+*   @skip Creating vertex buffer
+*   @until Dewpsi::VertexBuffer::Create
+*
+*   After the vertex buffer contains data, the vertex buffer must then be told the layout
+*   of said data. That is done by calling Dewpsi::VertexBuffer::SetLayout(). It accepts a
+*   @doxtype{BufferLayout}, a data structure that tells shaders how to interpret data that is
+*   sent to them via vertex attributes.
+*   @skip Vertex buffer layout
+*   @until SetLayout
+*
+*   @doxtype{BufferElement}, the type held by @doxtype{BufferLayout}, accepts two to three
+*   parameters. The first parameter is the type of data being sent to the shader. It is a
+*   constant of @ref Dewpsi::ShaderDataType "ShaderDataType". The second parameter is a name for the data, as a string.
+*   The third parameter is optional: a boolean that determines whether the data will be normalized.
+*   It defaults to @c false. For more information, see the documentation for
+*   @ref Dewpsi::BufferLayout "BufferLayout".
+*
+*   Define an array of indices before creating the index buffer. Then create the index buffer and
+*   feed the data into it.
+*   @skip indices
+*   @line indices
+*   @line Dewpsi::IndexBuffer::Create
+*
+*   After the vertex and index buffers are created, they can be added to the vertex array.
+*
+*   @snippet render.cpp Add buffers to array
+*
+*   And from there the vertex array can finally be drawn.
+*
+*   @endparblock
+*
+    @section    useRender_sec Using the Renderer
+    @parblock
+    aaaa
+    @endparblock
 */
 
 /**

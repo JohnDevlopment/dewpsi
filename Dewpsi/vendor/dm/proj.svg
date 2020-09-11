@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- viewBox="0 0 200 200"
+width="200" height="150" -->
+<svg xmlns="http://www.w3.org/2000/svg" stroke="#106D0E" width="200" height="150" >
+    <ellipse cx="96" cy="67" rx="95" ry="65" style="fill:#106D0E;stroke-width:1;stroke:#106D0E" />
+    <ellipse cx="96" cy="77" rx="93" ry="65" style="fill:white;stroke-width:1;stroke:white" />
+    <text x="32" y="100" fill="#106D0E" style="font-size: 80px">DM</text>
+</svg>

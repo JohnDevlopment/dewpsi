@@ -44,6 +44,9 @@ namespace Dewpsi {
 		/// Draws the given vertex array.
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) = 0;
 
+		/// Sets the new current API.
+		static void SetAPI(API api) {s_API = api;}
+
 		/// Returns the current API.
 		static API GetAPI() {return s_API;}
 

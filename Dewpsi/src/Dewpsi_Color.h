@@ -5,6 +5,8 @@
 *   @file       Dewpsi_Color.h
 *   @brief      A header for the Dewpsi engine.
 *
+*   @defgroup   colors Colors
+*   Functions and types involving colors.
 *   @ingroup    core
 */
 
@@ -13,22 +15,29 @@
 #include <Dewpsi_Math.h>
 
 /// Red green and blue values for the color black
+/// @ingroup colors
 #define PD_COLOR_BLACK  0, 0, 0
+
+/// Unpacks a @c %Color into a comma-separated list of its components.
+/// Apropriate for use as parameter arguments or array members.
+/// @ingroup colors
+#define PD_COLOR_UNPACK3(color) color.red, color.green, color.blue
 
 namespace Dewpsi {
     /** A structure representing a color.
-    *   @ingroup core
+    *   @doxcout
+    *   @ingroup colors
     */
     struct Color {
         uint8_t red;    ///< The red component
         uint8_t green;  ///< The green component
         uint8_t blue;   ///< The blue component
         uint8_t alpha;  ///< The alpha component (255 means opaque, 0 is fully transparent)
-        
+
         /// Constructs a Color with default parameters: red, green, blue all zero, but alpha is 255.
         Color() : red(0), green(0), blue(0), alpha(255)
         {  }
-        
+
         /** Constructs a Color with the given color components.
         *   @param  r   Red component
         *   @param  g   Green component
@@ -39,20 +48,21 @@ namespace Dewpsi {
             : red(r), green(g), blue(b), alpha(a)
         {  }
     };
-    
+
     /** A structure representing a color.
-    *   @ingroup core
+    *   @doxcout
+    *   @ingroup colors
     */
     struct FColor {
         float red;    ///< The red component
         float green;  ///< The green component
         float blue;   ///< The blue component
         float alpha;  ///< The alpha component (255 means opaque, 0 is fully transparent)
-        
+
         /// Constructs an FColor with all-zero values.
         FColor() : red(0.0f), green(0.0f), blue(0.0f), alpha(1.0f)
         {  }
-        
+
         /// Accepts a Color and turns it into an FColor.
         FColor(const Color& color)
             : red((float) color.red / 255.0f),
@@ -61,13 +71,13 @@ namespace Dewpsi {
               alpha((float) color.alpha / 255.0f)
         {  }
     };
-    
+
     /** Returns a Color structure with the given color components.
     *   @param      red     The red component of a color. Can be 0-255.
     *   @param      green   The green component of a color. Can be 0-255.
     *   @param      blue    The blue component of a color. Can be 0-255.
     *   @note               This function sets the alpha component to 255.
-    *   @ingroup    core
+    *   @ingroup    colors
     */
     template<typename T>
     inline Color DefineColor(T red, T green, T blue)
@@ -75,24 +85,24 @@ namespace Dewpsi {
         Color temp ((uint8_t) red, (uint8_t) green, (uint8_t) blue, 255);
         return temp;
     }
-    
+
     template<>
     inline Color DefineColor<float>(float red, float green, float blue)
     {
-        Color temp((uint8_t) Clamp(0, 255, static_cast<int>(red * 255.0f)),
-                    (uint8_t) Clamp(0, 255, static_cast<int>(green * 255.0f)),
-                    (uint8_t) Clamp(0, 255, static_cast<int>(blue * 255.0f)),
+        Color temp((uint8_t) clamp(0, 255, static_cast<int>(red * 255.0f)),
+                    (uint8_t) clamp(0, 255, static_cast<int>(green * 255.0f)),
+                    (uint8_t) clamp(0, 255, static_cast<int>(blue * 255.0f)),
                     255);
-        
+
         return temp;
     }
-    
+
     /** Returns a Color structure with the given color components.
     *   @param      red     The red component of a color. Can be 0-255.
     *   @param      green   The green component of a color. Can be 0-255.
     *   @param      blue    The blue component of a color. Can be 0-255.
     *   @param      alpha   The alpha component of a color. Can be 0-255.
-    *   @ingroup    core
+    *   @ingroup    colors
     */
     template<typename T>
     inline Color DefineColor(T red, T green, T blue, T alpha)
