@@ -9,6 +9,9 @@
 #include <Dewpsi_Memory.h>
 #include <Dewpsi_Shader.h>
 #include <Dewpsi_Vector.h>
+#include <Dewpsi_OrthoCamera.h>
+#include <Dewpsi_String.h>
+#include <Dewpsi_Rect.h>
 
 namespace SandboxAppNS {
     struct Vertex {
@@ -18,17 +21,23 @@ namespace SandboxAppNS {
 }
 
 struct SandboxData {
-    PDchar enableImGui;
+    Dewpsi::Rectui windowDim;
     Dewpsi::ImGuiInitData guiInit;
+    char title[50];
+    Dewpsi::TVector2D<PDfloat> sizeRatio;
 
-    SandboxData() : enableImGui(0), guiInit()
-    {  }
+    SandboxData()
+    {
+        Dewpsi::String::MemSet(title, 0, sizeof(title));
+    }
 };
 
 // sandbox application layer
 class SandboxLayer : public Dewpsi::Layer {
 public:
-    SandboxLayer() : Layer("Sandbox")
+    SandboxLayer(SandboxData* data)
+    : Layer("Sandbox"),
+      m_Camera(-data->sizeRatio.x, data->sizeRatio.x, -data->sizeRatio.y, data->sizeRatio.y)
     {  }
 
     ~SandboxLayer()
@@ -47,6 +56,7 @@ private:
     Dewpsi::Ref<Dewpsi::VertexArray> m_VertexArray;
     Dewpsi::Ref<Dewpsi::VertexBuffer> m_VertexBuffer;
     Dewpsi::Ref<Dewpsi::IndexBuffer> m_IndexBuffer;
+    Dewpsi::OrthoCamera m_Camera;
 };
 
 // sandbox application

@@ -1,5 +1,4 @@
 #include "sandbox.h"
-
 #include <Dewpsi_Log.h>
 #include <Dewpsi_Window.h>
 #include <Dewpsi_Application.h>
@@ -12,13 +11,16 @@
 #define PD_PROFILE 0
 #include <Dewpsi_Debug.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
 static constexpr Dewpsi::StaticString _VertShaderOpenGL = R"(
     #version 430 core
     layout(location = 0) in vec2 In_Position;
     layout(location = 1) in vec3 In_Color;
+    uniform mat4 U_ViewProjection;
     out vec3 V_Color;
     void main() {
-        gl_Position = vec4(In_Position, 0.0, 1.0);
+        gl_Position = U_ViewProjection * vec4(In_Position, 0.0, 1.0);
         V_Color = In_Color;
     }
 )";
@@ -89,11 +91,10 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
 {
-    Dewpsi::Renderer::BeginScene();
+    PD_PROFILE_FUNCTION();
+    Dewpsi::Renderer::BeginScene(m_Camera);
 
-    m_Program->Bind();
-    m_VertexArray->Bind();
-    Dewpsi::Renderer::Submit(m_VertexArray);
+    Dewpsi::Renderer::Submit(m_Program, m_VertexArray);
     m_VertexArray->UnBind();
 
     Dewpsi::Renderer::EndScene();
@@ -120,5 +121,8 @@ Sandbox::Sandbox(PDuserdata userdata)
     m_UserData = userdata;
     SandboxData* data = (SandboxData*) userdata;
     PD_ASSERT(data, "NULL \"data\" pointer");
-    PushLayer(new SandboxLayer());
+    data->sizeRatio /= 100.0f;
+    PushLayer(new SandboxLayer(data));
+
+    PD_INFO("Window ratio is {0}", data->sizeRatio);
 }
