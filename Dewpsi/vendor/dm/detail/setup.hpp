@@ -6,6 +6,8 @@
 #include <cassert>
 #include <cstddef>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #define DM_VERSION_MAJOR    0
 #define DM_VERSION_MINOR    1
@@ -120,6 +122,12 @@ namespace dm {
 
         using ::std::make_unsigned;
         using ::std::ostream;
+
+        using ::std::sqrt;
+
+        using ::std::string;
+        using ::std::stringstream;
+        using ::std::to_string;
     }
 
 #if DM_CONFIG_LENGTH_TYPE == DM_LENGTH_SIZE_T

@@ -9,10 +9,35 @@ namespace dm {
     template<typename ValueType> struct TypeStringName;
 
     namespace std {
+        using ::std::true_type;
+        using ::std::false_type;
         using ::std::enable_if;
         using ::std::is_convertible;
         using ::std::is_floating_point;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Floating point type
+
+    template<typename T>
+    struct FloatType {
+        //static_assert(false, "Invalid type: not a floating point!");
+    };
+
+    template<>
+    struct FloatType<float> {
+        typedef float type;
+    };
+
+    template<>
+    struct FloatType<double> {
+        typedef double type;
+    };
+
+    template<>
+    struct FloatType<long double> {
+        typedef long double type;
+    };
 
     ////////////////////////////////////////////////////////////////////////////////
     // Vector traits

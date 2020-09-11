@@ -9,6 +9,8 @@
 
 namespace dm {
 
+    // -- Constructors --
+
     template<typename T>
     Vec<2, T>::Vec()
     {
@@ -24,6 +26,11 @@ namespace dm {
     : x(_x), y(_y) {}
 
     template<typename T>
+    Vec<2, T>::Vec(const Vec<2, T>& src) : x(src.x), y(src.y) {}
+
+    // -- Accessors --
+
+    template<typename T>
     typename Vec<2, T>::value_type& Vec<2, T>::operator[](Vec<2, T>::length_type i)
     {
         assert(i < 2);
@@ -37,10 +44,56 @@ namespace dm {
         return (&x)[i];
     }
 
+    // -- Relational Operators --
+
+    template<typename T>
+    bool Vec<2, T>::operator==(const Vec& b) const
+    {
+        return (x == b.x) && (y == b.y);
+    }
+
+    template<typename T>
+    bool Vec<2, T>::operator!=(const Vec& b) const
+    {
+        return (x != b.x) && (y != b.y);
+    }
+
+    template<typename T>
+    bool Vec<2, T>::operator<=(const Vec& b) const
+    {
+        return (x <= b.x) && (y <= b.y);
+    }
+
+    template<typename T>
+    bool Vec<2, T>::operator>=(const Vec& b) const
+    {
+        return (x >= b.x) && (y >= b.y);
+    }
+
+    template<typename T>
+    bool Vec<2, T>::operator<(const Vec& b) const
+    {
+        return (x < b.x) && (y < b.y);
+    }
+
+    template<typename T>
+    bool Vec<2, T>::operator>(const Vec& b) const
+    {
+        return (x > b.x) && (y > b.y);
+    }
+
     // -- Unary Operators --
 
     template<typename T>
     Vec<2, T>& Vec<2, T>::operator=(const Vec<2, T>& rhs)
+    {
+        x = rhs.x;
+        y = rhs.y;
+        return *this;
+    }
+
+    template<typename T>
+    Vec<2, T>& Vec<2, T>::operator=(Vec<2, T>&& rhs)
     {
         x = rhs.x;
         y = rhs.y;
@@ -116,7 +169,37 @@ namespace dm {
         return *this = *this % Vec<2, T>(rhs);
     }
 
+    // -- Vector functions --
+
+    // Calculate length
+    template<typename T>
+    float Vec<2, T>::Length() const
+    {
+        const float fX = (float) x;
+        const float fY = (float) y;
+        return std::sqrt(fX * fX + fY * fY);
+    }
+
+    template<>
+    float Vec<2, float>::Length() const {return std::sqrt(x * x + y * y);}
+
+    // Retrieve a string with the value of the vector.
+    template<typename T>
+    std::string Vec<2, T>::GetString() const
+    {
+        std::stringstream ss;
+        ss << '(' << x << ", " << y << ')';
+        return ss.str();
+    }
+
     // -- Non-member, non-operator functions --
+
+    // Normalize the vector
+    template<typename T>
+    Vec<2, T> normalize(const Vec<2, T>& v)
+    {
+        return v / static_cast<T>(v.Length());
+    }
 
     // Cast vector to a different type
     template<typename To, typename From>

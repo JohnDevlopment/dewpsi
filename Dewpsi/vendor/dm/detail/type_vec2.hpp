@@ -6,6 +6,8 @@
 
 #include "qualifier.hpp"
 #include <iostream>
+#include <string>
+#include <cmath>
 
 namespace dm {
     /** A vector with two components.
@@ -13,29 +15,20 @@ namespace dm {
     *   It can also represent a color. And to facilitate that function, each component
     *   can have one of two names.
     *
-    *   @par Data Members
-    *   @doxtype{Vec} contains two member variables of type @c T that represent the components
-    *   of the vector. Each component can have two different names, depending on the function
-    *   of said vector. The data members are part of an anonymous structure within a union.
+    *   The x component can be obtained through the members @a x or @a r. The y component
+    *   can be obtained through the members @a y or @a g.
     *
-    *   Position/Direction | Color
-    *   ------------------ | -----
-    *   x                  | r
-    *   y                  | g
+    *   @par Constructors
+    *   @include vec_ctor.cpp
+    *   -# Initialize the vector to zero
+    *   -# Initialize the vector to @a val
+    *   -# Initialize the vector to @a x and @a y
     *
-    *   @par Example
-    *   @code{.cpp}
-    *   Vec<2, float> vector1;
-    *   vector1.x = 5; // (5, 0)
-    *   vector1.y = 6; // (5, 6)
-    *   vector1.r = 10; // (10, 6)
-    *   vector1.g = 12; // (10, 12)
-    *   @endcode
+    *   @par Vector Athrimetic
+    *   @include vec_binOps.cpp
     *
-    *   @par Athrimetic Operators
-    *   @parblock
-        aa
-    *   @endparblock
+    *   @par Relational Operators
+    *   Two vectors can be compared with each other using the ==, !=, <=, >=, <, and > operators.
     *
     *   @tparam T A integral or floating-point type
     *   @ingroup core
@@ -53,10 +46,12 @@ namespace dm {
         Vec(value_type _val);
         Vec(value_type _x, value_type _y);
 
+        Vec(const Vec& src);
+
         ~Vec() = default;
 
         /// Returns the number of components.
-        static DM_CONSTEXPR length_type Length() {return 2;};
+        static DM_CONSTEXPR length_type Count() {return 2;};
 
         // -- Getter Functions --
 
@@ -70,10 +65,22 @@ namespace dm {
         */
         const value_type& operator[](length_type i) const;
 
+        // -- Relational Operators --
+
+        bool operator==(const Vec& b) const;
+        bool operator!=(const Vec& b) const;
+        bool operator<=(const Vec& b) const;
+        bool operator>=(const Vec& b) const;
+        bool operator<(const Vec& b) const;
+        bool operator>(const Vec& b) const;
+
         // -- Unary Operators --
 
         /// Assignment operator that accepts a vector.
         Vec& operator=(const Vec& rhs);
+
+        /// Assignment operator that accepts a vector.
+        Vec& operator=(Vec&& rhs);
 
         Vec& operator+=(const Vec& rhs);
         Vec& operator+=(T rhs);
@@ -90,6 +97,14 @@ namespace dm {
         Vec& operator%=(const Vec& rhs);
         Vec& operator%=(T rhs);
 
+        // -- Vector functions --
+
+        /// Returns the length of the vector.
+        float Length() const;
+
+        /// Retrieve a string with the value of the vector.
+        std::string GetString() const;
+
         // -- Data --
 
         union {
@@ -103,6 +118,9 @@ namespace dm {
     };
 
     // -- Non-member functions --
+
+    template<typename T>
+    Vec<2, T> normalize(const Vec<2, T>& v);
 
     /** Converts a vector from one type to another.
     *   @param  vector  A vector of @c From
@@ -161,6 +179,8 @@ namespace dm {
     Vec<2, T> operator%(const Vec<2, T>& lhs, T rhs);
     template<typename T>
     Vec<2, T> operator%(T rhs, const Vec<2, T>& lhs);
+
+    // -- Output for vector --
 
     template<typename T>
     std::ostream& operator<<(std::ostream& os, const Vec<2, T>& vector)
