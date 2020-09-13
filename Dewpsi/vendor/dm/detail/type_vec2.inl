@@ -181,7 +181,7 @@ namespace dm {
     }
 
     template<>
-    float Vec<2, float>::Length() const {return std::sqrt(x * x + y * y);}
+    inline float Vec<2, float>::Length() const {return std::sqrt(x * x + y * y);}
 
     // Retrieve a string with the value of the vector.
     template<typename T>
@@ -381,38 +381,38 @@ namespace dm {
 
     // Single-precision floating point modulus
     template<>
-    Vec<2, float> operator%(const Vec<2, float>& lhs, const Vec<2, float>& rhs)
+    inline Vec<2, float> operator%(const Vec<2, float>& lhs, const Vec<2, float>& rhs)
     {
         return lhs;
     }
 
     template<>
-    Vec<2, float> operator%(const Vec<2, float>& lhs, float rhs)
+    inline Vec<2, float> operator%(const Vec<2, float>& lhs, float rhs)
     {
         return lhs;
     }
 
     template<>
-    Vec<2, float> operator%(float lhs, const Vec<2, float>& rhs)
+    inline Vec<2, float> operator%(float lhs, const Vec<2, float>& rhs)
     {
         return rhs;
     }
 
     // Double-precision floating point modulus
     template<>
-    Vec<2, double> operator%(const Vec<2, double>& lhs, const Vec<2, double>& rhs)
+    inline Vec<2, double> operator%(const Vec<2, double>& lhs, const Vec<2, double>& rhs)
     {
         return lhs;
     }
 
     template<>
-    Vec<2, double> operator%(const Vec<2, double>& lhs, double rhs)
+    inline Vec<2, double> operator%(const Vec<2, double>& lhs, double rhs)
     {
         return lhs;
     }
 
     template<>
-    Vec<2, double> operator%(double lhs, const Vec<2, double>& rhs)
+    inline Vec<2, double> operator%(double lhs, const Vec<2, double>& rhs)
     {
         return rhs;
     }

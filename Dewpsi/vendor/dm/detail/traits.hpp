@@ -12,6 +12,8 @@ namespace dm {
         using ::std::true_type;
         using ::std::false_type;
         using ::std::enable_if;
+        using ::std::conditional;
+        using ::std::is_signed;
         using ::std::is_convertible;
         using ::std::is_floating_point;
     }
