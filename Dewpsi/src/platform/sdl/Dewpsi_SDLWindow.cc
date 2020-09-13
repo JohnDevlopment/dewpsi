@@ -496,6 +496,8 @@ uint32_t Dewpsi2SDLKeyCode(Dewpsi::KeyCode code)
         return static_cast<uint32_t>(PD_KEY_UNKNOWN);
     }
 
+    uiKey = found->second;
+
     return uiKey;
 }
 

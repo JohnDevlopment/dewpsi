@@ -31,6 +31,13 @@ namespace Dewpsi {
             RecalculateViewMatrix();
         }
 
+        /// Set the angle of the rotation.
+        /// The angle is in degrees.
+        void SetRotation(float angle) {m_Rotation = angle;}
+
+        /// Get the angle of the rotation.
+        float GetRotation() const {return m_Rotation;}
+
         /// Returns the view matrix.
         const glm::mat4& GetViewMatrix() const {return m_ViewMatrix;}
 

@@ -25,14 +25,12 @@ namespace Dewpsi {
     template<typename T>
     typename std::enable_if<std::is_signed<T>::value, T>::type
     abs(T val) {
-        std::cout << "generic abs()" << std::endl;
         return (val < 0 ? -val : val);
     }
     template<typename T>
     typename std::enable_if<!std::is_signed<T>::value, T>::type
     abs(T val)
     {
-        std::cout << "unsigned_type abs()" << std::endl;
         return val;
     }
 

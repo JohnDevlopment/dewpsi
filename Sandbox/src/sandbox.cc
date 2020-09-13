@@ -13,6 +13,9 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+static constexpr float _CamXSpeed = 1.0f;
+static constexpr float _CamRotation = 90.0f;
+
 static constexpr Dewpsi::StaticString _VertShaderOpenGL = R"(
     #version 430 core
     layout(location = 0) in vec2 In_Position;
@@ -92,6 +95,28 @@ void SandboxLayer::OnDetach()
 void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
 {
     PD_PROFILE_FUNCTION();
+
+    glm::vec3 position = m_Camera.GetPosition();
+
+    if (Dewpsi::Input::IsKeyPressed(PD_KEY_LEFT))
+        position.x -= _CamXSpeed * delta;
+    else if (Dewpsi::Input::IsKeyPressed(PD_KEY_RIGHT))
+        position.x += _CamXSpeed * delta;
+    else if (Dewpsi::Input::IsKeyPressed(PD_KEY_UP))
+        position.y += _CamXSpeed * delta;
+    else if (Dewpsi::Input::IsKeyPressed(PD_KEY_DOWN))
+        position.y -= _CamXSpeed * delta;
+
+    m_Camera.SetPosition(position);
+
+    {
+        float fAngle = m_Camera.GetRotation();
+        if (Dewpsi::Input::IsKeyPressed(PD_KEY_R))
+            fAngle -= _CamRotation * delta;
+
+        m_Camera.SetRotation(fAngle);
+    }
+
     Dewpsi::Renderer::BeginScene(m_Camera);
 
     Dewpsi::Renderer::Submit(m_Program, m_VertexArray);
@@ -100,18 +125,14 @@ void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
     Dewpsi::Renderer::EndScene();
 }
 
-void SandboxLayer::OnImGuiRender()
-{}
+//void SandboxLayer::OnImGuiRender()
+//{}
 
 void SandboxLayer::OnEvent(Dewpsi::Event& e)
 {
-    using namespace Dewpsi;
-    EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<KeyPressedEvent>(PD_BIND_EVENT_FN(SandboxLayer::OnKeyPressed));
+    //Dewpsi::EventDispatcher dispatcher(e);
+    //dispatcher.Dispatch<Dewpsi::KeyPressedEvent>(PD_BIND_EVENT_FN(SandboxLayer::OnKeyboardPressed));
 }
-
-bool SandboxLayer::OnKeyPressed(Dewpsi::KeyPressedEvent& keyEvent)
-{}
 
 // sandbox app
 Sandbox::Sandbox(PDuserdata userdata)
@@ -121,7 +142,7 @@ Sandbox::Sandbox(PDuserdata userdata)
     m_UserData = userdata;
     SandboxData* data = (SandboxData*) userdata;
     PD_ASSERT(data, "NULL \"data\" pointer");
-    data->sizeRatio /= 100.0f;
+    data->sizeRatio = (data->sizeRatio / 10.0f) + 1.0f;
     PushLayer(new SandboxLayer(data));
 
     PD_INFO("Window ratio is {0}", data->sizeRatio);

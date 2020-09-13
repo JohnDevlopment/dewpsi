@@ -9,6 +9,8 @@
 #include <Dewpsi_Math.h>
 
 #include <DewpsiMath_Vec2.hpp>
+#include <DewpsiMath_Util.hpp>
+#include <ext/vec2_util.hpp>
 
 using Dewpsi::StaticString;
 
@@ -47,7 +49,7 @@ int main (int argc, char const* argv[])
         props.height = appData->windowDim.h;
         props.title = appData->title;
         props.flags = Dewpsi::RendererVSync | Dewpsi::WindowOpenGL | Dewpsi::WindowResizable;
-        appData->sizeRatio = Dewpsi::VectorCast<PDfloat>(Dewpsi::ratio(props.width, props.height));
+        appData->sizeRatio = dm::vector_cast<float>(dm::ratio(props.width, props.height));
         SetWindowAttribute(props, Dewpsi::MajorVersion, 3);
         SetWindowAttribute(props, Dewpsi::MinorVersion, 3);
         SetWindowAttribute(props, Dewpsi::Depth, 24);
