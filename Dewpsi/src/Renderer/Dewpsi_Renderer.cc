@@ -2,6 +2,9 @@
 #include "Dewpsi_Shader.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <memory>
+
+#include "Dewpsi_OpenGLShader.h"
 
 namespace Dewpsi {
 
@@ -19,8 +22,12 @@ void Renderer::EndScene()
 
 void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray)
 {
-    shader->Bind();
-    shader->UploadUniformMat4("U_ViewProjection", glm::value_ptr(s_SceneData->viewProjectionMatrix));
+    ::std::dynamic_pointer_cast<OpenGLShader>(shader)->Bind();
+    ::std::dynamic_pointer_cast<OpenGLShader>(shader)->Bind();
+    ::std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4(
+        "U_ViewProjection",
+        glm::value_ptr(s_SceneData->viewProjectionMatrix)
+    );
     vertexArray->Bind();
     RenderCommand::DrawIndexed(vertexArray);
 }

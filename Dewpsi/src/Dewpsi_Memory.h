@@ -76,17 +76,55 @@ namespace Dewpsi {
     template<typename T>
     using Ref = std::shared_ptr<T>;
 
-#if __cplusplus >= 201402L
-    /** Creates a shared reference to an object of type @c T.
-    *   @param args A list of arguments used to construct @c T
-    *   @return     A @c %Ref of an object of @c T
+    template<typename _Tp>
+    struct _MakeRef {
+        typedef Ref<_Tp> __single_object;
+    };
+
+    template<typename _Tp>
+    struct _MakeRef<_Tp[]> {
+        typedef Ref<_Tp[]> __array;
+    };
+
+    template<typename _Tp, size_t _Bound>
+    struct _MakeRef<_Tp[_Bound]> {
+        struct __invalid_type {  };
+    };
+
+    /** Construct a referenced object with optional parameters.
+    *   @param  args    An optional list of arguments to initialize the constructed object
+    *   @return         A @doxtype{Ref} of type @c T
+    *   @tparam T       The type of the constructed object
     */
     template<typename T, typename... Args>
-    constexpr Ref<T> CreateRef(Args&&... args)
+    inline typename _MakeRef<T>::__single_object
+    CreateRef(Args&&... args)
     {
-        return std::make_shared<T>(std::forward<Args>(args)...);
+        return Ref<T>(new T(std::forward<Args>(args)...));
     }
-#endif
+
+    template<typename T, typename... Args>
+    inline typename _MakeRef<T>::__single_object
+    CreateRef()
+    {
+        return Ref<T>(new T);
+    }
+
+    /** Construct a referenced array.
+    *   @param  num The number of elements
+    *   @return     A @doxtype{Ref} of array type @c T
+    *   @tparam T   An array type of known bound
+    */
+    template<typename T, typename... Args>
+    inline typename _MakeRef<T>::__array
+    CreateRef(size_t num)
+    {
+        return Ref<T>(new std::remove_extent_t<T>[num]);
+    }
+
+    template<typename T, typename... Args>
+    inline typename _MakeRef<T>::__invalid_type
+    CreateRef(size_t num) = delete;
 
     /// @}
 }

@@ -41,7 +41,7 @@ namespace Dewpsi {
         *   The vertex array is not bound by default. You can bind/unbind it
         *   with the Bind() and UnBind() functions, respectively.
         */
-        static VertexArray* Create();
+        static Ref<VertexArray> Create();
     };
 }
 

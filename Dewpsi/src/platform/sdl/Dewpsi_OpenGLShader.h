@@ -13,7 +13,7 @@ namespace Dewpsi {
         virtual void Bind() const override;
         virtual void UnBind() const override;
 
-        virtual void UploadUniformMat4(const PDstring& name, const float* values) override;
+        void UploadUniformMat4(const PDstring& name, const float* values);
 
     private:
         PDuint m_ShaderID;

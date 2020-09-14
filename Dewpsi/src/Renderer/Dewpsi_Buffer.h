@@ -29,9 +29,9 @@ namespace Dewpsi {
         Mat3,	  ///< 3x3 matrix
         Mat4,	  ///< 4x4 matrix
         Int,	  ///< Single tnteger
-        Int2,	  ///< Two-component float
-        Int3,	  ///< Three-component float
-        Int4,	  ///< Four-component float
+        Int2,	  ///< Two-component tnteger
+        Int3,	  ///< Three-component tnteger
+        Int4,	  ///< Four-component tnteger
         Bool	  ///< Boolean
 	};
 
@@ -55,7 +55,7 @@ namespace Dewpsi {
         /// Initialize the type, name and normalization flag of the shader data.
         BufferElement(ShaderDataType _type, const PDstring& _name, bool nml = false)
             : name(_name), type(_type), size(ShaderDataTypeSize(type)),
-              offset(0), normalized(nml) {  }
+              offset(0), normalized(nml) {}
 
         /// Copy constructor.
         BufferElement(const BufferElement& src)
@@ -85,16 +85,14 @@ namespace Dewpsi {
         /// Vector type
         typedef std::vector<BufferElement> BufferVector;
     public:
-
-        /// Constructs an empty @c %BufferLayout.
-        BufferLayout() {  }
+        BufferLayout() = default;
 
         /// Initialize a list of elements in the layout.
         BufferLayout(const std::initializer_list<BufferElement>& elms);
 
         /// Copy constructor.
         BufferLayout(const BufferLayout& src)
-            : m_Elements(src.m_Elements), m_Stride(src.m_Stride) {  }
+            : m_Elements(src.m_Elements), m_Stride(src.m_Stride) {}
 
         /// Copy assignment.
         BufferLayout& operator=(const BufferLayout& rhs)

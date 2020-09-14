@@ -2,12 +2,13 @@
 #include "Dewpsi_VertexArray.h"
 #include "Dewpsi_Renderer.h"
 #include "Dewpsi_Except.h"
+#include "Dewpsi_Memory.h"
 
 #define NEW_VERTEX_ARRAY(type) static_cast<VertexArray*>(new type());
 
 namespace Dewpsi {
 
-VertexArray* VertexArray::Create()
+Ref<VertexArray> VertexArray::Create()
 {
     #define _ERROR(msg) "VertexArray::Create: " msg
 
@@ -18,7 +19,7 @@ VertexArray* VertexArray::Create()
         break;
 
     case RendererAPI::API::OpenGL:
-        return NEW_VERTEX_ARRAY(OpenGLVertexArray);
+        return CreateRef<OpenGLVertexArray>();
         break;
 
     default: break;
