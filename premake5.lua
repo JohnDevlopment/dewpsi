@@ -96,11 +96,13 @@ IncludeDir["getopt"] = "Dewpsi/vendor/getopt/include"
 IncludeDir["glm"] = "Dewpsi/vendor/glm"
 IncludeDir["inifile"] = "Dewpsi/vendor/inifile"
 IncludeDir["dm"] = "Dewpsi/vendor/dm"
+IncludeDir["stb"] = "Dewpsi/vendor/stb"
 
 group "Dependencies"
     include "Dewpsi/vendor/imgui"
     include "Dewpsi/vendor/glad"
     include "Dewpsi/vendor/getopt"
+    include "Dewpsi/vendor/stb"
 group ""
 
 -- Main engine project --
@@ -118,6 +120,7 @@ project "dewpsi"
         (srcdir .. "/ImGui/*.cc"),
         (srcdir .. "/ImGui/imguibuild.cpp"),
         (srcdir .. "/Renderer/*.cc"),
+        (srcdir .. "/os/*.cc"),
 
         (srcdir .. "/*.h"),
         (srcdir .. "/debug/*.h"),
@@ -141,6 +144,7 @@ project "dewpsi"
         "%{IncludeDir.glm}",
         "%{IncludeDir.inifile}",
         "%{IncludeDir.dm}",
+        "%{IncludeDir.stb}",
         (srcdir),
         (srcdir .. "/debug"),
         (srcdir .. "/events"),
@@ -152,7 +156,8 @@ project "dewpsi"
         "spdlog",
         "ImGui",
         "Glad",
-        "getopt"
+        "getopt",
+        "stb_image"
     }
     postbuildcommands {
         "{MKDIR} ../Sandbox/src/dewpsi-include/glad",
@@ -260,6 +265,7 @@ project "sandbox"
         "%{IncludeDir.glm}",
         "%{IncludeDir.inifile}",
         "%{IncludeDir.dm}",
+        "%{IncludeDir.stb}",
         "%{prj.location}/src",
         "%{prj.location}/src/dewpsi-include"
     }

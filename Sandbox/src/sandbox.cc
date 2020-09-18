@@ -16,77 +16,63 @@
 static constexpr float _CamXSpeed = 1.0f;
 static constexpr float _CamRotation = 90.0f;
 
-static constexpr Dewpsi::StaticString _VertShaderOpenGL = R"(
-    #version 430 core
-    layout(location = 0) in vec2 In_Position;
-    layout(location = 1) in vec3 In_Color;
-    uniform mat4 U_ViewProjection;
-    out vec3 V_Color;
-    void main() {
-        gl_Position = U_ViewProjection * vec4(In_Position, 0.0, 1.0);
-        V_Color = In_Color;
-    }
-)";
-
-static constexpr Dewpsi::StaticString _FragShaderOpenGL = R"(
-    #version 430 core
-    in vec3 V_Color;
-    out vec4 FragColor;
-    void main() {
-        FragColor = vec4(V_Color, 1.0);
-    }
-)";
-
 void SandboxLayer::OnAttach()
 {
     PD_PROFILE_FUNCTION();
 
+    // shader
     Dewpsi::Renderer::SetAPI(Dewpsi::RendererAPI::API::OpenGL);
-    m_Program.reset(Dewpsi::Shader::Create(_VertShaderOpenGL.get(), _FragShaderOpenGL.get()));
-    m_VertexArray.reset(Dewpsi::VertexArray::Create());
+    //m_Program = Dewpsi::Shader::Create(_VertShaderOpenGL.get(), _FragShaderOpenGL.get());
+    m_Program = Dewpsi::Shader::Create("Sandbox/assets/shaders/opengl.glsl");
+    m_Program->Bind();
+
+    /*Dewpsi::static_ref_cast<Dewpsi::OpenGLShader>(m_Program)->UploadUniformFloat4(
+        "U_Color", m_Color[0], m_Color[1], m_Color[2], m_Color[3]
+    );*/
+
+    // vertex array
+    m_VertexArray = Dewpsi::VertexArray::Create();
     m_VertexArray->Bind();
 
-    // create vertex buffer
     {
-        PD_PROFILE_SCOPE("Vertex buffer");
-        using Dewpsi::DefineColor;
+        PD_PROFILE_SCOPE("Vertex/index buffer");
         using Dewpsi::ShaderDataType;
-        Dewpsi::FColor colors[] = {
-            DefineColor(127, 0, 127),
-            DefineColor(0, 127, 127),
-            DefineColor(127, 127, 0),
-        };
-        const float faVertices[] = {
-           -0.5f, -0.5f,   PD_COLOR_UNPACK3(colors[0]),
-            0.5f, -0.5f,   PD_COLOR_UNPACK3(colors[1]),
-            0.0f,  0.5f,   PD_COLOR_UNPACK3(colors[1])
-        };
-        m_VertexBuffer.reset(Dewpsi::VertexBuffer::Create(sizeof(faVertices), faVertices));
 
-        // layout
+        // vertex buffer
+        const float faVertices[] = {
+           -0.5f, -0.5f, 0.0f, 0.0f, // 0 (BL)
+            0.5f, -0.5f, 1.0f, 0.0f, // 1 (BR)
+            0.5f,  0.5f, 1.0f, 1.0f, // 2 (TR)
+           -0.5f,  0.5f, 0.0f, 1.0f  // 3 (TL)
+        };
+        m_VertexBuffer = Dewpsi::VertexBuffer::Create(sizeof(faVertices), faVertices);
         Dewpsi::BufferLayout layout = {
             { ShaderDataType::Float2, "In_Position" },
-            { ShaderDataType::Float3, "In_Color" }
+            { ShaderDataType::Float2, "In_TexCoord" }
         };
         m_VertexBuffer->SetLayout(layout);
+
+        // index buffer
+        const PDuint uiaIndices[] = {0, 1, 2, 2, 3, 0};
+        m_IndexBuffer = Dewpsi::IndexBuffer::Create(PD_ARRAYSIZE(uiaIndices), uiaIndices);
+
+        m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+        m_VertexArray->SetIndexBuffer(m_IndexBuffer);
     }
 
-    // create index buffer
-    {
-        PD_PROFILE_SCOPE("Index buffer");
-        const PDuint uiaIndices[] = {0, 1, 2};
-        m_IndexBuffer.reset(Dewpsi::IndexBuffer::Create(sizeof(uiaIndices), uiaIndices));
-    }
+    // texture
+    m_Texture = Dewpsi::Texture::CreateTexture("Sandbox/assets/proj.png");
+    m_Texture->Bind(0);
+    Dewpsi::static_ref_cast<Dewpsi::OpenGLShader>(m_Program)->UploadUniformInt1("U_Texture", 0);
 
-    // supply vertex array with buffers
-    m_VertexArray->AddVertexBuffer(m_VertexBuffer);
-    m_VertexArray->SetIndexBuffer(m_IndexBuffer);
     m_VertexArray->UnBind();
+    m_Program->UnBind();
 }
 
 void SandboxLayer::OnDetach()
 {
     PD_PROFILE_FUNCTION();
+    m_Texture.reset();
     m_VertexBuffer.reset();
     m_VertexArray.reset();
     m_Program.reset();
@@ -117,16 +103,36 @@ void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
         m_Camera.SetRotation(fAngle);
     }
 
+    m_Texture->Bind();
+
     Dewpsi::Renderer::BeginScene(m_Camera);
-
     Dewpsi::Renderer::Submit(m_Program, m_VertexArray);
-    m_VertexArray->UnBind();
-
     Dewpsi::Renderer::EndScene();
 }
 
-//void SandboxLayer::OnImGuiRender()
-//{}
+void SandboxLayer::OnImGuiRender()
+{
+    /*ImGui::Begin("Options");
+
+    ImGui::ColorEdit3("Rect Color", m_Color, ImGuiColorEditFlags_NoTooltip);
+    if (ImGui::Button("Set Color"))
+    {
+        Dewpsi::static_ref_cast<Dewpsi::OpenGLShader>(m_Program)->UploadUniformFloat4(
+            "U_Color", m_Color[0], m_Color[1], m_Color[2], m_Color[3]
+        );
+    }
+
+    ImGui::InputInt("Active Texture", &m_ActiveTexture);
+    if (ImGui::Button("Set Active Texture"))
+    {
+        m_Texture->Bind(m_ActiveTexture);
+        Dewpsi::static_ref_cast<Dewpsi::OpenGLShader>(m_Program)->UploadUniformInt1(
+            "U_Texture", m_ActiveTexture
+        );
+    }
+
+    ImGui::End();*/
+}
 
 void SandboxLayer::OnEvent(Dewpsi::Event& e)
 {

@@ -1,8 +1,6 @@
 #include "Dewpsi_OpenGLContext.h"
 #include "Dewpsi_WhichOS.h"
 
-static int SDL_GL_Loader();
-
 namespace Dewpsi {
 
 OpenGLContext::OpenGLContext(SDL_Window* windowHandle)
@@ -35,14 +33,19 @@ int OpenGLContext::Init()
         Dewpsi::SetError("GLAD loader returned an error status");
         return PD_INVALID;
     }
-    /*if (SDL_GL_Loader())
-    {
-        Dewpsi::SetError("Failed to load other GL functions");
-        return PD_INVALID;
-    }*/
+    PD_CORE_INFO(
+        "OpenGL context\n  vendor: {0}\n  renderer: {1}\n  version: {2}",
+        glGetString(GL_VENDOR),
+        glGetString(GL_RENDERER),
+        glGetString(GL_VERSION)
+    );
 
-    PD_CORE_INFO("OpenGL context\n  vendor: {0}\n  renderer: {1}\n  version: {2}",
-                    glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
+    glEnable(GL_BLEND);
+    glEnable(GL_SCISSOR_TEST);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
 
     return PD_OKAY;
 }
@@ -53,9 +56,3 @@ void OpenGLContext::SwapBuffers()
 }
 
 }
-/*
-int SDL_GL_Loader()
-{
-    #include "Dewpsi_GLFuncs.h"
-    return 0;
-}*/

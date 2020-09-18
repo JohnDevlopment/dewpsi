@@ -39,9 +39,6 @@
 *
 *   @defgroup platforms Platform-Specific
 *   Headers, functions, types, and other declarations specific to each platform.
-*
-*   @addtogroup core
-*   @{
 */
 
 // Config
@@ -66,6 +63,7 @@
 #include <cstdint>
 
 /// Convert an lvalue to an rvalue.
+/// @ingroup core
 #define PD_MOVE(e)  std::move(e)
 
 /// Dewpsi Namespace: contains all relevent Dewpsi functions, classes, and other types.

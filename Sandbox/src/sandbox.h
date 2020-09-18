@@ -12,6 +12,7 @@
 #include <Dewpsi_String.h>
 #include <Dewpsi_Rect.h>
 #include <ext/vec2_float.hpp>
+#include <Dewpsi_Texture.h>
 
 namespace SandboxAppNS {
     struct Vertex {
@@ -37,16 +38,15 @@ class SandboxLayer : public Dewpsi::Layer {
 public:
     SandboxLayer(SandboxData* data)
     : Layer("Sandbox"),
-      m_Camera(-data->sizeRatio.x, data->sizeRatio.x, -data->sizeRatio.y, data->sizeRatio.y)
-    {}
+      m_Camera(-data->sizeRatio.x, data->sizeRatio.x, -data->sizeRatio.y, data->sizeRatio.y),
+      m_Color {0.5f, 0.0f, 0.0f}, m_ActiveTexture(0) {}
 
-    ~SandboxLayer()
-    {}
+    ~SandboxLayer() {}
 
     virtual void OnAttach() override;
     virtual void OnDetach() override;
     virtual void OnUpdate(Dewpsi::Timestep delta) override;
-	//virtual void OnImGuiRender() override;
+	virtual void OnImGuiRender() override;
     virtual void OnEvent(Dewpsi::Event& e) override;
 
     bool OnKeyboardPressed(Dewpsi::KeyPressedEvent& e);
@@ -56,7 +56,10 @@ private:
     Dewpsi::Ref<Dewpsi::VertexArray> m_VertexArray;
     Dewpsi::Ref<Dewpsi::VertexBuffer> m_VertexBuffer;
     Dewpsi::Ref<Dewpsi::IndexBuffer> m_IndexBuffer;
+    Dewpsi::Ref<Dewpsi::Texture> m_Texture;
     Dewpsi::OrthoCamera m_Camera;
+    float m_Color[3];
+    int m_ActiveTexture;
 };
 
 // sandbox application

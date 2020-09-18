@@ -17,6 +17,7 @@ static PDuint CreateShader(const ShaderProgramSource& source,
 static bool CheckShader(PDuint shader, const char* desc);
 static bool CheckProgram(PDuint program, const char* desc);
 static void ResizeErrorPtr(PDuint len);
+static ShaderProgramSource ParseShaderFile(const PDstring& filename);
 
 namespace Dewpsi {
 
@@ -27,6 +28,17 @@ OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string& frag
     PD_CORE_ASSERT(m_ShaderID, "Failed to link shader program");
     if (! m_ShaderID)
         throw DewpsiError("OpenGL shader has failed to compile");
+    GLPrintActiveUniforms(m_ShaderID);
+}
+
+OpenGLShader::OpenGLShader(const PDstring& file)
+{
+    ShaderProgramSource sources = PD_MOVE(ParseShaderFile(file));
+    m_ShaderID = CreateShader(sources);
+    PD_CORE_ASSERT(m_ShaderID, "Failed to link shader program");
+    if (! m_ShaderID)
+        throw DewpsiError("OpenGL shader has failed to compile");
+    GLPrintActiveUniforms(m_ShaderID);
 }
 
 OpenGLShader::~OpenGLShader()
@@ -44,21 +56,65 @@ void OpenGLShader::UnBind() const
     glUseProgram(0);
 }
 
+void OpenGLShader::UploadUniformInt1(const PDstring& name, int value)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform1i(iLocation, value));
+}
+
+void OpenGLShader::UploadUniformFloat3(const PDstring& name, float val1, float val2, float val3)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform3f(iLocation, val1, val2, val3));
+}
+
+void OpenGLShader::UploadUniformFloat4(const PDstring& name, float val1, float val2, float val3, float val4)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform4f(iLocation, val1, val2, val3, val4));
+}
+
 void OpenGLShader::UploadUniformMat4(const PDstring& name, const float* values)
 {
     PD_CORE_ASSERT(values, "NULL 'values' parameter");
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    glUniformMatrix4fv(iLocation, 1, GL_FALSE, values);
+}
+
+int OpenGLShader::GetUniformLocation(const PDstring& name)
+{
+    PD_CORE_ASSERT(m_ShaderID, "Shader program not initialized!");
     glUseProgram(m_ShaderID);
-    GLint temp = glGetUniformLocation(m_ShaderID, name.c_str());
-    PD_CORE_ASSERT(temp >= 0, "Invalid shader program");
-    glUniformMatrix4fv(temp, 1, GL_FALSE, values);
+
+    int result = -1;
+    auto found = m_UniformCache.find(name);
+
+    if (found != m_UniformCache.end())
+        return found->second;
+
+    int iLocation = glGetUniformLocation(m_ShaderID, name.c_str());
+    m_UniformCache[name] = iLocation;
+
+    return iLocation;
 }
 
 }
 
 // INTERNAL
 
-/*
-ShaderProgramSource ParseShaderFile(const std::string& filename)
+ShaderProgramSource ParseShaderFile(const PDstring& filename)
 {
     ShaderType type = ShaderType::None;
     std::stringstream ss[3];
@@ -75,18 +131,13 @@ ShaderProgramSource ParseShaderFile(const std::string& filename)
                 type = ShaderType::Vertex;
             else if (sLine.find("fragment") != std::string::npos)
                 type = ShaderType::Fragment;
-            else if (sLine.find("geometry") != std::string::npos)
-                type = ShaderType::Geometry;
         }
         else
-        {
             ss[(int) type] << sLine << '\n';
-        }
     }
 
-    return { ss[0].str(), ss[1].str(), ss[2].str() };
+    return {ss[0].str(), ss[1].str()};
 }
-*/
 
 PDuint CompileShader(PDuint type, const std::string& source)
 {
@@ -178,6 +229,8 @@ PDuint CreateShader(const ShaderProgramSource& source, PDuint* pVert, PDuint* pF
             }
         }
     }
+
+    _DETACH_SHADERS()
 
 #undef _DETACH_SHADERS
 
