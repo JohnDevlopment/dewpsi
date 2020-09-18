@@ -7,6 +7,7 @@
 */
 
 #include <Dewpsi_Core.h>
+#include <Dewpsi_Memory.h>
 #include <initializer_list>
 
 namespace Dewpsi {
@@ -157,7 +158,7 @@ namespace Dewpsi {
         *	@param data  A pointer to an array of floats that represent vertices
         *	@return      A pointer to the API and platform-specific vertex buffer
         */
-        static VertexBuffer* Create(PDsizei size, const PDfloat* data);
+        static Ref<VertexBuffer> Create(PDsizei size, const PDfloat* data);
     };
 
     /// Index array buffer.
@@ -180,7 +181,7 @@ namespace Dewpsi {
         *	              used to represent indices into the vertex buffer's data
         *	@return       A pointer to the API and platform-specific vertex buffer
         */
-        static IndexBuffer* Create(PDsizei count, const PDuint32* data);
+        static Ref<IndexBuffer> Create(PDsizei count, const PDuint32* data);
     };
 
     /// @}

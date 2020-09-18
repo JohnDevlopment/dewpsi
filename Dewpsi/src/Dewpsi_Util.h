@@ -90,12 +90,14 @@
 */
 #ifdef PD_ENABLE_ASSERTS
     #define PD_ASSERT(x, ...)       if (! (x)) { \
-                                        ::Dewpsi::Log::GetClientLogger()->error("Assertion '" #x "' failed"); \
+                                        ::Dewpsi::Log::GetClientLogger()->error(\
+                                            "Assertion '" #x "' failed | {0}:{1}", __FILE__, __LINE__); \
                                         ::Dewpsi::Log::GetClientLogger()->error(__VA_ARGS__); \
                                         PD_ABORT(); \
                                     }
     #define PD_CORE_ASSERT(x, ...)  if (! (x)) { \
-                                        ::Dewpsi::Log::GetCoreLogger()->error("Assertion '" #x "' failed"); \
+                                        ::Dewpsi::Log::GetCoreLogger()->error(\
+                                            "Assertion '" #x "' failed | {0}:{1}", __FILE__, __LINE__); \
                                         ::Dewpsi::Log::GetCoreLogger()->error(__VA_ARGS__); \
                                         PD_ABORT(); \
                                     }

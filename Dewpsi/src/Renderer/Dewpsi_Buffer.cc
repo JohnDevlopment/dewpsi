@@ -100,21 +100,21 @@ void BufferLayout::CalculateOffsetsAndStride()
     }
 }
 
-VertexBuffer* VertexBuffer::Create(PDsizei size, const PDfloat* data)
+Ref<VertexBuffer> VertexBuffer::Create(PDsizei size, const PDfloat* data)
 {
     #define _ERROR(msg) "VertexBuffer::Create: " msg
 
     switch (Renderer::GetAPI())
     {
-    case RendererAPI::API::None:
-        throw DewpsiError(_ERROR("Renderer API is set to none"));
-        break;
+        case RendererAPI::API::None:
+            throw DewpsiError(_ERROR("Renderer API is set to none"));
+            break;
 
-    case RendererAPI::API::OpenGL:
-        return NEW_VERTEX_BUFFER(OpenGLVertexBuffer, size, data);
-        break;
+        case RendererAPI::API::OpenGL:
+            return CreateRef<OpenGLVertexBuffer>(size, data);
+            break;
 
-    default: break;
+        default: break;
     }
 
     throw DewpsiError(_ERROR("unrecognized API"));
@@ -124,21 +124,21 @@ VertexBuffer* VertexBuffer::Create(PDsizei size, const PDfloat* data)
     #undef _ERROR
 }
 
-IndexBuffer* IndexBuffer::Create(PDsizei size, const PDuint32* data)
+Ref<IndexBuffer> IndexBuffer::Create(PDsizei size, const PDuint32* data)
 {
     #define _ERROR(msg) "IndexBuffer::Create: " msg
 
     switch (Renderer::GetAPI())
     {
-    case RendererAPI::API::None:
-        throw DewpsiError(_ERROR("Renderer API is set to none"));
-        break;
+        case RendererAPI::API::None:
+            throw DewpsiError(_ERROR("Renderer API is set to none"));
+            break;
 
-    case RendererAPI::API::OpenGL:
-        return NEW_INDEX_BUFFER(OpenGLIndexBuffer, size, data);
-        break;
+        case RendererAPI::API::OpenGL:
+            return CreateRef<OpenGLIndexBuffer>(size, data);
+            break;
 
-    default: break;
+        default: break;
     }
 
     throw DewpsiError(_ERROR("unrecognized API"));

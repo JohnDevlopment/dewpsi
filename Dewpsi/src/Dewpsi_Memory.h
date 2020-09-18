@@ -126,6 +126,20 @@ namespace Dewpsi {
     inline typename _MakeRef<T>::__invalid_type
     CreateRef(size_t num) = delete;
 
+    // Casting operations
+
+    /** Casts a reference object to a different type via static_cast.
+    *   @param  src The Ref to be cast, of type @c U
+    *   @return     A Ref of type @c T, converted from @c U
+    *   @tparam T,U The types converted to and from, respectively
+    */
+    template<typename T, typename U>
+    inline Ref<T> static_ref_cast(const Ref<U>& src)
+    {
+        using _ref = Ref<T>;
+        return _ref(src, static_cast<typename _ref::element_type*>(src.get()));
+    }
+
     /// @}
 }
 
