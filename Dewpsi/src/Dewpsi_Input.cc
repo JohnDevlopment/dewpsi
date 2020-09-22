@@ -7,6 +7,7 @@ Scope<Input> Input::s_Instance = Input::Create();
 
 Scope<Input> Input::Create()
 {
+    PD_CORE_ASSERT(! (s_Instance), "Input poller already initialized");
 #ifdef PD_PLATFORM_LINUX
     return CreateScope<SDLInput>();
 #else

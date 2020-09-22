@@ -9,8 +9,7 @@
 */
 
 #include <Dewpsi_Core.h>
-#include <glm/matrix.hpp>
-#include <glm/matrix_transform.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 namespace Dewpsi {
     /** A camera.

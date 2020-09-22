@@ -14,6 +14,7 @@
 #include <Dewpsi_Core.h>
 #include <Dewpsi_KeyCode.h>
 #include <Dewpsi_MouseCode.h>
+#include <Dewpsi_Pair.h>
 
 namespace Dewpsi {
     /** Global input class.
@@ -42,6 +43,7 @@ namespace Dewpsi {
             return s_Instance->IsKeyPressedImpl(key);
         }
 
+        /// Returns a bitmask with all the key modifiers that are pressed down.
         static KeyMod GetModState()
         {
             return s_Instance->GetModStateImpl();
@@ -70,7 +72,7 @@ namespace Dewpsi {
         *   the X position of the mouse and @a second is the Y
         *   position.
         */
-        static std::pair<float, float> GetMousePosition()
+        static Pair<float, float> GetMousePosition()
         {
             return s_Instance->GetMousePositionImpl();
         }
@@ -90,7 +92,7 @@ namespace Dewpsi {
         virtual KeyMod GetModStateImpl() = 0;
         virtual bool IsMouseButtonPressedImpl(MouseCode button) = 0;
         virtual PDuint32 GetMouseStateImpl() = 0;
-        virtual std::pair<float, float> GetMousePositionImpl() = 0;
+        virtual Pair<float, float> GetMousePositionImpl() = 0;
         virtual float GetMouseXImpl() = 0;
 		virtual float GetMouseYImpl() = 0;
 

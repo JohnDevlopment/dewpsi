@@ -119,7 +119,15 @@
 *	parameters, the first being the class' @a this pointer, and the other
 *	a reference to any type that derives from Event.
 */
-#define PD_BIND_EVENT_FN(fn)    std::bind(&fn, this, std::placeholders::_1)
+#define PD_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
+
+/** Binds an event to a non-member function.
+*   Binds the function @a fn to a function object.
+*   @param  fn      The address of a function
+*   @param  data    User data (can be @c NULL)
+*   @return         An object that can be called with one parameter and that returns @c bool
+*/
+#define PD_BIND_EVENT_FN_NM(fn, data) std::bind(&fn, std::placeholders::_1)
 
 /// Retrieves the low word of a value.
 #define PD_LOWORD(x)            ((x) & 0xffff)

@@ -9,34 +9,6 @@
 *   Provisions of the core functionality of Dewpsi.
 *   For function attributes, see the following.
 *
-*   Macro           | Description
-*	----------------|------------
-*	PD_INLINE       | Suggest that a function be inlined
-*	PD_FORCE_INLINE | force a function to be inlined
-*	PD_COLD         | Declare a function to be cold
-*	PD_HOT          | Declare a function to be hot
-*	PD_CALL         | Prefix to an export library call
-*
-*	For utility macros, see:
-*   - PD_ABORT()         - abort execution of a program
-*	- PD_OFFSETOF()      - get the offset to a member of a type
-*	- PD_ARRAYSIZE()     - to measure the length of an array
-*	- PD_ADDRESSOF()     - to get the address of an object
-*	- PD_BIND_EVENT_FN() - bind an event function to a class
-*	- PD_LOWORD()        - get the low word of a dword
-*	- PD_HIWORD()        - get the high word of a dword
-*	- PD_CREATEDWORD()   - create a dword from two words
-*	- PD_LONYBBLE()      - get the low nybble of a byte
-*	- PD_HINYBBLE()      - get the high nybble of a byte
-*	- PD_CREATEBYTE()    - create a byte from two nybbles
-*
-*   For other kinds of macros, see:
-*	- @ref PD_CONSTEXPR
-*	- @ref PD_APIENTRY
-*	- PD_DEBUGBREAK()
-*	- PD_ASSERT()
-*	- PD_CORE_ASSERT()
-*
 *   @defgroup platforms Platform-Specific
 *   Headers, functions, types, and other declarations specific to each platform.
 */

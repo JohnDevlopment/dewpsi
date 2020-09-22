@@ -9,10 +9,10 @@
 #include <sstream>
 #include <vector>
 #include <functional>
-#include <stdexcept>
+#include <exception>
+//#include <stdexcept>
 #include <csignal>
 #include <type_traits>
-#include <alloca.h>
 
 #include "Dewpsi_Log.h"
 

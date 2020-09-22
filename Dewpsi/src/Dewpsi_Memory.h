@@ -126,6 +126,23 @@ namespace Dewpsi {
     inline typename _MakeRef<T>::__invalid_type
     CreateRef(size_t num) = delete;
 
+    /// An overload of @doxfunc{ResetRefs} with no arguments.
+    inline void ResetRefs() {}
+
+    /** Call this function to release a list of referenced objects.
+    *   @param  r       A referenced object of arbitrary type @c T
+    *   @param  args    An optional list of arguments to include
+    *   @tparam T       Any type supported by @doxtype{Ref}
+    *   @note           Each argument must be a mutable l-value reference to @doxtype{Ref}.
+    */
+    template<typename T, typename... Args>
+    void ResetRefs(Ref<T>& r, Args... args)
+    {
+        r.reset();
+        //ResetRefs(r);
+        ResetRefs(args...);
+    }
+
     // Casting operations
 
     /** Casts a reference object to a different type via static_cast.
