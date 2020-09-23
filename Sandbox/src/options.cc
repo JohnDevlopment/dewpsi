@@ -1,17 +1,22 @@
 #include "options.h"
+#include "sandbox.h"
 #include <Dewpsi_String.h>
 #include <Dewpsi_Log.h>
 #define INIFILE_FUNCTIONS
 #include <inifile.hpp>
-#include "sandbox.h"
+#include <tuple>
 
 using Dewpsi::StaticString;
 
-static constexpr StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
-static constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
+namespace {
+
+auto DefaultArguments = std::make_tuple(PD_WINDOWPOS_CENTERED, 640U, 480U);
+constexpr StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
+constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
+
+}
 
 static constexpr StaticString OptionChars = "+:?t:x:y:w:h:W:H:";
-
 static constexpr StaticString Usage = R"(
     sandbox -h
     sandbox [options] [ini_file]
@@ -53,14 +58,14 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
     int iCode = 1;
 
     // window size
-    data->windowDim.x = PD_WINDOWPOS_CENTERED;
-    data->windowDim.y = PD_WINDOWPOS_CENTERED;
-    data->windowDim.w = 640U;
-    data->windowDim.h = 480U;
+    data->windowDim.x = std::get<0>(DefaultArguments);
+    data->windowDim.y = std::get<0>(DefaultArguments);
+    data->windowDim.w = std::get<1>(DefaultArguments);
+    data->windowDim.h = std::get<2>(DefaultArguments);
 
     // resolution
-    data->resolution.x = 640;
-    data->resolution.y = 480;
+    data->resolution.x = std::get<1>(DefaultArguments);
+    data->resolution.y = std::get<2>(DefaultArguments);
 
     // ImGui information
     data->guiInit.glslPath = ImGuiShaderPath.get();

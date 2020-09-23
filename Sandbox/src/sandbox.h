@@ -12,20 +12,15 @@
 #include <Dewpsi_String.h>
 #include <Dewpsi_Rect.h>
 #include <ext/vec2_float.hpp>
+#include <ext/vec2_unsigned_int.hpp>
 #include <Dewpsi_Texture.h>
-
-namespace SandboxAppNS {
-    struct Vertex {
-        Dewpsi::Vector2D position;
-        Dewpsi::FColor color;
-    };
-}
 
 struct SandboxData {
     Dewpsi::Rectui windowDim;
     Dewpsi::ImGuiInitData guiInit;
     char title[50];
     dm::Vec2 sizeRatio;
+    dm::UVec2 resolution;
 
     SandboxData()
     {
@@ -52,11 +47,6 @@ public:
     bool OnKeyboardPressed(Dewpsi::KeyPressedEvent& e);
 
 private:
-    Dewpsi::Ref<Dewpsi::Shader> m_Program;
-    Dewpsi::Ref<Dewpsi::VertexArray> m_VertexArray;
-    Dewpsi::Ref<Dewpsi::VertexBuffer> m_VertexBuffer;
-    Dewpsi::Ref<Dewpsi::IndexBuffer> m_IndexBuffer;
-    Dewpsi::Ref<Dewpsi::Texture> m_Texture;
     Dewpsi::OrthoCamera m_Camera;
     float m_Color[3];
     int m_ActiveTexture;
