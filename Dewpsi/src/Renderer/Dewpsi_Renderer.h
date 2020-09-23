@@ -1,10 +1,8 @@
 #ifndef DEWPSI_RENDERER_H
 #define DEWPSI_RENDERER_H
 
-/** @file     Dewpsi_Renderer.h
-*   @brief    @doxfb
-*	@defgroup renderer Rendering API
-*	@c %Renderer provides an interface to rendering graphics.
+/** @file Dewpsi_Renderer.h
+*	@defgroup core_renderer Rendering API
 *	@ingroup  core
 */
 
@@ -13,23 +11,20 @@
 #include <Dewpsi_OrthoCamera.h> // glm
 
 namespace Dewpsi {
-    /** @addtogroup renderer
-    *   @{
-    */
-
     class Shader;
 
     /** High-level rendering interface.
     *   This class interprets high-level data constructs from
     *   %Dewpsi and delegates taks down the hierchy down to the
     *   actual rendering API.
+    *   @ingroup core_renderer
     */
     class Renderer {
     public:
-        /// Begins a scene.
+        /// Begins a scene for the view @a camera.
         static void BeginScene(OrthoCamera& camera);
 
-        /// Ends a scene.
+        /// Ends a previously begun scene.
         static void EndScene();
 
         /// Submits a vertex array to the render queue.

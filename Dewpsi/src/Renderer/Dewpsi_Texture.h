@@ -1,8 +1,11 @@
 #ifndef DEWPSI_TEXTURE_H
 #define DEWPSI_TEXTURE_H
 
-/// @file Dewpsi_Texture.h
-/// @ref core
+/** @file     Dewpsi_Texture.h
+*   @ref      core_renderer_textures
+*   @defgroup core_renderer_textures Textures
+*   @ingroup  core_renderer
+*/
 
 #include <Dewpsi_Core.h>
 #include <Dewpsi_String.h>
@@ -10,29 +13,38 @@
 #include <stb_image.h>
 
 namespace Dewpsi {
-    /** A texture.
-    *   @ingroup core
-    */
+    /// A texture.
+    /// @ingroup core_renderer_textures
     class Texture {
     public:
-        /// Construct a texture of the given file.
-        Texture(const PDstring& file);
-        ~Texture();
+        Texture() = default;
+        virtual ~Texture() = default;
 
         /// Return an immutable pointer to the pixel data.
-        const PDuchar* GetData() const {return m_DataBuffer;}
+        virtual const PDuchar* GetData() const = 0;
 
-        void Bind(PDuint slot = 0) const;
-        void UnBind() const;
+        /// Bind the texture to the given slot.
+        virtual void Bind(PDuint slot = 0) const = 0;
 
-        /// Create a new texture based on @a file.
-        static Ref<Texture> CreateTexture(const PDstring& file);
-    private:
-        PDstring m_File;
-        PDuchar* m_DataBuffer;
-        int m_Width;
-        int m_Height;
-        int m_BPP;
+        /// Unbind the texture.
+        virtual void UnBind() const = 0;
+
+        /// Get the width of the texture.
+        virtual PDuint GetWidth() const = 0;
+
+        /// Get the height of the texture.
+        virtual PDuint GetHeight() const = 0;
+    };
+
+    /// A 2D texture.
+    /// @ingroup core_renderer_textures
+    class Texture2D : public Texture {
+    public:
+        Texture2D() = default;
+        virtual ~Texture2D() = default;
+
+        /// Create a 2D texture from file.
+        static Ref<Texture2D> Create(const PDstring& file);
     };
 }
 

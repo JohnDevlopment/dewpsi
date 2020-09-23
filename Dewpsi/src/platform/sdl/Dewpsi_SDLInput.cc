@@ -112,26 +112,20 @@ PDuint32 SDLInput::GetMouseStateImpl()
     uiState = SDL_GetMouseState(nullptr, nullptr);
 
     if (uiState & SDL_BUTTON(SDL_BUTTON_LEFT))
-    {
         uiRet |= (PDuint32) PD_MOUSEBUTTON_LEFT;
-    }
 
     if (uiState & SDL_BUTTON(SDL_BUTTON_RIGHT))
-    {
         uiRet |= (PDuint32) PD_MOUSEBUTTON_RIGHT;
-    }
 
     if (uiState & SDL_BUTTON(SDL_BUTTON_MIDDLE))
-    {
         uiRet |= (PDuint32) PD_MOUSEBUTTON_MIDDLE;
-    }
 
     return uiRet;
 }
 
-std::pair<float, float> SDLInput::GetMousePositionImpl()
+Pair<float, float> SDLInput::GetMousePositionImpl()
 {
-    std::pair<float, float> pos;
+    Pair<float, float> pos;
     int iMx, iMy;
     SDL_GetMouseState(&iMx, &iMy);
 

@@ -4,8 +4,6 @@
 #include "Dewpsi_Except.h"
 #include "Dewpsi_Memory.h"
 
-#define NEW_VERTEX_ARRAY(type) static_cast<VertexArray*>(new type());
-
 namespace Dewpsi {
 
 Ref<VertexArray> VertexArray::Create()

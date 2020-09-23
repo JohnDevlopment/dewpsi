@@ -1,10 +1,12 @@
 #include "Dewpsi_Log.h"
+#include "Dewpsi_Memory.h"
+#include "Dewpsi_Array.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/stdout_sinks.h>
 #include <cstdarg>
 #include <cstdio>
 
-static std::unique_ptr<char[]> g_pError(new char[500]);
+static Dewpsi::Scope<char[]> g_pError(new char[500]);
 
 namespace Dewpsi {
 
