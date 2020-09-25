@@ -6,7 +6,6 @@
 #include "Dewpsi_KeyEvent.h"
 #include "Dewpsi_String.h"
 #include "Dewpsi_ImGui_SDL.h"
-#include "Dewpsi_Vector.h"
 #include "Dewpsi_OpenGL.h"
 #include "Dewpsi_Debug.h"
 #include "Dewpsi_Except.h"

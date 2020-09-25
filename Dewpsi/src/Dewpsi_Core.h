@@ -38,32 +38,7 @@
 /// @ingroup core
 #define PD_MOVE(e)  std::move(e)
 
-/// Dewpsi Namespace: contains all relevent Dewpsi functions, classes, and other types.
 namespace Dewpsi {
-    /// @addtogroup core
-    /// @{
-
-    /// Returns 1 or 0 depending on whether @a val is non-zero.
-    template<typename T>
-    inline typename std::enable_if<std::is_arithmetic<T>::value, int>::type
-    IsNonzero(T val)
-    {
-        return (val) ? 1 : 0;
-    }
-
-    /** Exchanges the values of @a a and @a b.
-    *   The parameters are of course @a a and @a b, whose values are swapped.
-    *   The type @c T must be move constructible and move assignable.
-    */
-    template<typename T>
-    void Swap (T& a, T& b)
-    noexcept(std::is_nothrow_move_constructible<T>::value && std::is_nothrow_move_assignable<T>::value)
-    {
-        T temp(std::move(a));
-        a = std::move(b);
-        b = std::move(temp);
-    }
-
     /** Parses commandline arguments.
     *   The @a argc and @a argv arguments are the same as the ones passed to main().
     *	Each ARGV-element is processed with each successive call to this function.
@@ -130,10 +105,9 @@ namespace Dewpsi {
     *                    argument, then the return value depends on the first
     *                    character in @a optstring: if it is a colon, ':' is
     *                    returned; otherwise, '?' is returned.
+    *   @ingroup         core
     */
     int GetOption(int argc, char** argv, const char* optstring);
-
-    /// @}
 }
 
 /// @}

@@ -1,10 +1,10 @@
 #ifndef DEWPSI_UTIL_H
 #define DEWPSI_UTIL_H
 
-/** @file Dewpsi_Util.h
-*   @ref util
-*   @defgroup util Utility Functions And Macros
-*   @ingroup core
+/** @file                  Dewpsi_Util.h
+*   @ref                   core_utility
+*   @defgroup core_utility Utility Functions And Macros
+*   @ingroup  core
 *   @{
 *
 *   Utility functions for general use by the client application. Some of these
@@ -167,12 +167,98 @@
 *   smaller values.
 *
 *   @code{.cpp}
-    PDint8 uiVal = PD_CREATEBYTE(0x0f, 0x01); // results in 0x1f
-    std::cout << std::hex << "0x" << uiVal << std::endl;
+*       PDint8 uiVal = PD_CREATEBYTE(0x0f, 0x01); // results in 0x1f
+*       std::cout << std::hex << "0x" << uiVal << std::endl;
 *   @endcode
 */
 #define PD_CREATEBYTE(lo, hi)   (((PDuint8)(hi) << 4) | (((PDuint8)(lo)) & 0x0f))
 
 /// @}
+
+namespace Dewpsi {
+    /// @addtogroup core
+    /// @{
+
+    using ::std::remove_reference;
+    using ::std::is_lvalue_reference;
+
+    /** Returns an rvalue reference from an lvalue reference.
+    *   If the argument is an rvalue reference, it gets returned as such.
+    *   @param  src An lvalue or rvalue reference to a value of arbitrary type
+    *   @return     The argument cast to an rvalue reference
+    */
+    template<typename T>
+    constexpr T&& Forward(T& src) noexcept {return static_cast<T&&>(src);}
+    template<typename T>
+    constexpr T&& Forward(T&& src) noexcept {return static_cast<T&&>(src);}
+
+    /** Converts a value to an rvalue reference.
+    *   @param src A value of arbitrary type
+    *   @return    The value cast to an rvalue reference
+    */
+    template<typename T>
+    constexpr typename remove_reference<T>::type&&
+    Move(T&& src) noexcept
+    {
+        return static_cast<typename remove_reference<T>::type&&>(src);
+    }
+
+    /** Fill a range of elements with a certain value.
+    *   @param beg,end  The beginning and end elements of a range
+    *   @param val      The value to fill the range with
+    */
+    template<typename _Iterator, typename _Type>
+    void Fill(_Iterator beg, _Iterator end, const _Type& val)
+    {
+        while (beg != end)
+            *(beg++) = val;
+    }
+
+    template<class _Iterator, class _Function>
+    _Function ForEach(_Iterator beg, _Iterator end, _Function fn)
+    {
+        while (beg != end)
+        {
+            fn(*beg);
+            ++beg;
+        }
+        return Move(fn);
+    }
+
+    /// Returns 1 or 0 depending on whether @a val is non-zero.
+    template<typename T>
+    inline typename std::enable_if<std::is_arithmetic<T>::value, int>::type
+    IsNonzero(T val)
+    {
+        return (val) ? 1 : 0;
+    }
+
+    /** Exchanges the values of @a a and @a b.
+    *   The parameters are of course @a a and @a b, whose values are swapped.
+    *   The type @c T must be move constructible and move assignable.
+    */
+    template<typename T>
+    void Swap (T& a, T& b)
+    noexcept(std::is_nothrow_move_constructible<T>::value && std::is_nothrow_move_assignable<T>::value)
+    {
+        T temp(std::move(a));
+        a = std::move(b);
+        b = std::move(temp);
+    }
+
+#if defined(__GNUC__)
+    template<typename T>
+    inline constexpr T* __AddressOf(T& r) {return __builtin_addressof(r);}
+#else
+    template<typename T>
+    inline constexpr T* __AddressOf(T& r) {return &r;}
+#endif
+
+    /// Returns the address of @a r.
+    template<typename T>
+    inline constexpr T* AddressOf(T& r) {return __AddressOf(r);}
+
+    /// @}
+}
 
 #endif /* DEWPSI_UTIL_H */

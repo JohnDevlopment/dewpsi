@@ -4,7 +4,7 @@
 /// @file Dewpsi_Array.h
 /// @ref core
 
-//#include <Dewpsi_Core.h>
+#include <Dewpsi_Iterator.h>
 #include <Dewpsi_Math.h>
 #include <cassert>
 #include <initializer_list>
@@ -17,9 +17,19 @@ namespace Dewpsi {
     */
     template<typename Type, PDsizei N>
     struct Array {
-        typedef Type value_type;      ///< Type of each element
-        typedef Type* pointer_type;   ///< Pointer of @c value_type
-        typedef Type& reference_type; ///< Reference of @c value_type
+        typedef Type __ValueType;             ///< Type of each element
+        typedef Type* __Pointer;              ///< Pointer of @c value_type
+        typedef const Type* __ConstPointer;   ///< Const pointer of @c value_type
+        typedef Type& __Reference;            ///< Reference of @c value_type
+        typedef const Type& __ConstReference; ///< Const reference of @c value_type
+        typedef Type* __Iterator;             ///< Iterator of @c value_type
+        typedef const Type* __ConstIterator;  ///< Const iterator of @c value_type
+
+        /// Reverse iterator
+        typedef Dewpsi::ReverseIterator<__Iterator> __ReverseIterator;
+
+        /// Const reverse iterator
+        typedef Dewpsi::ReverseIterator<__ConstIterator> __ConstReverseIterator;
 
         /** Constructor.
         *   There are multiple constructors with different parameters:
@@ -30,10 +40,10 @@ namespace Dewpsi {
         *
         *   @par Examples
         *   @code{.cpp}
-            Array<int, 5> first;
-            Array<int, 5> second = first;
-            Array<int, 5> third = std::move(second);
-            Array<int, 5> fourth = {1, 2, 3, 4, 5};
+                Array<int, 5> first;
+                Array<int, 5> second = first;
+                Array<int, 5> third = std::move(second);
+                Array<int, 5> fourth = {1, 2, 3, 4, 5};
         *   @endcode
         */
         Array() = default;
@@ -64,23 +74,44 @@ namespace Dewpsi {
         ~Array() = default;
 
         /// Obtain a reference to one of the elements (does not check for bounds).
-        reference_type operator[](PDsizei i)
+        __Reference operator[](PDsizei i)
         {
-            assert(i < N);
+            assert(i < size);
             return values[i];
         }
 
         /// Obtain an immutable reference to one of the elements (does not check for bounds).
-        const reference_type operator[](PDsizei i) const
+        const __Reference operator[](PDsizei i) const
         {
-            assert(i < N);
+            assert(i < size);
             return values[i];
         }
 
         /// Return the size of the array.
-        constexpr PDsizei Size() const {return N;}
+        constexpr PDsizei Size() const {return size;}
 
-        Type values[N];
+        /// Return an interator to the beginning of the array.
+        __Iterator begin() {return __Iterator(values);}
+        __ConstIterator begin() const {return __ConstIterator(values);}
+
+        /// Return an interator to the just past the end of the array.
+        __Iterator end() {return __Iterator(static_cast<__Pointer>(values) + size);}
+        __ConstIterator end() const {return __ConstIterator(static_cast<__ConstPointer>(values) + size);}
+
+        /// Returns a reverse iterator to the end of the array.
+        __ReverseIterator rbegin() noexcept {return __ReverseIterator(this->end());}
+        __ConstReverseIterator rbegin() const noexcept {return __ConstReverseIterator(this->end());}
+
+        /// Returns a reverse iterator to the beginning of the array.
+        __ReverseIterator rend() noexcept {return __ReverseIterator(this->begin());}
+        __ConstReverseIterator rend() const noexcept {return __ConstReverseIterator(this->begin());}
+
+        /// Returns a raw pointer to the array (alias for @doxfunc{begin()}).
+        __Pointer Data() const {return static_cast<__Pointer>(values);}
+
+    private:
+        __ValueType values[N];
+        const PDsizei size = N;
     };
 }
 

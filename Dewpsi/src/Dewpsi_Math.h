@@ -11,7 +11,6 @@
 */
 
 #include <Dewpsi_Core.h>
-#include <Dewpsi_Vector.h>
 #include <Dewpsi_Traits.h>
 #include <Dewpsi_Debug.h>
 
@@ -107,40 +106,6 @@ namespace Dewpsi {
         }
 
         return result;
-    }
-
-    /** Calculates the ratio between two numbers.
-    *   If the two numbers are equal, the number is returned.
-    *   This function does not compile if @c V cannot be assigned
-    *   a value of @c T.
-    *   @param  a,b Numbers
-    *   @tparam T   A numeric type of the parameters
-    *   @tparam V   The underlying type of the vector
-    *   @return     A 2D vector representing the ration between @a a and @a b
-    */
-    template<typename T, typename V = T>
-    TVector2D<V> ratio(T a, T b)
-    {
-        constexpr int iMaxLoops = 100;
-
-        static_assert(std::is_convertible<T, V>::value, "Type T cannot be converted to type U");
-
-        T divisor = mcd(a, b);
-        assert(divisor != 1);
-        TVector2D<V> result(a, b);
-
-        while (! (result.x % divisor) && ! (result.y % divisor))
-        {
-            result /= TVector2D<V>(divisor);
-        }
-
-        return result;
-    }
-
-    template<typename T>
-    inline TVector2D<T> ratio(const TVector2D<T>& v)
-    {
-        return ratio(v.x, v.y);
     }
 }
 

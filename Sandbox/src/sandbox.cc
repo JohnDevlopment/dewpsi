@@ -51,15 +51,48 @@ static const char* FragmentShaderOpenGL[2] = {
     ""
 };
 
+#include <typeinfo>
+
 static constexpr float _CamXSpeed = 1.0f;
 static constexpr float _CamRotation = 90.0f;
+
+static void addFloats(float& a, float val) {
+    std::cout << "lvalue reference\n";
+    a += val;
+}
+
+static void addFloats(float&& a, float val) {
+    std::cout << "rvalue reference\n";
+    a += val;
+}
 
 void SandboxLayer::OnAttach()
 {
     PD_PROFILE_FUNCTION();
 
-    Dewpsi::Array<float, 4> values1 = {1, 2, 3, 4};
-    std::cout << "values1[0] = " << values1[0] << std::endl;
+    Dewpsi::Array<float, 7> values;
+
+    float fNumber = 5.0f;
+    float&& fRef = Dewpsi::Move(fNumber);
+    float fCopy = fNumber;
+
+    std::cout << fNumber << ", " << fRef << ", " << fCopy << std::endl;
+
+    /*{
+        float temp = 1;
+        Dewpsi::ForEach(values.begin(), values.end(), [&temp](float& v) {
+            v = temp++;
+        });
+    }
+
+    for (auto val : values)
+        std::cout << val << ' ';
+    std::cout << std::endl;
+
+    {
+        auto rev_iter = values.rbegin() + 2;
+        std::cout << *rev_iter << std::endl;
+    }*/
 
     // shader
     /*Dewpsi::Renderer::SetAPI(Dewpsi::RendererAPI::API::OpenGL);

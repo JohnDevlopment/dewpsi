@@ -7,7 +7,6 @@
 
 #include <Dewpsi_Core.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <Dewpsi_Vector.h>
 
 namespace Dewpsi {
     /** An orthographic camera.
