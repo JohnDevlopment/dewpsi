@@ -73,6 +73,19 @@ namespace Dewpsi {
 
         ~Array() = default;
 
+        /// Copies one %Array to another.
+        Array& operator=(const Array& src) = delete;
+
+        void SetData(const std::initializer_list<Type>& il)
+        {
+            PDsizei x = 0;
+            for (auto e : il)
+            {
+                if (x == N) break;
+                values[x++] = e;
+            }
+        }
+
         /// Obtain a reference to one of the elements (does not check for bounds).
         __Reference operator[](PDsizei i)
         {
@@ -87,8 +100,11 @@ namespace Dewpsi {
             return values[i];
         }
 
-        /// Return the size of the array.
-        constexpr PDsizei Size() const {return size;}
+        /// Returns the size of the array in bytes.
+        constexpr PDsizei Size() const {return sizeof(Type) * size;}
+
+        /// Returns the length of the array.
+        constexpr PDsizei Length() const {return size;}
 
         /// Return an interator to the beginning of the array.
         __Iterator begin() {return __Iterator(values);}
@@ -107,7 +123,8 @@ namespace Dewpsi {
         __ConstReverseIterator rend() const noexcept {return __ConstReverseIterator(this->begin());}
 
         /// Returns a raw pointer to the array (alias for @doxfunc{begin()}).
-        __Pointer Data() const {return static_cast<__Pointer>(values);}
+        __Pointer Data() noexcept {return static_cast<__Pointer>(&values[0]);}
+        __ConstPointer Data() const noexcept {return static_cast<__Pointer>(&values[0]);}
 
     private:
         __ValueType values[N];

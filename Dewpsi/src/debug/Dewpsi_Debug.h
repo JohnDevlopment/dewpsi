@@ -21,11 +21,11 @@
 #include <cassert>
 
 #ifndef PD_DEBUG
-# define NDEBUG
+#define NDEBUG
 #endif
 
 #ifndef PD_ENABLE_DEBUG_BREAKS
-# define PD_ENABLE_DEBUG_BREAKS 0
+#define PD_ENABLE_DEBUG_BREAKS 0
 #endif /* PD_ENABLE_DEBUG_BREAKS */
 
 /**

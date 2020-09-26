@@ -152,7 +152,7 @@ namespace Dewpsi {
         /** Creates a vertex buffer.
         *   The API-specific vertex buffer is bound (according to the method of the API)
         *   when this is created. Depending on the API, this is neccessary to supply that
-        *   API with the data.
+        *   API with the data. After creation, the vertex buffer is automatically bound.
         *
         *	@param size  The size of the array pointed to by @a data in bytes
         *	@param data  A pointer to an array of floats that represent vertices
@@ -176,6 +176,10 @@ namespace Dewpsi {
         virtual PDuint32 GetCount() const = 0;
 
         /** Creates an index buffer.
+        *   The API-specific index buffer is bound (according to the method of the API)
+        *   when this is created. Depending on the API, this is neccessary to supply that
+        *   API with the data. After creation, the index buffer is automatically bound.
+        *
         *	@param count  The number of elements in the array at @a data
         *	@param data   A pointer to an array of unsigned 32-bit integers,
         *	              used to represent indices into the vertex buffer's data

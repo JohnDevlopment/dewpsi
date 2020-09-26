@@ -6,29 +6,45 @@
 
 #include "Dewpsi_OpenGLShader.h"
 
+static bool Begin = false;
+
 namespace Dewpsi {
 
-Scope<Renderer::SceneData> Renderer::s_SceneData(new Renderer::SceneData());
+Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneData>();
 
 void Renderer::BeginScene(OrthoCamera& camera)
 {
     s_SceneData->viewProjectionMatrix = camera.GetViewProjectionMatrix();
+    Begin = true;
 }
 
-void Renderer::EndScene()
-{
+void Renderer::EndScene() {}
 
-}
-
-void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray)
+void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray,
+    const glm::mat4& transform)
 {
-    ::std::dynamic_pointer_cast<OpenGLShader>(shader)->Bind();
-    ::std::dynamic_pointer_cast<OpenGLShader>(shader)->Bind();
-    ::std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4(
-        "U_ViewProjection",
-        glm::value_ptr(s_SceneData->viewProjectionMatrix)
-    );
+    static Shader* CurrentShader = nullptr;
+
+    if (CurrentShader != shader.get())
+    {
+        CurrentShader = shader.get();
+        CurrentShader->Bind();
+    }
+
+    if (Begin)
+    {
+        Begin = false;
+        static_cast<OpenGLShader*>(CurrentShader)->UploadUniformMat4(
+            "u_ViewProjection",
+            glm::value_ptr(s_SceneData->viewProjectionMatrix)
+        );
+    }
+
     vertexArray->Bind();
+    static_cast<OpenGLShader*>(CurrentShader)->UploadUniformMat4(
+        "u_Transform",
+        glm::value_ptr(transform)
+    );
     RenderCommand::DrawIndexed(vertexArray);
 }
 

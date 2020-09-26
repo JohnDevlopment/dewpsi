@@ -8,12 +8,12 @@
 #include <Dewpsi_Renderer.h>
 #include <Dewpsi_Memory.h>
 #include <Dewpsi_Shader.h>
-#include <Dewpsi_OrthoCamera.h>
 #include <Dewpsi_String.h>
 #include <Dewpsi_Rect.h>
 #include <ext/vec2_float.hpp>
 #include <ext/vec2_unsigned_int.hpp>
-#include <Dewpsi_Texture.h>
+
+#include "sandbox_shape.h" // includes buffers, texture, vertex array, and camera
 
 struct SandboxData {
     Dewpsi::Rectui windowDim;
@@ -34,7 +34,7 @@ public:
     SandboxLayer(SandboxData* data)
     : Layer("Sandbox"),
       m_Camera(-data->sizeRatio.x, data->sizeRatio.x, -data->sizeRatio.y, data->sizeRatio.y),
-      m_Color {0.5f, 0.0f, 0.0f}, m_ActiveTexture(0) {}
+      m_Color {0.5f, 0.0f, 0.0f} {}
 
     ~SandboxLayer() {}
 
@@ -49,7 +49,8 @@ public:
 private:
     Dewpsi::OrthoCamera m_Camera;
     float m_Color[3];
-    int m_ActiveTexture;
+    Dewpsi::Ref<Dewpsi::Shader> m_ColorShader;
+    Dewpsi::Ref<SandboxShape<16, 6>> m_ColoredQuad;
 };
 
 // sandbox application

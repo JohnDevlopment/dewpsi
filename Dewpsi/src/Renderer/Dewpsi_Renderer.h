@@ -28,7 +28,8 @@ namespace Dewpsi {
         static void EndScene();
 
         /// Submits a vertex array to the render queue.
-        static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray);
+        static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray,
+            const glm::mat4& transform = glm::mat4(1.0f));
 
         /// Sets the current rendering API.
         static void SetAPI(RendererAPI::API api) {RendererAPI::SetAPI(api);}
