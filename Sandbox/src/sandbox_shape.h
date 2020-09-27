@@ -35,6 +35,7 @@ struct SandboxShape {
         );
         vao->AddVertexBuffer(vbo);
         vao->SetIndexBuffer(ibo);
+        vao->UnBind();
     }
 
     // return the transform

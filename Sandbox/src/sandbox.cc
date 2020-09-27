@@ -24,7 +24,19 @@ static const char* VertexShaderOpenGL[2] = {
             gl_Position = u_ViewProjection * u_Transform * vec4(in_Position, 0, 1);
         }
     )",
-    ""
+    R"(
+        #version 430 core
+        layout(location = 0) in vec2 in_Position;
+        layout(location = 1) in vec2 in_TexCoord;
+        uniform mat4 u_ViewProjection;
+        uniform mat4 u_Transform;
+        out vec2 v_TexCoord;
+
+        void main() {
+            v_TexCoord =  in_TexCoord;
+            gl_Position = u_ViewProjection * u_Transform * vec4(in_Position, 0, 1);
+        }
+    )"
 };
 
 static const char* FragmentShaderOpenGL[2] = {
@@ -37,7 +49,16 @@ static const char* FragmentShaderOpenGL[2] = {
             FragColor = vec4(u_Color, 1);
         }
     )",
-    ""
+    R"(
+        #version 430 core
+        in vec2 v_TexCoord;
+        uniform sampler2D u_Texture;
+        out vec4 FragColor;
+
+        void main() {
+            FragColor = texture(u_Texture, v_TexCoord.st);
+        }
+    )"
 };
 
 static constexpr float _CamXSpeed = 1.0f;
@@ -50,7 +71,7 @@ void SandboxLayer::OnAttach()
     Dewpsi::Renderer::SetAPI(Dewpsi::RendererAPI::API::OpenGL);
 
     // set vertex and index buffer data
-    m_ColoredQuad = Dewpsi::CreateRef<SandboxShape<16, 6>>();
+    m_ColoredQuad = Dewpsi::CreateRef<SandboxShape<8, 6>>();
     m_ColoredQuad->vertices.SetData({
        -0.5f, -0.5f, // 0 (BL)
         0.5f, -0.5f, // 1 (BR)
@@ -73,22 +94,42 @@ void SandboxLayer::OnAttach()
         "u_Color", m_Color[0], m_Color[1], m_Color[2]
     );
 
+    // texture shader
+    m_TextureShader = Dewpsi::Shader::Create(VertexShaderOpenGL[1], FragmentShaderOpenGL[1]);
+    m_TextureShader->Bind();
+
     // textured quad
-    /*m_ColoredQuad->vertices.SetData({
+    m_TexturedQuad = Dewpsi::CreateRef<SandboxShape<16, 6>>();
+    m_TexturedQuad->vertices.SetData({
        -0.5f, -0.5f, 0.0f, 0.0f, // 0 (BL)
         0.5f, -0.5f, 1.0f, 0.0f, // 1 (BR)
         0.5f,  0.5f, 1.0f, 1.0f, // 2 (TR)
        -0.5f,  0.5f, 0.0f, 1.0f  // 3 (TL)
-    });*/
+    });
+    m_TexturedQuad->indices.SetData({0, 1, 2, 2, 3, 0});
 
-    m_ColoredQuad->vao->UnBind();
+    layout = {
+        {Dewpsi::ShaderDataType::Float2, "in_Position"},
+        {Dewpsi::ShaderDataType::Float2, "in_TexCoord"}
+    };
+    m_TexturedQuad->Init(layout);
+    m_TexturedQuad->position.x -= 0.5f;
+    m_TexturedQuad->position.y -= 0.5f;
+    // texture
+    m_TexturedQuad->vao->Bind();
+    m_TexturedQuad->texture = Dewpsi::Texture2D::Create("Sandbox/assets/images/dm.png");
+    m_TexturedQuad->texture->Bind(0);
+    m_TexturedQuad->vao->UnBind();
+    ////////////
 }
 
 void SandboxLayer::OnDetach()
 {
     PD_PROFILE_FUNCTION();
     m_ColoredQuad.reset();
+    m_TexturedQuad.reset();
     m_ColorShader.reset();
+    m_TextureShader.reset();
 }
 
 void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
@@ -118,6 +159,7 @@ void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
 
     Dewpsi::Renderer::BeginScene(m_Camera);
     Dewpsi::Renderer::Submit(m_ColorShader, m_ColoredQuad->vao, m_ColoredQuad->Transform());
+    Dewpsi::Renderer::Submit(m_TextureShader, m_TexturedQuad->vao, m_TexturedQuad->Transform());
     Dewpsi::Renderer::EndScene();
 }
 

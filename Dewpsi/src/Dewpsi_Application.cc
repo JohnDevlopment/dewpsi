@@ -7,6 +7,9 @@
 #include "Dewpsi_String.h"
 #include "Dewpsi_Renderer.h"
 
+// These includes are just to get make to update them
+#include "Dewpsi_Rect.h"
+
 #ifdef PD_DEBUG
 #include "Dewpsi_Debug.h"
 #endif

@@ -50,7 +50,9 @@ private:
     Dewpsi::OrthoCamera m_Camera;
     float m_Color[3];
     Dewpsi::Ref<Dewpsi::Shader> m_ColorShader;
-    Dewpsi::Ref<SandboxShape<16, 6>> m_ColoredQuad;
+    Dewpsi::Ref<Dewpsi::Shader> m_TextureShader;
+    Dewpsi::Ref<SandboxShape<8, 6>> m_ColoredQuad;
+    Dewpsi::Ref<SandboxShape<16, 6>> m_TexturedQuad;
 };
 
 // sandbox application

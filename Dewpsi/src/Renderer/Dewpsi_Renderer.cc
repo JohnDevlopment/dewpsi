@@ -6,7 +6,6 @@
 
 #include "Dewpsi_OpenGLShader.h"
 
-static bool Begin = false;
 
 namespace Dewpsi {
 
@@ -15,7 +14,6 @@ Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneDa
 void Renderer::BeginScene(OrthoCamera& camera)
 {
     s_SceneData->viewProjectionMatrix = camera.GetViewProjectionMatrix();
-    Begin = true;
 }
 
 void Renderer::EndScene() {}
@@ -23,25 +21,15 @@ void Renderer::EndScene() {}
 void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray,
     const glm::mat4& transform)
 {
-    static Shader* CurrentShader = nullptr;
+    shader->Bind();
 
-    if (CurrentShader != shader.get())
-    {
-        CurrentShader = shader.get();
-        CurrentShader->Bind();
-    }
-
-    if (Begin)
-    {
-        Begin = false;
-        static_cast<OpenGLShader*>(CurrentShader)->UploadUniformMat4(
-            "u_ViewProjection",
-            glm::value_ptr(s_SceneData->viewProjectionMatrix)
-        );
-    }
+    static_ref_cast<OpenGLShader>(shader)->UploadUniformMat4(
+        "u_ViewProjection",
+        glm::value_ptr(s_SceneData->viewProjectionMatrix)
+    );
 
     vertexArray->Bind();
-    static_cast<OpenGLShader*>(CurrentShader)->UploadUniformMat4(
+    static_ref_cast<OpenGLShader>(shader)->UploadUniformMat4(
         "u_Transform",
         glm::value_ptr(transform)
     );

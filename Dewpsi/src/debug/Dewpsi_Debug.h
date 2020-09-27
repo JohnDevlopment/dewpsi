@@ -5,8 +5,6 @@
 *   @file Dewpsi_Debug.h
 *   @ref debug
 *   @defgroup debug Debugging
-*   @ingroup core
-*   @{
 *   Contains debug macros.
 */
 
