@@ -8,6 +8,9 @@
 namespace Dewpsi {
     class RenderCommand {
     public:
+        /// Initialize the rendering API.
+        static void Init();
+
         /// Sets the clear color.
         static void SetClearColor(const Color& color)
         {

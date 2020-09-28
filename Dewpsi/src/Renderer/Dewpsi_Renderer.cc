@@ -11,6 +11,11 @@ namespace Dewpsi {
 
 Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneData>();
 
+void Renderer::Init()
+{
+    RenderCommand::Init();
+}
+
 void Renderer::BeginScene(OrthoCamera& camera)
 {
     s_SceneData->viewProjectionMatrix = camera.GetViewProjectionMatrix();

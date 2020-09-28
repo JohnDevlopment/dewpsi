@@ -40,6 +40,7 @@
 #include <cassert>
 #include <typeinfo>
 
+#include "DewpsiMath_Util.hpp"
 #include "DewpsiMath_Vec2.hpp"
 
 #endif /* DEWPSIMATH_HPP */

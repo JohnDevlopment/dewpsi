@@ -2,6 +2,16 @@
 
 namespace Dewpsi {
 
+void OpenGLRendererAPI::Init()
+{
+    glEnable(GL_BLEND);
+    //glEnable(GL_SCISSOR_TEST);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+}
+
 void OpenGLRendererAPI::SetClearColor(const Color& color)
 {
     m_ClearColor = color;

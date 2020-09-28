@@ -21,6 +21,9 @@ namespace Dewpsi {
     */
     class Renderer {
     public:
+        /// Initialize the renderer.
+        static void Init();
+
         /// Begins a scene for the view @a camera.
         static void BeginScene(OrthoCamera& camera);
 

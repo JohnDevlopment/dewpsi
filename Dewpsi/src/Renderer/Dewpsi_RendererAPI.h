@@ -31,6 +31,9 @@ namespace Dewpsi {
 	        OpenGL      ///< OpenGL API
 	    };
 
+		/// Initialize the rendering API.
+		virtual void Init() = 0;
+
 		/** Sets the clear color.
 		*	The argument is a Color object that has the fields
 		*	@a red, @a green, @a blue, and @a alpha, each field

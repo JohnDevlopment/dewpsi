@@ -39,6 +39,9 @@ Application::Application(const std::string& sName)
     m_window = Window::Create(_WindowProperties);
     m_window->SetEventCallback(PD_BIND_EVENT_FN(Application::OnEvent));
 
+    // initialize renderer
+    Renderer::Init();
+
     // set the clear color
     RenderCommand::SetClearColor(DefineColor(127, 127, 127));
 
