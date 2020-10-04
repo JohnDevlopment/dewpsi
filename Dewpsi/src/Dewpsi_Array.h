@@ -6,6 +6,7 @@
 
 #include <Dewpsi_Iterator.h>
 #include <Dewpsi_Math.h>
+#include <Dewpsi_String.h>
 #include <cassert>
 #include <initializer_list>
 
@@ -33,7 +34,7 @@ namespace Dewpsi {
 
         /** Constructor.
         *   There are multiple constructors with different parameters:
-        *   -# Default constructor
+        *   -# Default constructor; initializes everything to zero.
         *   -# Copies values from one array to another, respecting bounds
         *   -# Moves values from one array to another, respecting bounds
         *   -# Initialize array from a list of values
@@ -46,7 +47,7 @@ namespace Dewpsi {
                 Array<int, 5> fourth = {1, 2, 3, 4, 5};
         *   @endcode
         */
-        Array() = default;
+        Array() {String::MemSet(this, 0, sizeof(*this));}
         Array(const Array& src)
         {
             PDsizei size = Dewpsi::min(N, src.Size());
@@ -129,6 +130,8 @@ namespace Dewpsi {
     private:
         __ValueType values[N];
         const PDsizei size = N;
+
+        //static void Clear()
     };
 }
 
