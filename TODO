@@ -1,0 +1,16 @@
+#1
+Create a vector traits class that identifies whether a the type of the vector can be move-assigned
+and move-constructed or not. This will be done with metaprogramming. Basically, if the type of the
+vector is move constructible, the move constructor is used whenever the vector class constructs
+an element based on another. But if it is not move constructible, use the copy constructor as well.
+
+CODE: [
+
+typedef VectorTraits<Vector<Tp>> __VectorTraits;
+for (PDsizei i = 0; i < count; ++i)
+    dst.begin[i] = __VectorTraits::Assign(src.begin[i]);
+
+]
+
+A vector traits class takes in a vector type (Vector<Tp>) and exposes a function (Assign) that returns
+a reference to the underlying value type based on whether said type is move-constructible.

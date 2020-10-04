@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <string>
+#include <limits>
 
 /// An unsigned type used to represent the size of objects
 typedef size_t PDsizei;
@@ -89,6 +90,29 @@ typedef void* PDuserdata;
 
 /// String class
 typedef std::string PDstring;
+
+namespace Dewpsi {
+    using ::std::numeric_limits;
+
+    /** Provides information about the properties of arithmetic types (either integral
+    *   or floating-point) in the specific platform for which the library compiles.
+    *   This class template is specialized for every fundamental arithmetic type,
+    *   with its members describing the properties of type T. This template shall
+    *   not be specialized for any other type.
+    *
+    *   @note
+    *   This class is inherited from std::numeric_limits and provides specializations for
+    *   Dewpsi types that are just typedefs for their respective arithmetic types.
+    */
+    template<typename T>
+    class NumericLimits : public numeric_limits<T> {};
+    template<>
+    class NumericLimits<PDuint> : public numeric_limits<unsigned int> {};
+}
+
+/*Provides information about the properties of arithmetic types (either integral or floating-point) in the specific platform for which the library compiles.
+
+This class template is specialized for every fundamental arithmetic type, with its members describing the properties of type T. This template shall not be specialized for any other type.*/
 
 /// @}
 
