@@ -57,6 +57,8 @@ int main (int argc, char const* argv[])
         Dewpsi::SetWindowProps(props);
     }
 
+    Dewpsi::Renderer::SetAPI(Dewpsi::RendererAPI::API::OpenGL);
+
     // start client application
     App = Dewpsi::NewApplication(appData.get());
     PD_PROFILE_END_SESSION();

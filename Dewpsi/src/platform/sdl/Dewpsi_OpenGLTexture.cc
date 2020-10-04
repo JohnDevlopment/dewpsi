@@ -1,33 +1,17 @@
 #include "Dewpsi_OpenGLTexture.h"
 #include "Dewpsi_Log.h"
-#include "Dewpsi_WhichOS.h"
 
 namespace Dewpsi {
 
-OpenGLTexture2D::OpenGLTexture2D(const PDstring& file)
+OpenGLTexture2D::OpenGLTexture2D(const PDstring& file) : m_TextureID(0)
 {
-    stbi_set_flip_vertically_on_load(1);
-    m_DataBuffer = stbi_load(file.c_str(), &m_Width, &m_Height, &m_BPP, 4);
-    PD_CORE_ASSERT(m_DataBuffer, "Failed to load {0}", file);
-
-    GLCall(glGenTextures(1, &m_TextureID));
-    GLCall(glBindTexture(GL_TEXTURE_2D, m_TextureID));
-
-    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-
-    GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-        m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_DataBuffer));
-    GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+    GLCall(glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID));
+    Add(file, 0);
 }
 
 OpenGLTexture2D::~OpenGLTexture2D()
 {
     glDeleteTextures(1, &m_TextureID);
-    if (m_DataBuffer)
-        stbi_image_free(m_DataBuffer);
 }
 
 void OpenGLTexture2D::Bind(PDuint slot) const
@@ -42,6 +26,50 @@ void OpenGLTexture2D::Bind(PDuint slot) const
 void OpenGLTexture2D::UnBind() const
 {
     GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+}
+
+void OpenGLTexture2D::Add(const PDstring& file, PDuint slot)
+{
+    GLint iWidth, iHeight, iDepth;
+    GLenum internalFormat = 0, dataFormat = 0;
+    PDuchar* ucpBuffer = nullptr;
+
+    // Load file
+    stbi_set_flip_vertically_on_load(1);
+    ucpBuffer = stbi_load(file.c_str(), &iWidth, &iHeight, &iDepth, 0);
+    if (! ucpBuffer)
+    {
+        SetError("Failed to read %s", file);
+        return;
+    }
+
+    // Internal and data format based on the number of channels in the file
+    if (iDepth == 4)
+    {
+        internalFormat = GL_RGBA8;
+        dataFormat = GL_RGBA;
+    }
+    else if (iDepth == 3)
+    {
+        internalFormat = GL_RGB8;
+        dataFormat = GL_RGB;
+    }
+    PD_CORE_ASSERT(internalFormat && dataFormat, "format not supported");
+
+    // Bind texture
+    GLCall(glActiveTexture(GL_TEXTURE0 + slot));
+    GLCall(glBindTexture(GL_TEXTURE_2D, m_TextureID));
+
+    // Texture parameters
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+
+    // Upload pixel data to the current subtexture
+    GLCall(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, iWidth, iHeight, dataFormat,
+        GL_UNSIGNED_BYTE, ucpBuffer));
+    GLCall(glBindTexture(GL_TEXTURE_2D, m_TextureID));
 }
 
 }

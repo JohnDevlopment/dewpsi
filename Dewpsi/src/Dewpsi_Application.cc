@@ -6,6 +6,7 @@
 #include "Dewpsi_Except.h"
 #include "Dewpsi_String.h"
 #include "Dewpsi_Renderer.h"
+#include "Dewpsi_Vector.h"
 
 // These includes are just to get make to update them
 #include "Dewpsi_Rect.h"

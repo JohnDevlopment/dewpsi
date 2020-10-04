@@ -3,6 +3,7 @@
 
 #include "Dewpsi_Core.h"
 #include "Dewpsi_Shader.h"
+#include "Dewpsi_OpenGL.h"
 
 #include <unordered_map>
 
@@ -16,16 +17,31 @@ namespace Dewpsi {
         virtual void Bind() const override;
         virtual void UnBind() const override;
 
-        void UploadUniformInt1(const PDstring& name, int value);
-        void UploadUniformFloat3(const PDstring& name, float val1, float val2, float val3);
-        void UploadUniformFloat4(const PDstring& name, float val1, float val2, float val3, float val4);
-        void UploadUniformMat4(const PDstring& name, const float* values);
+        virtual void SetInt1(const PDstring& name, int v0) override;
+        virtual void SetInt2(const PDstring& name, int v1, int v2) override;
+        virtual void SetInt3(const PDstring& name, int v1, int v2, int v3) override;
+        virtual void SetInt4(const PDstring& name, int v1, int v2, int v3, int v4) override;
+        virtual void SetFloat1(const PDstring& name, float v1) override;
+        virtual void SetFloat2(const PDstring& name, float v1, float v2) override;
+        virtual void SetFloat3(const PDstring& name, float v1, float v2, float v3) override;
+        virtual void SetFloat4(const PDstring& name, float v1, float v2, float v3, float v4) override;
+        virtual void SetMat4(const PDstring& name, PDsizei count, const glm::mat4* value,
+            bool transpose = false) override;
 
     private:
-        int GetUniformLocation(const PDstring& name);
+        typedef std::unordered_map<GLenum, PDstring> SourceMap;
 
-        PDuint m_ShaderID;
+        PDstring ReadFile(const PDstring& path) const;
+        SourceMap PreProcess(const PDstring& source) const;
+        GLenum GetShaderType(const PDstring& name) const;
+        bool CompileShader(const SourceMap& sources);
+        int GetUniformLocation(const PDstring& name);
+        bool CheckShader(GLuint shader, const char* desc);
+        bool CheckProgram(PDuint program);
+
+        PDuint m_ShaderID = 0;
         std::unordered_map<PDstring, int> m_UniformCache;
+        std::vector<char> m_ErrorLog;
     };
 }
 

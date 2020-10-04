@@ -43,6 +43,9 @@ namespace Dewpsi {
         Texture2D() = default;
         virtual ~Texture2D() = default;
 
+        /// Adds another image to the texture.
+        virtual void Add(const PDstring& file, PDuint slot) = 0;
+
         /// Create a 2D texture from file.
         static Ref<Texture2D> Create(const PDstring& file);
     };

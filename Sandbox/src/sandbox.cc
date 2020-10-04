@@ -10,8 +10,7 @@
 #include <Dewpsi_ImGuiLayer.h>
 #define PD_PROFILE 0
 #include <Dewpsi_Debug.h>
-
-#include <glm/gtc/type_ptr.hpp>
+#include <Dewpsi_Except.h>
 
 static const char* VertexShaderOpenGL[2] = {
     R"(
@@ -64,11 +63,33 @@ static const char* FragmentShaderOpenGL[2] = {
 static constexpr float _CamXSpeed = 1.0f;
 static constexpr float _CamRotation = 90.0f;
 
+struct IntValue {
+    int value;
+
+    IntValue() : value(0) {}
+
+    IntValue(int i) : value(i) {}
+
+    IntValue(const IntValue& src) : value(src.value) {}
+
+    IntValue(IntValue&& src) : value(src.value) {}
+
+    IntValue& operator=(const IntValue& rhs)
+    {
+        value = rhs.value;
+        return *this;
+    }
+
+    IntValue& operator=(IntValue&& rhs)
+    {
+        value = rhs.value;
+        return *this;
+    }
+};
+
 void SandboxLayer::OnAttach()
 {
     PD_PROFILE_FUNCTION();
-
-    Dewpsi::Renderer::SetAPI(Dewpsi::RendererAPI::API::OpenGL);
 
     // set vertex and index buffer data
     m_ColoredQuad = Dewpsi::CreateRef<SandboxShape<8, 6>>();
@@ -89,13 +110,10 @@ void SandboxLayer::OnAttach()
     // color shader
     m_ColorShader = Dewpsi::Shader::Create(VertexShaderOpenGL[0], FragmentShaderOpenGL[0]);
     m_ColorShader->Bind();
-
-    Dewpsi::static_ref_cast<Dewpsi::OpenGLShader>(m_ColorShader)->UploadUniformFloat3(
-        "u_Color", m_Color[0], m_Color[1], m_Color[2]
-    );
+    m_ColorShader->SetFloat3("u_Color", m_Color[0], m_Color[1], m_Color[2]);
 
     // texture shader
-    m_TextureShader = Dewpsi::Shader::Create(VertexShaderOpenGL[1], FragmentShaderOpenGL[1]);
+    /*m_TextureShader = Dewpsi::Shader::Create(VertexShaderOpenGL[1], FragmentShaderOpenGL[1]);
     m_TextureShader->Bind();
 
     // textured quad
@@ -119,7 +137,7 @@ void SandboxLayer::OnAttach()
     m_TexturedQuad->vao->Bind();
     m_TexturedQuad->texture = Dewpsi::Texture2D::Create("Sandbox/assets/images/dm.png");
     m_TexturedQuad->texture->Bind(0);
-    m_TexturedQuad->vao->UnBind();
+    m_TexturedQuad->vao->UnBind();*/
     ////////////
 }
 
@@ -127,9 +145,9 @@ void SandboxLayer::OnDetach()
 {
     PD_PROFILE_FUNCTION();
     m_ColoredQuad.reset();
-    m_TexturedQuad.reset();
+    //m_TexturedQuad.reset();
     m_ColorShader.reset();
-    m_TextureShader.reset();
+    //m_TextureShader.reset();
 }
 
 void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
@@ -159,21 +177,18 @@ void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
 
     Dewpsi::Renderer::BeginScene(m_Camera);
     Dewpsi::Renderer::Submit(m_ColorShader, m_ColoredQuad->vao, m_ColoredQuad->Transform());
-    Dewpsi::Renderer::Submit(m_TextureShader, m_TexturedQuad->vao, m_TexturedQuad->Transform());
+    //Dewpsi::Renderer::Submit(m_TextureShader, m_TexturedQuad->vao, m_TexturedQuad->Transform());
     Dewpsi::Renderer::EndScene();
 }
 
 void SandboxLayer::OnImGuiRender()
 {
-    static Dewpsi::OpenGLShader* colorShader = reinterpret_cast<Dewpsi::OpenGLShader*>(m_ColorShader.get());
     ImGui::Begin("Options");
 
     ImGui::ColorEdit3("Rect Color", m_Color, ImGuiColorEditFlags_NoTooltip);
     if (ImGui::Button("Set Color"))
     {
-        m_ColorShader->Bind();
-        colorShader->UploadUniformFloat3("u_Color", m_Color[0], m_Color[1], m_Color[2]);
-        m_ColorShader->UnBind();
+        m_ColorShader->SetFloat3("u_Color", m_Color[0], m_Color[1], m_Color[2]);
     }
 
     ImGui::End();

@@ -2,43 +2,33 @@
 #include "Dewpsi_OpenGLShader.h"
 #include "Dewpsi_Memory.h"
 #include "Dewpsi_String.h"
-#include "Dewpsi_OpenGL.h"
 #include "_Dewpsi_Int_Shader.h"
 #include "Dewpsi_Except.h"
+#include "Dewpsi_Array.h"
+
+#include <glm/gtc/type_ptr.hpp>
+#include <fstream>
 
 using Dewpsi::Internal::ShaderProgramSource;
 using Dewpsi::Internal::ShaderType;
-
-static Dewpsi::Scope<char[]> g_Error;
-static PDuint g_ErrorLen = 0;
-
-static PDuint CreateShader(const ShaderProgramSource& source,
-    PDuint* pVert = nullptr, PDuint* pFrag = nullptr);
-static bool CheckShader(PDuint shader, const char* desc);
-static bool CheckProgram(PDuint program, const char* desc);
-static void ResizeErrorPtr(PDuint len);
-static ShaderProgramSource ParseShaderFile(const PDstring& filename);
 
 namespace Dewpsi {
 
 OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string& fragmentSrc)
 {
-    ShaderProgramSource sources = { vertexSrc, fragmentSrc };
-    m_ShaderID = CreateShader(sources);
-    PD_CORE_ASSERT(m_ShaderID, "Failed to link shader program");
+    SourceMap sources;
+    sources[GL_VERTEX_SHADER] = vertexSrc;
+    sources[GL_FRAGMENT_SHADER] = fragmentSrc;
+    CompileShader(sources);
+    PD_CORE_ASSERT(m_ShaderID, "OpenGL shader has failed to compile");
     if (! m_ShaderID)
         throw DewpsiError("OpenGL shader has failed to compile");
-    GLPrintActiveUniforms(m_ShaderID);
 }
 
 OpenGLShader::OpenGLShader(const PDstring& file)
 {
-    ShaderProgramSource sources = PD_MOVE(ParseShaderFile(file));
-    m_ShaderID = CreateShader(sources);
-    PD_CORE_ASSERT(m_ShaderID, "Failed to link shader program");
-    if (! m_ShaderID)
-        throw DewpsiError("OpenGL shader has failed to compile");
-    GLPrintActiveUniforms(m_ShaderID);
+    SourceMap sources = PreProcess(ReadFile(file));
+    CompileShader(sources);
 }
 
 OpenGLShader::~OpenGLShader()
@@ -56,41 +46,93 @@ void OpenGLShader::UnBind() const
     glUseProgram(0);
 }
 
-void OpenGLShader::UploadUniformInt1(const PDstring& name, int value)
+void OpenGLShader::SetInt1(const PDstring& name, int v0)
 {
     GLCall(glUseProgram(m_ShaderID));
 
     GLint iLocation = GetUniformLocation(name);
     PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
-    GLCall(glUniform1i(iLocation, value));
+    GLCall(glUniform1i(iLocation, v0));
 }
 
-void OpenGLShader::UploadUniformFloat3(const PDstring& name, float val1, float val2, float val3)
+void OpenGLShader::SetInt2(const PDstring& name, int v0, int v1)
 {
     GLCall(glUseProgram(m_ShaderID));
 
     GLint iLocation = GetUniformLocation(name);
     PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
-    GLCall(glUniform3f(iLocation, val1, val2, val3));
+    GLCall(glUniform2i(iLocation, v0, v1));
 }
 
-void OpenGLShader::UploadUniformFloat4(const PDstring& name, float val1, float val2, float val3, float val4)
+void OpenGLShader::SetInt3(const PDstring& name, int v0, int v1, int v2)
 {
     GLCall(glUseProgram(m_ShaderID));
 
     GLint iLocation = GetUniformLocation(name);
     PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
-    GLCall(glUniform4f(iLocation, val1, val2, val3, val4));
+    GLCall(glUniform3i(iLocation, v0, v1, v2));
 }
 
-void OpenGLShader::UploadUniformMat4(const PDstring& name, const float* values)
+void OpenGLShader::SetInt4(const PDstring& name, int v0, int v1, int v2, int v3)
 {
-    PD_CORE_ASSERT(values, "NULL 'values' parameter");
     GLCall(glUseProgram(m_ShaderID));
 
     GLint iLocation = GetUniformLocation(name);
     PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
-    glUniformMatrix4fv(iLocation, 1, GL_FALSE, values);
+    GLCall(glUniform4i(iLocation, v0, v1, v2, v3));
+}
+
+void OpenGLShader::SetFloat1(const PDstring& name, float v1)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform1f(iLocation, v1));
+}
+
+void OpenGLShader::SetFloat2(const PDstring& name, float v1, float v2)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform2f(iLocation, v1, v2));
+}
+
+void OpenGLShader::SetFloat3(const PDstring& name, float v1, float v2, float v3)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform3f(iLocation, v1, v2, v3));
+}
+
+void OpenGLShader::SetFloat4(const PDstring& name, float v1, float v2, float v3, float v4)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform4f(iLocation, v1, v2, v3, v4));
+}
+
+void OpenGLShader::SetMat4(const PDstring& name, PDsizei count, const glm::mat4* value,
+    bool transpose)
+{
+    PD_CORE_ASSERT(value, "NULL 'values' parameter");
+    if (! value)
+    {
+        PD_CORE_WARN("NULL 'value' parameter in Shader::SetMat4");
+        PD_BADPARAM("value");
+        return;
+    }
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    glUniformMatrix4fv(iLocation, count, (transpose ? GL_TRUE : GL_FALSE), glm::value_ptr(*value));
 }
 
 int OpenGLShader::GetUniformLocation(const PDstring& name)
@@ -110,143 +152,183 @@ int OpenGLShader::GetUniformLocation(const PDstring& name)
     return iLocation;
 }
 
-}
-
-// INTERNAL
-
-ShaderProgramSource ParseShaderFile(const PDstring& filename)
+PDstring OpenGLShader::ReadFile(const PDstring& path) const
 {
-    ShaderType type = ShaderType::None;
-    std::stringstream ss[3];
-    std::string sLine;
-
-    std::ifstream ifs(filename);
-    PD_CORE_ASSERT(ifs.is_open(), "Failed to open {0}", filename);
-
-    while (std::getline(ifs, sLine))
+    PDstring result;
+    std::ifstream in(path);
+    PD_CORE_ASSERT(in, "Could not open '{0}' for reading", path);
+    if (in)
     {
-        if (sLine.find("#shader") != std::string::npos)
+        in.seekg(0, in.end);
+        PDsizei szLength = in.tellg();
+        if (szLength > 0)
         {
-            if (sLine.find("vertex") != std::string::npos)
-                type = ShaderType::Vertex;
-            else if (sLine.find("fragment") != std::string::npos)
-                type = ShaderType::Fragment;
+            in.seekg(0, in.beg);
+            result.resize(szLength);
+            in.read(result.data(), szLength);
         }
         else
-            ss[(int) type] << sLine << '\n';
+        {
+            PD_CORE_ERROR("Failed to read input stream...file: {0}", path);
+        }
+    }
+    else
+    {
+        PD_CORE_ERROR("Could not open '{0}' for reading", path);
     }
 
-    return {ss[0].str(), ss[1].str()};
+    return PD_MOVE(result);
 }
 
-PDuint CompileShader(PDuint type, const std::string& source)
+OpenGLShader::SourceMap OpenGLShader::PreProcess(const PDstring& source) const
 {
-    PDuint uiShader = 0;
+    SourceMap result;
 
-    static constexpr Dewpsi::StaticString ShaderStrings[2] = {
-        "vertex",
-        "fragment"
+    const char* cpToken = "#type";
+    const size_t szTokenLength = strlen(cpToken);
+    size_t szPos = source.find(cpToken, 0);
+    PD_CORE_ASSERT(szPos != std::string::npos, "Syntax Error: " \
+        "source contains no #type declarations");
+
+    while (szPos != std::string::npos)
+    {
+        const size_t eol = source.find_first_of("\r\n", szPos); // End of #type declaration
+        PD_CORE_ASSERT(eol != std::string::npos, "Syntax Error: no text after #type declaration");
+
+        const size_t szBegin = szPos + szTokenLength + 1; // Position after "#type "
+        PDstring sType = source.substr(szBegin, eol - szBegin);
+        PD_CORE_ASSERT(GetShaderType(sType), "Invalid shader type '{0}'", sType);
+
+        size_t szNextLinePos = source.find_first_not_of("\r\n ", eol); // Find first line of actual code
+        PD_CORE_ASSERT(szNextLinePos != std::string::npos, "Syntax Error: no code after #type declaration");
+        szPos = source.find(cpToken, szNextLinePos);
+
+        result[GetShaderType(sType)] = (szPos == std::string::npos) ? source.substr(szNextLinePos)
+            : source.substr(szNextLinePos, szPos - szNextLinePos);
+    }
+
+    return PD_MOVE(result);
+}
+
+GLenum OpenGLShader::GetShaderType(const PDstring& name) const
+{
+    if (name == "vertex")
+        return GL_VERTEX_SHADER;
+    else if (name == "fragment" || name == "pixel")
+        return GL_FRAGMENT_SHADER;
+
+    return 0;
+}
+
+bool OpenGLShader::CompileShader(const OpenGLShader::SourceMap& sources)
+{
+    PD_CORE_ASSERT(sources.size() <= 2, "Only two shaders supported");
+
+    Dewpsi::Array<GLuint, 2> shaderIds = {0, 0};
+    short int iShaderIdIndex = 0;
+    bool result = true;
+
+    auto typeString = [](GLenum t) -> const char* {
+        if (t == GL_VERTEX_SHADER)
+            return "vertex";
+        else
+            return "fragment";
     };
 
-    if (! source.empty())
-    {
-        uiShader = glCreateShader(type);
-        const char* cpSource = source.c_str();
-
-        // shader type
-        ShaderType eType = ShaderType::None;
-        switch (type)
+    auto clearShaders = [&shaderIds](GLuint program) -> void {
+        for (auto& val : shaderIds)
         {
-        case GL_VERTEX_SHADER:
-            eType = ShaderType::Vertex;
-            break;
-
-        case GL_FRAGMENT_SHADER:
-            eType = ShaderType::Fragment;
-            break;
-
-        default: break;
-        }
-
-        // compile the source code into a shader
-        glShaderSource(uiShader, 1, &cpSource, nullptr);
-        glCompileShader(uiShader);
-
-        if (! CheckShader(uiShader, ShaderStrings[(int)eType].get()))
-        {
-            glDeleteShader(uiShader);
-            return 0;
-        }
-    }
-
-    return uiShader;
-}
-
-PDuint CreateShader(const ShaderProgramSource& source, PDuint* pVert, PDuint* pFrag)
-{
-    PDuint uiProg, uiVS, uiFS;
-
-#define _DETACH_SHADERS() glDetachShader(uiProg, uiVS); \
-                          glDetachShader(uiProg, uiFS);
-
-    // compile shaders
-    uiProg = glCreateProgram();
-    uiVS = CompileShader(GL_VERTEX_SHADER, source.vertex);
-    uiFS = CompileShader(GL_FRAGMENT_SHADER, source.fragment);
-    PD_CORE_ASSERT(uiVS && uiFS, "one or both shaders failed to compile");
-
-    // link shaders to program
-    glAttachShader(uiProg, uiVS);
-    glAttachShader(uiProg, uiFS);
-    glLinkProgram(uiProg);
-
-    if (! CheckProgram(uiProg, "shader program"))
-    {
-        _DETACH_SHADERS()
-        DeleteShaders(uiVS, uiFS);
-        glDeleteProgram(uiProg);
-    }
-
-    // validate shader program
-    if (reinterpret_cast<void*>(glGetProgramPipelineiv) != nullptr) {
-        int iCode;
-        glValidateProgram(uiProg);
-        glGetProgramPipelineiv(uiProg, GL_VALIDATE_STATUS, &iCode);
-        if (iCode == GL_FALSE)
-        {
-            int iLogLen;
-            glGetProgramPipelineiv(uiProg, GL_INFO_LOG_LENGTH, &iLogLen);
-            if (iLogLen > 1)
+            if (val)
             {
-                ResizeErrorPtr(static_cast<PDuint>(iLogLen + 1));
-                glGetProgramPipelineInfoLog(uiProg, iLogLen, nullptr, g_Error.get());
-                PD_CORE_ERROR("ERROR: validation failed, reason:\n{0}", g_Error.get());
-                // delete shader program
-                _DETACH_SHADERS()
-                DeleteShaders(uiVS, uiFS);
-                glDeleteProgram(uiProg);
-                uiProg = 0;
+                glDetachShader(program, val);
+                glDeleteShader(val);
+                val = 0;
             }
         }
-    }
+    };
 
-    _DETACH_SHADERS()
+    // compile each shader
+    GLuint program = glCreateProgram();
 
-#undef _DETACH_SHADERS
-
-    return uiProg;
-}
-
-void ResizeErrorPtr(PDuint len)
-{
-    if ((int) g_ErrorLen < len)
+    for (auto& src : sources)
     {
-        g_ErrorLen = len;
-        g_Error = Dewpsi::CreateScope<char[]>((size_t) g_ErrorLen);
+        //const char* cpShaderType = (src.first == GL_VERTEX_SHADER) ? "vertex" : "fragment";
+        const char* cpShaderType = typeString(src.first);
+
+        // src: pair: first=GLenum, second=PDstring
+        GLuint shader = glCreateShader(src.first);
+        PD_CORE_ASSERT(shader, "Failed to create {0} shader", cpShaderType);
+
+        // compile source code
+        PDstring shaderSource = src.second;
+        const char* const shaderSourceCString = shaderSource.c_str();
+        glShaderSource(shader, 1, &shaderSourceCString, nullptr);
+        glCompileShader(shader);
+
+        // error check
+        if (CheckShader(shader, cpShaderType))
+        {
+            glAttachShader(program, shader);
+            shaderIds[iShaderIdIndex++] = shader;
+        }
+        else
+        {
+            result = false;
+            break;
+        }
     }
+
+    // delete program if this fails
+    if (! result)
+    {
+        glDeleteProgram(program);
+        clearShaders(program);
+    }
+    else
+    {
+        // link shader objects into program object
+        m_ShaderID = program;
+        program = 0;
+        glLinkProgram(m_ShaderID);
+        if (! CheckProgram(m_ShaderID))
+        {
+            clearShaders(m_ShaderID);
+            glDeleteProgram(m_ShaderID);
+            m_ShaderID = 0;
+        }
+    }
+
+    m_ErrorLog.clear();
+    return result;
+    #undef deleteShaders
 }
 
-bool CheckProgram(PDuint program, const char* desc)
+bool OpenGLShader::CheckShader(GLuint shader, const char* desc)
+{
+    int iStatus = 0, iLogLen = 0;
+
+    std::vector<char> errorLog;
+
+    // get the compile status and info string length
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &iStatus);
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &iLogLen);
+
+    // there is an error
+    if (iStatus == GL_FALSE)
+    {
+        // print the error
+        if (iLogLen > 1)
+        {
+            m_ErrorLog.resize(static_cast<PDuint>(iLogLen + 1));
+            glGetShaderInfoLog(shader, iLogLen, nullptr, m_ErrorLog.data());
+            PD_CORE_ERROR("Failed to compile {0} shader: {1}", desc, m_ErrorLog.data());
+        }
+    }
+
+    return (bool) iStatus == GL_TRUE;
+}
+
+bool OpenGLShader::CheckProgram(PDuint program)
 {
     int iStatus, iLogLen;
 
@@ -260,34 +342,13 @@ bool CheckProgram(PDuint program, const char* desc)
         // print the error
         if (iLogLen > 1)
         {
-            ResizeErrorPtr(static_cast<PDuint>(iLogLen + 1));
-            glGetProgramInfoLog(program, iLogLen, nullptr, g_Error.get());
-            PD_CORE_ERROR("ERROR: failed to link {0}: {1}", desc, g_Error.get());
+            m_ErrorLog.resize(static_cast<PDuint>(iLogLen + 1));
+            glGetProgramInfoLog(program, iLogLen, nullptr, m_ErrorLog.data());
+            PD_CORE_ERROR("ERROR: failed to link shader program: {1}", m_ErrorLog.data());
         }
     }
 
     return (bool) iStatus == GL_TRUE;
 }
 
-bool CheckShader(PDuint shader, const char* desc)
-{
-    int iStatus = 0, iLogLen = 0;
-
-    // get the compile status and info string length
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &iStatus);
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &iLogLen);
-
-    // there is an error
-    if (iStatus == GL_FALSE)
-    {
-        // print the error
-        if (iLogLen > 1)
-        {
-            ResizeErrorPtr(static_cast<PDuint>(iLogLen + 1));
-            glGetShaderInfoLog(shader, iLogLen, nullptr, g_Error.get());
-            PD_CORE_ERROR("ERROR: failed to compile {0} shader: {1}", desc, g_Error.get());
-        }
-    }
-
-    return (bool) iStatus == GL_TRUE;
 }

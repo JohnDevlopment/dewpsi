@@ -1,11 +1,7 @@
 #include "Dewpsi_Renderer.h"
 #include "Dewpsi_Shader.h"
-
-#include <glm/gtc/type_ptr.hpp>
-#include <memory>
-
 #include "Dewpsi_OpenGLShader.h"
-
+//#include "Dewpsi_Memory.h"
 
 namespace Dewpsi {
 
@@ -27,17 +23,9 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
     const glm::mat4& transform)
 {
     shader->Bind();
-
-    static_ref_cast<OpenGLShader>(shader)->UploadUniformMat4(
-        "u_ViewProjection",
-        glm::value_ptr(s_SceneData->viewProjectionMatrix)
-    );
-
     vertexArray->Bind();
-    static_ref_cast<OpenGLShader>(shader)->UploadUniformMat4(
-        "u_Transform",
-        glm::value_ptr(transform)
-    );
+    shader->SetMat4("u_ViewProjection", 1, &s_SceneData->viewProjectionMatrix);
+    shader->SetMat4("u_Transform", 1, &transform);
     RenderCommand::DrawIndexed(vertexArray);
 }
 
