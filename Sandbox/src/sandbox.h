@@ -21,8 +21,9 @@ struct SandboxData {
     char title[50];
     dm::Vec2 sizeRatio;
     dm::UVec2 resolution;
+    PDuserdata userData;
 
-    SandboxData()
+    SandboxData() : userData(nullptr)
     {
         Dewpsi::String::MemSet(title, 0, sizeof(title));
     }
@@ -42,7 +43,6 @@ public:
     virtual void OnDetach() override;
     virtual void OnUpdate(Dewpsi::Timestep delta) override;
 	virtual void OnImGuiRender() override;
-    virtual void OnEvent(Dewpsi::Event& e) override;
 
     bool OnKeyboardPressed(Dewpsi::KeyPressedEvent& e);
 
@@ -53,6 +53,8 @@ private:
     Dewpsi::Ref<Dewpsi::Shader> m_TextureShader;
     Dewpsi::Ref<SandboxShape> m_ColoredQuad;
     Dewpsi::Ref<SandboxShape> m_TexturedQuad;
+    Dewpsi::Ref<Dewpsi::Texture> m_Texture1;
+    Dewpsi::Ref<Dewpsi::Texture> m_Texture2;
 };
 
 // sandbox application

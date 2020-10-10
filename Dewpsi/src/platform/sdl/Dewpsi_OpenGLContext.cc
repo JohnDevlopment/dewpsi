@@ -22,7 +22,7 @@ int OpenGLContext::Init()
     m_Context = SDL_GL_CreateContext(m_WindowHandle);
     if (! m_Context)
     {
-        Dewpsi::SetError("Failed to create OpenGL context: %s", SDL_GetError());
+        Dewpsi::SetError("%s", SDL_GetError());
         return PD_INVALID;
     }
     SDL_GL_MakeCurrent(m_WindowHandle, m_Context);
@@ -33,12 +33,12 @@ int OpenGLContext::Init()
         Dewpsi::SetError("GLAD loader returned an error status");
         return PD_INVALID;
     }
-    PD_CORE_INFO(
+    /*PD_CORE_INFO(
         "OpenGL context\n  vendor: {0}\n  renderer: {1}\n  version: {2}",
         glGetString(GL_VENDOR),
         glGetString(GL_RENDERER),
         glGetString(GL_VERSION)
-    );
+    );*/
 
     return PD_OKAY;
 }

@@ -7,40 +7,57 @@
 #include "Dewpsi_Vector.h"
 
 namespace Dewpsi {
-    struct OpenGLTextureContainer {
-        GLuint slot;
-        GLint width;
-        GLint height;
-        GLint channels;
+    /*struct OpenGLTextureAttributes {
+        GLuint   slot;
+        GLint    width;
+        GLint    height;
+        GLint    channels;
         PDuchar* dataBuffer;
 
-        OpenGLTextureContainer() = default;
-        OpenGLTextureContainer(const OpenGLTextureContainer&) = delete;
-        OpenGLTextureContainer(OpenGLTextureContainer&& src)
+        OpenGLTextureAttributes() = default;
+        //OpenGLTextureAttributes(const OpenGLTextureAttributes&) = delete;
+        OpenGLTextureAttributes(OpenGLTextureAttributes&& src)
             : slot(src.slot), width(src.width), height(src.height),
               channels(src.channels), dataBuffer(src.dataBuffer)
         {
             src.dataBuffer = nullptr;
         }
-    };
+
+        OpenGLTextureAttributes& operator=(OpenGLTextureAttributes&& src)
+        {
+            slot = src.slot;
+            width = src.width;
+            height = src.height;
+            channels = src.channels;
+            dataBuffer = src.dataBuffer;
+            src.dataBuffer = nullptr;
+            return *this;
+        }
+
+        ~OpenGLTextureAttributes()
+        {
+            delete dataBuffer;
+            dataBuffer = nullptr;
+        }
+    };*/
 
     class OpenGLTexture2D : public Texture2D {
     public:
+        OpenGLTexture2D() = delete;
         explicit OpenGLTexture2D(const PDstring& file);
         virtual ~OpenGLTexture2D();
 
-        virtual const PDuchar* GetData() const override {return nullptr;}
         virtual void Bind(PDuint slot) const override;
         virtual void UnBind() const override;
-        virtual PDuint GetWidth() const override {return 0;}
-        virtual PDuint GetHeight() const override {return 0;}
-        virtual void Add(const PDstring& file, PDuint slot) override;
+        virtual PDuint GetWidth() const override {return static_cast<GLuint>(m_Width);}
+        virtual PDuint GetHeight() const override {return static_cast<GLuint>(m_Height);}
+        virtual const PDuchar* GetData() const override;
+
+        void Add(const PDstring& file);
     private:
         GLuint m_TextureID;
-        GLuint m_BaseWidth;
-        GLuint m_BaseHeight;
-        GLuint m_BaseDepth;
-        Vector<OpenGLTextureContainer> m_DataBuffers;
+        GLuint m_Width;
+        GLuint m_Height;
     };
 }
 

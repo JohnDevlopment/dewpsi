@@ -1,3 +1,4 @@
+#define GLCall_IMPL
 #include "Dewpsi_Shader.h"
 #include "Dewpsi_OpenGLShader.h"
 #include "Dewpsi_Memory.h"
@@ -14,15 +15,18 @@ using Dewpsi::Internal::ShaderType;
 
 namespace Dewpsi {
 
-OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string& fragmentSrc)
+OpenGLShader::OpenGLShader(const PDstring& vertexSrc, const PDstring& fragmentSrc)
 {
     SourceMap sources;
     sources[GL_VERTEX_SHADER] = vertexSrc;
     sources[GL_FRAGMENT_SHADER] = fragmentSrc;
-    CompileShader(sources);
-    PD_CORE_ASSERT(m_ShaderID, "OpenGL shader has failed to compile");
-    if (! m_ShaderID)
-        throw DewpsiError("OpenGL shader has failed to compile");
+    bool success = CompileShader(sources);
+    PD_CORE_ASSERT(success, "Unable to compile a shader: {}", GetError());
+    /*if (! success)
+    {
+        PDstring temp = PDstring("OpenGL shader has failed to compile") + GetError();
+        throw DewpsiError(temp);
+    }*/
 }
 
 OpenGLShader::OpenGLShader(const PDstring& file)
@@ -80,6 +84,42 @@ void OpenGLShader::SetInt4(const PDstring& name, int v0, int v1, int v2, int v3)
     GLint iLocation = GetUniformLocation(name);
     PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
     GLCall(glUniform4i(iLocation, v0, v1, v2, v3));
+}
+
+void OpenGLShader::SetUInt1(const PDstring& name, PDuint v0)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform1ui(iLocation, v0));
+}
+
+void OpenGLShader::SetUInt2(const PDstring& name, PDuint v0, PDuint v1)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform2ui(iLocation, v0, v1));
+}
+
+void OpenGLShader::SetUInt3(const PDstring& name, PDuint v0, PDuint v1, PDuint v2)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform3ui(iLocation, v0, v1, v2));
+}
+
+void OpenGLShader::SetUInt4(const PDstring& name, PDuint v0, PDuint v1, PDuint v2, PDuint v3)
+{
+    GLCall(glUseProgram(m_ShaderID));
+
+    GLint iLocation = GetUniformLocation(name);
+    PD_CORE_ASSERT(iLocation >= 0, "Could not find uniform '{0}'", name);
+    GLCall(glUniform4ui(iLocation, v0, v1, v2, v3));
 }
 
 void OpenGLShader::SetFloat1(const PDstring& name, float v1)
@@ -220,6 +260,14 @@ GLenum OpenGLShader::GetShaderType(const PDstring& name) const
     return 0;
 }
 
+const char* OpenGLShader::GetShaderType(GLenum type) const
+{
+    if (type == GL_VERTEX_SHADER)
+        return "vertex";
+    else
+        return "fragment";
+}
+
 bool OpenGLShader::CompileShader(const OpenGLShader::SourceMap& sources)
 {
     PD_CORE_ASSERT(sources.size() <= 2, "Only two shaders supported");
@@ -227,13 +275,6 @@ bool OpenGLShader::CompileShader(const OpenGLShader::SourceMap& sources)
     Dewpsi::Array<GLuint, 2> shaderIds = {0, 0};
     short int iShaderIdIndex = 0;
     bool result = true;
-
-    auto typeString = [](GLenum t) -> const char* {
-        if (t == GL_VERTEX_SHADER)
-            return "vertex";
-        else
-            return "fragment";
-    };
 
     auto clearShaders = [&shaderIds](GLuint program) -> void {
         for (auto& val : shaderIds)
@@ -252,18 +293,16 @@ bool OpenGLShader::CompileShader(const OpenGLShader::SourceMap& sources)
 
     for (auto& src : sources)
     {
-        //const char* cpShaderType = (src.first == GL_VERTEX_SHADER) ? "vertex" : "fragment";
-        const char* cpShaderType = typeString(src.first);
+        const char* cpShaderType = GetShaderType(src.first);
 
         // src: pair: first=GLenum, second=PDstring
         GLuint shader = glCreateShader(src.first);
-        PD_CORE_ASSERT(shader, "Failed to create {0} shader", cpShaderType);
+        PD_CORE_ASSERT(shader, "Failed to create {} shader", cpShaderType);
 
         // compile source code
-        PDstring shaderSource = src.second;
-        const char* const shaderSourceCString = shaderSource.c_str();
-        glShaderSource(shader, 1, &shaderSourceCString, nullptr);
-        glCompileShader(shader);
+        const char* cpShaderSource = src.second.c_str();
+        GLCall(glShaderSource(shader, 1, &cpShaderSource, nullptr));
+        GLCall(glCompileShader(shader));
 
         // error check
         if (CheckShader(shader, cpShaderType))
@@ -274,6 +313,7 @@ bool OpenGLShader::CompileShader(const OpenGLShader::SourceMap& sources)
         else
         {
             result = false;
+            SetError("%s", m_ErrorLog.data());
             break;
         }
     }
@@ -296,11 +336,11 @@ bool OpenGLShader::CompileShader(const OpenGLShader::SourceMap& sources)
             glDeleteProgram(m_ShaderID);
             m_ShaderID = 0;
         }
+        clearShaders(m_ShaderID);
     }
 
     m_ErrorLog.clear();
     return result;
-    #undef deleteShaders
 }
 
 bool OpenGLShader::CheckShader(GLuint shader, const char* desc)

@@ -20,9 +20,6 @@ namespace Dewpsi {
         Texture() = default;
         virtual ~Texture() = default;
 
-        /// Return an immutable pointer to the pixel data.
-        virtual const PDuchar* GetData() const = 0;
-
         /// Bind the texture to the given slot.
         virtual void Bind(PDuint slot = 0) const = 0;
 
@@ -34,6 +31,16 @@ namespace Dewpsi {
 
         /// Get the height of the texture.
         virtual PDuint GetHeight() const = 0;
+
+        /// Return an immutable pointer to the pixel data.
+        virtual const PDuchar* GetData() const = 0;
+
+        /// Returns @c true if there is an error.
+        /// @note If this returns true, the error message can be obtained with SetError().
+        bool IsError() const {return m_IsError;}
+
+    protected:
+        bool m_IsError;
     };
 
     /// A 2D texture.
@@ -42,9 +49,6 @@ namespace Dewpsi {
     public:
         Texture2D() = default;
         virtual ~Texture2D() = default;
-
-        /// Adds another image to the texture.
-        virtual void Add(const PDstring& file, PDuint slot) = 0;
 
         /// Create a 2D texture from file.
         static Ref<Texture2D> Create(const PDstring& file);

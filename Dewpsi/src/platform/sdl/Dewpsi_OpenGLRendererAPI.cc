@@ -5,11 +5,14 @@ namespace Dewpsi {
 void OpenGLRendererAPI::Init()
 {
     glEnable(GL_BLEND);
-    //glEnable(GL_SCISSOR_TEST);
-    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_SCISSOR_TEST);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glFrontFace(GL_CCW);
+
+    PD_CORE_TRACE("Initialized OpenGLRendererAPI");
 }
 
 void OpenGLRendererAPI::SetClearColor(const Color& color)

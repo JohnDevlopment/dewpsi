@@ -12,6 +12,7 @@
 
 namespace Dewpsi {
     class Shader;
+    class Texture;
 
     /** High-level rendering interface.
     *   This class interprets high-level data constructs from
@@ -33,6 +34,9 @@ namespace Dewpsi {
         /// Submits a vertex array to the render queue.
         static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray,
             const glm::mat4& transform = glm::mat4(1.0f));
+
+        /*static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray,
+            const Ref<Texture>& texture, PDuint slot, const glm::mat4& transform = glm::mat4(1.0f));*/
 
         /// Sets the current rendering API.
         static void SetAPI(RendererAPI::API api) {RendererAPI::SetAPI(api);}

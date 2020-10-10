@@ -18,7 +18,7 @@ constexpr StaticString DefaultTitle = "Sandbox Application";
 
 }
 
-static constexpr StaticString OptionChars = "+:?t:x:y:w:h:W:H:";
+static constexpr StaticString OptionChars = "+:?t:x:y:w:h:W:H:d:";
 static constexpr StaticString Usage = R"(
     sandbox -h
     sandbox [options] [ini_file]
@@ -32,6 +32,7 @@ Options:
     -y POS      Set the initial Y offset of the window. <centered>
     -w SIZE     Set the width of the window.
     -h SIZE     Set the height of the window.
+    -d INT      A debug option, will be removed. <0>
 
 Ini File:
     title       Analogous to the '-t' option above.

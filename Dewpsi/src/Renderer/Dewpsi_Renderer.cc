@@ -1,7 +1,7 @@
 #include "Dewpsi_Renderer.h"
 #include "Dewpsi_Shader.h"
 #include "Dewpsi_OpenGLShader.h"
-//#include "Dewpsi_Memory.h"
+#include "Dewpsi_Texture.h"
 
 namespace Dewpsi {
 

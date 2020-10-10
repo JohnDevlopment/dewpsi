@@ -107,15 +107,9 @@ void SandboxLayer::OnAttach()
     m_ColorShader->Bind();
     m_ColorShader->SetFloat3("u_Color", m_Color[0], m_Color[1], m_Color[2]);
 
-
-
-
     // texture shader
     m_TextureShader = Dewpsi::Shader::Create(VertexShaderOpenGL[1], FragmentShaderOpenGL[1]);
     m_TextureShader->Bind();
-
-
-
 
     // textured quad
     m_TexturedQuad = Dewpsi::CreateRef<SandboxShape>();
@@ -132,24 +126,42 @@ void SandboxLayer::OnAttach()
         {Dewpsi::ShaderDataType::Float2, "in_TexCoord"}
     });
 
-    // texture
-    m_TexturedQuad->vao->Bind();
-    m_TexturedQuad->texture = Dewpsi::Texture2D::Create("Sandbox/assets/images/dm.png");
-    m_TexturedQuad->texture->Add("Sandbox/assets/images/checkerboard.png", 1);
+    // First texture: DM logo
+    m_Texture1 = Dewpsi::Texture2D::Create("Sandbox/assets/images/dm.png");
+    if (m_Texture1->IsError())
+        PD_ERROR("Failed to load Sandbox/assets/images/dm.png: {0}", Dewpsi::GetError());
 
+    {
+        PDstring filename = "Sandbox/assets/images/";
+        const char* files[] = {
+            "checkerboard.png",
+            "checkerboard-alpha.png",
+            "smile-187x200.bmp"
+        };
+        int iChoice = 0;
+        PD_TRACE("The 'choice' index is {0}, the file is {1}", iChoice, files[iChoice]);
+        m_Texture2 = Dewpsi::Texture2D::Create(filename + files[iChoice]);
+    }
 
+    if (m_Texture2->IsError())
+        PD_ERROR("Failed to load Sandbox/assets/images/checkerboard.png: {0}", Dewpsi::GetError());
 
-
-
+    // Set initial positions
+    m_ColoredQuad->position = glm::vec3(-0.5f, 0.5f, 0.0f);
+    m_TexturedQuad->position = glm::vec3(0.5f, 0.5f, 0.0f);
 }
 
 void SandboxLayer::OnDetach()
 {
     PD_PROFILE_FUNCTION();
     m_ColoredQuad.reset();
-    //m_TexturedQuad.reset();
+    m_TexturedQuad.reset();
+
     m_ColorShader.reset();
-    //m_TextureShader.reset();
+    m_TextureShader.reset();
+
+    m_Texture1.reset();
+    m_Texture2.reset();
 }
 
 void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
@@ -193,34 +205,51 @@ void SandboxLayer::OnUpdate(Dewpsi::Timestep delta)
     }
 
     using Dewpsi::Renderer;
-
     Renderer::BeginScene(m_Camera);
 
-    Renderer::Submit(m_ColorShader, m_ColoredQuad->vao,
-        m_ColoredQuad->Transform(glm::vec3(-0.5f, 0.5f, 0.0f)));
-    Renderer::Submit(m_ColorShader, m_ColoredQuad->vao,
-        m_ColoredQuad->Transform(glm::vec3(0.1f, -0.7f, 0.0f)));
+    // Draw solid-color square
+    Renderer::Submit(m_ColorShader, m_ColoredQuad->vao, m_ColoredQuad->Transform());
+
+    // Bind texture and draw it
+    m_Texture1->Bind(0);
+    m_TextureShader->SetInt1("u_Texture", 0);
+    Renderer::Submit(m_TextureShader, m_TexturedQuad->vao, m_TexturedQuad->Transform());
+
+    // Bind other texture and draw it
+    m_Texture2->Bind(1);
+    m_TextureShader->SetInt1("u_Texture", 1);
+    Renderer::Submit(m_TextureShader, m_TexturedQuad->vao,
+        m_TexturedQuad->Transform(glm::vec3(0.5f, -0.5f, 0.0f)));
 
     Renderer::EndScene();
 }
 
 void SandboxLayer::OnImGuiRender()
 {
-    ImGui::Begin("Options");
+    /*ImGui::Begin("Options");
 
-    ImGui::ColorEdit3("Rect Color", m_Color, ImGuiColorEditFlags_NoTooltip);
-    if (ImGui::Button("Set Color"))
+    // Child window for colored quad attributes
+    if (ImGui::BeginChild("Colored Quad", ImVec2(0, -100)))
     {
-        m_ColorShader->SetFloat3("u_Color", m_Color[0], m_Color[1], m_Color[2]);
+        ImGui::TextUnformatted("Colored Quad");
+        ImGui::ColorEdit3("Color", m_Color, ImGuiColorEditFlags_NoTooltip);
+        ImGui::SameLine();
+        if (ImGui::Button("Set Color"))
+            m_ColorShader->SetFloat3("u_Color", m_Color[0], m_Color[1], m_Color[2]);
+
+        ImGui::SliderFloat2("Position", Dewpsi::AddressOf(m_ColoredQuad->position.x), -1.0f, 1.0f);
     }
+    ImGui::EndChild();
 
-    ImGui::End();
-}
+    // Child window for texured quad attributes
+    if (ImGui::BeginChild("Textured Quad"))
+    {
+        ImGui::TextUnformatted("Textured Quad");
+        ImGui::SliderFloat2("Position 1", Dewpsi::AddressOf(m_TexturedQuad->position.x), -1.0f, 1.0f);
+    }
+    ImGui::EndChild();
 
-void SandboxLayer::OnEvent(Dewpsi::Event& e)
-{
-    //Dewpsi::EventDispatcher dispatcher(e);
-    //dispatcher.Dispatch<Dewpsi::KeyPressedEvent>(PD_BIND_EVENT_FN(SandboxLayer::OnKeyboardPressed));
+    ImGui::End();*/
 }
 
 // sandbox app

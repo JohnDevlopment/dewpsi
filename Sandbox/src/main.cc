@@ -8,6 +8,8 @@
 #define PD_PROFILE 0
 #include <Dewpsi_Debug.h>
 #include <Dewpsi_Math.h>
+#include <Dewpsi_Except.h>
+#include <Dewpsi_String.h>
 
 #include <DewpsiMath_Vec2.hpp>
 #include <DewpsiMath_Util.hpp>

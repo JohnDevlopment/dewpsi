@@ -9,14 +9,13 @@
 #include <Dewpsi_Vector.h>
 
 struct SandboxShape {
-    glm::vec3                         position;
-    float                             rotation;
-    Dewpsi::Ref<Dewpsi::VertexArray>  vao;
-    Dewpsi::Ref<Dewpsi::VertexBuffer> vbo;
-    Dewpsi::Ref<Dewpsi::IndexBuffer>  ibo;
-    Dewpsi::Ref<Dewpsi::Texture>      texture;
-    Dewpsi::Vector<float>             vertices;
-    Dewpsi::Vector<PDuint>            indices;
+    glm::vec3                           position;
+    float                               rotation;
+    Dewpsi::Ref<Dewpsi::VertexArray>    vao;
+    Dewpsi::Ref<Dewpsi::VertexBuffer>   vbo;
+    Dewpsi::Ref<Dewpsi::IndexBuffer>    ibo;
+    Dewpsi::Vector<float>               vertices;
+    Dewpsi::Vector<PDuint>              indices;
 
     SandboxShape() : position(0.0f), rotation(0.0f), vao(), vbo(), ibo() {}
 

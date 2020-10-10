@@ -2,7 +2,7 @@
 #define DEWPSI_SHADER_H
 
 /** @file Dewpsi_Shader.h
-*	@ref renderer
+*	@ref core_renderer
 */
 
 #include <Dewpsi_Core.h>
@@ -12,21 +12,25 @@
 
 namespace Dewpsi {
     /** Defines an interface to shaders for the native rendering API.
-    *	@ingroup renderer
+    *	@ingroup core_renderer
     *
     *   # Functions #
     *
     *   ## Set ##
     *   Set - Specify the value of a shader-specific uniform variable
     *   @code
-    *       void SetInt1(const PDstring& name, int v0);
-    *       void SetInt2(const PDstring& name, int v1, int v2);
-    *       void SetInt3(const PDstring& name, int v1, int v2, int v3);
-    *       void SetInt4(const PDstring& name, int v1, int v2, int v3, int v4);
-    *       void SetFloat1(const PDstring& name, int v0);
-    *       void SetFloat2(const PDstring& name, float v0, float v1);
-    *       void SetFloat3(const PDstring& name, float v0, float v1, float v2);
-    *       void SetFloat4(const PDstring& name, float v0, float v1, float v2, float v3);
+    *       void SetInt1(const PDstring& name, PDint v0);
+    *       void SetInt2(const PDstring& name, PDint v1, PDint v2);
+    *       void SetInt3(const PDstring& name, PDint v1, PDint v2, PDint v3);
+    *       void SetInt4(const PDstring& name, PDint v1, PDint v2, PDint v3, PDint v4);
+    *       void SetUInt1(const PDstring& name, PDuint v0);
+    *       void SetUInt2(const PDstring& name, PDuint v1, PDuint v2);
+    *       void SetUInt3(const PDstring& name, PDuint v1, PDuint v2, PDuint v3);
+    *       void SetUInt4(const PDstring& name, PDuint v1, PDuint v2, PDuint v3, PDuint v4);
+    *       void SetFloat1(const PDstring& name, PDfloat v0);
+    *       void SetFloat2(const PDstring& name, PDfloat v0, PDfloat v1);
+    *       void SetFloat3(const PDstring& name, PDfloat v0, PDfloat v1, PDfloat v2);
+    *       void SetFloat4(const PDstring& name, PDfloat v0, PDfloat v1, PDfloat v2, PDfloat v3);
     *       void SetMat4(const PDstring& name, PDsizei count, const glm::mat4* value, bool transpose);
     *   @endcode
     *   @par Parameters
@@ -61,14 +65,18 @@ namespace Dewpsi {
     *   @par Table 1
     *   Function    | Type
     *   ----------- | ----
-    *   `SetInt1`   | Single @c int scalar
-    *   `SetInt2`   | Two-component @c int vector
-    *   `SetInt3`   | Three-component @c int vector
-    *   `SetInt4`   | Four-component @c int vector
-    *   `SetFloat1` | Single @c float scalar
-    *   `SetFloat2` | Two-component @c float vector
-    *   `SetFloat3` | Three-component @c float vector
-    *   `SetFloat4` | Four-component @c float vector
+    *   `SetInt1`   | Single @c PDint scalar
+    *   `SetInt2`   | Two-component @c PDint vector
+    *   `SetInt3`   | Three-component @c PDint vector
+    *   `SetInt4`   | Four-component @c PDint vector
+    *   `SetUInt1`  | Single @c PDuint scalar
+    *   `SetUInt2`  | Two-component @c PDuint vector
+    *   `SetUInt3`  | Three-component @c PDuint vector
+    *   `SetUInt4`  | Four-component @c PDuint vector
+    *   `SetFloat1` | Single @c PDfloat scalar
+    *   `SetFloat2` | Two-component @c PDfloat vector
+    *   `SetFloat3` | Three-component @c PDfloat vector
+    *   `SetFloat4` | Four-component @c PDfloat vector
     *   `SetMat4`   | 4x4 matrix (@c float)
     */
     class Shader {
@@ -83,10 +91,16 @@ namespace Dewpsi {
         virtual void UnBind() const = 0;
 
         // These are documented up above in the class doc.
-        virtual void SetInt1(const PDstring& name, int v0) = 0;
-        virtual void SetInt2(const PDstring& name, int v1, int v2) = 0;
-        virtual void SetInt3(const PDstring& name, int v1, int v2, int v3) = 0;
-        virtual void SetInt4(const PDstring& name, int v1, int v2, int v3, int v4) = 0;
+        virtual void SetInt1(const PDstring& name, PDint v0) = 0;
+        virtual void SetInt2(const PDstring& name, PDint v1, PDint v2) = 0;
+        virtual void SetInt3(const PDstring& name, PDint v1, PDint v2, PDint v3) = 0;
+        virtual void SetInt4(const PDstring& name, PDint v1, PDint v2, PDint v3, PDint v4) = 0;
+
+        virtual void SetUInt1(const PDstring& name, PDuint v0) = 0;
+        virtual void SetUInt2(const PDstring& name, PDuint v1, PDuint v2) = 0;
+        virtual void SetUInt3(const PDstring& name, PDuint v1, PDuint v2, PDuint v3) = 0;
+        virtual void SetUInt4(const PDstring& name, PDuint v1, PDuint v2, PDuint v3, PDuint v4) = 0;
+
         virtual void SetFloat1(const PDstring& name, float v1) = 0;
         virtual void SetFloat2(const PDstring& name, float v1, float v2) = 0;
         virtual void SetFloat3(const PDstring& name, float v1, float v2, float v3) = 0;
