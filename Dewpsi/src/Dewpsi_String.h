@@ -56,6 +56,7 @@ namespace Dewpsi {
         *   @param ch  A character (byte) to find in @a str
         *   @return    A pointer to the first occurrence of @a ch in @a str
         *              or @c NULL if @a ch cannot be found
+        *   @ingroup   strings
         */
         PD_FORCE_INLINE const char* StringChar(const char* str, int ch)
         {
@@ -67,6 +68,7 @@ namespace Dewpsi {
         *   @param ch  A character (byte) to find in @a str
         *   @return    A pointer to the last occurrence of @a ch in @a str
         *              or @c NULL if @a ch cannot be found
+        *   @ingroup   strings
         */
         PD_FORCE_INLINE const char* StringRevChar(const char* str, int ch)
         {
@@ -76,6 +78,7 @@ namespace Dewpsi {
         /** Convert a lowercase character to an uppercase character.
         *   @param  ch  Character to be converted casted as an integer
         *   @return     The uppercase equivalent of @a ch, if there is one, or @a ch otherwise
+        *   @ingroup    strings
         */
         PD_FORCE_INLINE char ToUpper(int ch)
         {
@@ -86,6 +89,7 @@ namespace Dewpsi {
         /** Convert a uppercase character to an lowercase character.
         *   @param  ch  Character to be converted casted as an integer
         *   @return     The uppercase equivalent of @a ch, if there is one, or @a ch otherwise
+        *   @ingroup    strings
         */
         PD_FORCE_INLINE char ToLower(int ch)
         {
@@ -97,7 +101,7 @@ namespace Dewpsi {
         *
         *   @param  str A string, must not be @c NULL
         *   @return     The length of @a str in characters or PD_INVALID if @a str is @c NULL
-        *   @ingroup strings
+        *   @ingroup    strings
         */
         PD_FORCE_INLINE size_t Length(const char* str)
         {
@@ -114,6 +118,7 @@ namespace Dewpsi {
         *   @return     A %c long %c int containing the converted number. If the result is zero,
         *               and the string contained non-zero digits, then that means the string
         *               exceeded the integer range. Call GetError() to retrieve the error message.
+        *   @ingroup    strings
         */
         PD_CALL long int StringToLong(const char* str);
 
@@ -127,6 +132,7 @@ namespace Dewpsi {
         *   @return     An %c int containing the converted number. If the result is zero,
         *               and the string contained non-zero digits, then that means the string
         *               exceeded the integer range. Call GetError() to retrieve the error message.
+        *   @ingroup    strings
         */
         PD_FORCE_INLINE int StringToInt(const char* str)
         {
