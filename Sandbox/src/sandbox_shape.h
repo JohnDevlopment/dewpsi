@@ -6,8 +6,8 @@
 #include <Dewpsi_VertexArray.h>
 #include <Dewpsi_Texture.h>
 #include <Dewpsi_Array.h>
+#include <Dewpsi_Vector.h>
 
-template<PDsizei Nv, PDsizei Ni>
 struct SandboxShape {
     glm::vec3                         position;
     float                             rotation;
@@ -15,8 +15,8 @@ struct SandboxShape {
     Dewpsi::Ref<Dewpsi::VertexBuffer> vbo;
     Dewpsi::Ref<Dewpsi::IndexBuffer>  ibo;
     Dewpsi::Ref<Dewpsi::Texture>      texture;
-    Dewpsi::Array<float, Nv>          vertices;
-    Dewpsi::Array<PDuint, Ni>         indices;
+    Dewpsi::Vector<float>             vertices;
+    Dewpsi::Vector<PDuint>            indices;
 
     SandboxShape() : position(0.0f), rotation(0.0f), vao(), vbo(), ibo() {}
 
@@ -27,12 +27,12 @@ struct SandboxShape {
         vao = Dewpsi::VertexArray::Create();
         vao->Bind();
         // vertex buffer
-        vbo = Dewpsi::VertexBuffer::Create(vertices.Size(), vertices.Data());
+        vbo = Dewpsi::VertexBuffer::Create(vertices.Size() * sizeof(float), vertices.Data());
+        vbo->Bind();
         vbo->SetLayout(layout);
         // index buffer
-        ibo = Dewpsi::IndexBuffer::Create(
-            indices.Length(), indices.Data()
-        );
+        ibo = Dewpsi::IndexBuffer::Create(indices.Size(), indices.Data());
+        ibo->Bind();
         vao->AddVertexBuffer(vbo);
         vao->SetIndexBuffer(ibo);
         vao->UnBind();
@@ -43,6 +43,11 @@ struct SandboxShape {
     {
         return glm::translate(glm::mat4(1.0f), position);
                 //* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+
+    glm::mat4 Transform(glm::vec3 v) const
+    {
+        return glm::translate(glm::mat4(1.0f), v);
     }
 };
 

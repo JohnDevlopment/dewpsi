@@ -2,6 +2,7 @@
 #include "sandbox.h"
 #include <Dewpsi_String.h>
 #include <Dewpsi_Log.h>
+#include <Dewpsi_Except.h>
 #define INIFILE_FUNCTIONS
 #include <inifile.hpp>
 #include <tuple>
@@ -13,6 +14,7 @@ namespace {
 auto DefaultArguments = std::make_tuple(PD_WINDOWPOS_CENTERED, 640U, 480U);
 constexpr StaticString ShaderFile = "Dewpsi/OpenGL/shaders/shaders.glsl";
 constexpr StaticString ImGuiShaderPath = "Dewpsi/OpenGL/shaders";
+constexpr StaticString DefaultTitle = "Sandbox Application";
 
 }
 
@@ -45,27 +47,15 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
     using std::cerr;
     using std::endl;
 
-    // base name of the program
-    const char* cpBaseName = Dewpsi::String::StringRevChar(argv[0], '/');
-    if (! cpBaseName)
-        cpBaseName = argv[0];
-    else
-        ++cpBaseName;
+    // Fill in the default parameters
+    defaultParameters(data);
 
-    // default window title
-    Dewpsi::String::Copy(data->title, "Sandbox Application");
+    // This will assert if the pointer is NULL.
+    // If the path does not exist, this will do nothing.
+    if (readIniFile("Sandbox/assets/settings.ini", data))
+        PD_TRACE("Read Sandbox/assets/settings.ini");
 
     int iCode = 1;
-
-    // window size
-    data->windowDim.x = std::get<0>(DefaultArguments);
-    data->windowDim.y = std::get<0>(DefaultArguments);
-    data->windowDim.w = std::get<1>(DefaultArguments);
-    data->windowDim.h = std::get<2>(DefaultArguments);
-
-    // resolution
-    data->resolution.x = std::get<1>(DefaultArguments);
-    data->resolution.y = std::get<2>(DefaultArguments);
 
     // ImGui information
     data->guiInit.glslPath = ImGuiShaderPath.get();
@@ -78,12 +68,11 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
         iCode = Dewpsi::GetOption(argc, (char**) argv, OptionChars.get());
     }
     while (iCode > 0);
+
     if (optind == (argc - 1))
     {
         PD_TRACE("Non-option found");
-        const char* cpIniFile = nullptr;
-        cpIniFile = argv[optind];
-        readIniFile(cpIniFile, data);
+        readIniFile(argv[optind], data);
     }
 
     // process options
@@ -96,30 +85,39 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
             switch (iCode)
             {
                 case '?':
+                    PD_ERROR("Unrecognized option '{0}'", optopt);
                     cout << Usage.get() << endl;
                     return PD_INVALID;
                     break;
 
                 case 't':
-                    Dewpsi::String::Copy(data->title, optarg, 50);
+                    Dewpsi::String::Copy(data->title, optarg, sizeof(data->title));
                     break;
 
                 case 'x':
                     {
-                        int temp = Dewpsi::String::StringToInt(optarg);
-                        if (temp > 0)
+                        PDstring temp = optarg;
+                        if (temp == "center" || temp == "centered")
+                            data->windowDim.x = PD_WINDOWPOS_CENTERED;
+                        else
                         {
-                            data->windowDim.x = (PDuint) temp;
+                            int temp2 = Dewpsi::String::StringToInt(optarg);
+                            if (temp2 > 0)
+                                data->windowDim.x = (PDuint) temp2;
                         }
                         break;
                     }
 
                 case 'y':
                     {
-                        int temp = Dewpsi::String::StringToInt(optarg);
-                        if (temp > 0)
+                        PDstring temp = optarg;
+                        if (temp == "center" || temp == "centered")
+                            data->windowDim.y = PD_WINDOWPOS_CENTERED;
+                        else
                         {
-                            data->windowDim.y = (PDuint) temp;
+                            int temp2 = Dewpsi::String::StringToInt(optarg);
+                            if (temp2 > 0)
+                                data->windowDim.y = (PDuint) temp2;
                         }
                         break;
                     }
@@ -128,9 +126,7 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
                     {
                         int temp = Dewpsi::String::StringToInt(optarg);
                         if (temp > 0)
-                        {
                             data->windowDim.w = (PDuint) temp;
-                        }
                         break;
                     }
 
@@ -138,9 +134,7 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
                     {
                         int temp = Dewpsi::String::StringToInt(optarg);
                         if (temp > 0)
-                        {
                             data->windowDim.h = (PDuint) temp;
-                        }
                         break;
                     }
 
@@ -148,9 +142,7 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
                     {
                         int temp = Dewpsi::String::StringToInt(optarg);
                         if (temp > 0)
-                        {
                             data->resolution.x = temp;
-                        }
                         break;
                     }
 
@@ -158,18 +150,20 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
                     {
                         int temp = Dewpsi::String::StringToInt(optarg);
                         if (temp > 0)
-                        {
                             data->resolution.x = temp;
-                        }
                         break;
                     }
 
                 case ':':
-                    PD_ERROR("Missing argument for '-{}'", optopt);
+                    PD_ERROR("Missing argument for '-{0}'", optopt);
                     break;
 
                 default:
-                    PD_ERROR("Unrecognized option '-{}'", optopt);
+                    {
+                        PDstring message = __PRETTY_FUNCTION__;
+                        message += ": default case reached in switch() statement. That is not meant to happen.";
+                        throw Dewpsi::DewpsiError(message);
+                    }
                     break;
             }
         } // end if (iCode > 0)
@@ -181,29 +175,47 @@ int parseArguments(int argc, const char* argv[], SandboxData* data)
 
 bool readIniFile(const char* file, SandboxData* data)
 {
+    PD_ASSERT(data, "NULL 'data' pointer");
     IniFile ini;
+
+    // Attempt to open file
     if (ini.ReadFile(file) < 0)
         return false;
 
-    assert(data);
-
+    // Helper macro
     #define _getoption(str, out, default) \
         PD_TRACE("Process INI option \"{0}\"", str); \
-        if (ini.GetValue(str, out) < 0) \
-        { \
-            out = default; \
-        }
+        ini.GetValue(str, out);
 
+    // Window title
     PDstring sTitle;
-    if (ini.GetValue("title", sTitle) < 0)
-        Dewpsi::String::Copy(data->title, "Sandbox Application", sizeof(data->title));
-    else
+    if (ini.GetValue("title", sTitle) >= 0)
         Dewpsi::String::Copy(data->title, sTitle.c_str(), sizeof(data->title));
 
-    PDuint uiSize;
+    /*
+    Get the x and y offsets for the window. If the option says "center", then the constant
+    PD_WINDOWPOS_CENTERED is used. Otherwise extrapolate the integral value of the named
+    option key.
+    */
+    {
+        PDstring& temp = sTitle;
 
-    _getoption("x", data->windowDim.x, 300U);
-    _getoption("y", data->windowDim.y, 200U);
+        if (ini.GetValue("x", temp) >= 0)
+        {
+            if (temp == "center" || temp == "centered")
+                data->windowDim.x = PD_WINDOWPOS_CENTERED;
+            else
+                data->windowDim.x = (PDuint) Dewpsi::String::StringToInt(temp.c_str());
+        }
+
+        if (ini.GetValue("y", temp) >= 0)
+        {
+            if (temp == "center" || temp == "centered")
+                data->windowDim.y = PD_WINDOWPOS_CENTERED;
+            else
+                data->windowDim.y = (PDuint) Dewpsi::String::StringToInt(temp.c_str());
+        }
+    }
 
     _getoption("width", data->windowDim.w, 640U);
     _getoption("height", data->windowDim.h, 480U);
@@ -214,4 +226,16 @@ bool readIniFile(const char* file, SandboxData* data)
     return true;
 
     #undef _getoption
+}
+
+void defaultParameters(SandboxData* p)
+{
+    PD_ASSERT(p, "Pointer argument is NULL");
+    Dewpsi::String::Copy(p->title, DefaultTitle.get(), sizeof(p->title));
+    p->windowDim.x = std::get<0>(DefaultArguments);
+    p->windowDim.y = std::get<0>(DefaultArguments);
+    p->windowDim.w = std::get<1>(DefaultArguments);
+    p->windowDim.h = std::get<2>(DefaultArguments);
+    p->resolution.x = std::get<1>(DefaultArguments);
+    p->resolution.y = std::get<2>(DefaultArguments);
 }

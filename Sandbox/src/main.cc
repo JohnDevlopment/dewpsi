@@ -47,13 +47,14 @@ int main (int argc, char const* argv[])
         props.width = appData->windowDim.w;
         props.height = appData->windowDim.h;
         props.title = appData->title;
+        //props.flags = Dewpsi::RendererVSync | Dewpsi::WindowResizable;
         props.flags = Dewpsi::RendererVSync | Dewpsi::WindowOpenGL | Dewpsi::WindowResizable;
         appData->sizeRatio = dm::vector_cast<float>(dm::ratio(props.width, props.height));
         SetWindowAttribute(props, Dewpsi::MajorVersion, 3);
         SetWindowAttribute(props, Dewpsi::MinorVersion, 3);
         SetWindowAttribute(props, Dewpsi::Depth, 24);
         SetWindowAttribute(props, Dewpsi::DoubleBuffer, 1);
-        SetWindowAttribute(props, Dewpsi::StencilSize, 8);
+        //SetWindowAttribute(props, Dewpsi::StencilSize, 8);
         Dewpsi::SetWindowProps(props);
     }
 
