@@ -1,12 +1,9 @@
 #ifndef DEWPSI_MATH_H
 #define DEWPSI_MATH_H
 
-/**
-*   @file       Dewpsi_Math.h
-*   @brief      @doxfb
-*   Contains math functions.
-*
-*   @defgroup math Math
+/** @ref core_math
+*   @file Dewpsi_Math.h
+*   @defgroup core_math Math Functions
 *   @ingroup core
 */
 
@@ -15,6 +12,21 @@
 #include <Dewpsi_Debug.h>
 
 namespace Dewpsi {
+    /// @addtogroup core_math
+    /// @{
+
+    template<typename T>
+    inline typename std::enable_if<IsSigned<T>::value, T>::type
+    __abs(T val) {
+        return (val < 0 ? -val : val);
+    }
+    template<typename T>
+    inline typename std::enable_if<!IsSigned<T>::value, T>::type
+    __abs(T val)
+    {
+        return val;
+    }
+
     /** Obtain the absolute value of @a val.
     *   @param  val A value of an integral or floating-point type.
     *   @return     The absolute value of @a val. If @a T is an unsigned
@@ -22,15 +34,9 @@ namespace Dewpsi {
     *   @tparam T   A type
     */
     template<typename T>
-    typename std::enable_if<std::is_signed<T>::value, T>::type
-    abs(T val) {
-        return (val < 0 ? -val : val);
-    }
-    template<typename T>
-    typename std::enable_if<!std::is_signed<T>::value, T>::type
-    abs(T val)
+    T abs(T val)
     {
-        return val;
+        return __abs(val);
     }
 
     /** Returns a value within a range.
@@ -42,7 +48,6 @@ namespace Dewpsi {
     *   @return     If @a val is less than @a min, min is returned;
     *               if greater than @a max, max is returned; else,
     *               @a val is returned
-    *   @ingroup    math
     */
     template<typename T>
     T clamp(T min, T max, T val)
@@ -60,7 +65,6 @@ namespace Dewpsi {
     *   @param  b   A value
     *   @tparam T   Any type that supports the less-than operator
     *   @return     @a a if it is less than @a b, otherwise @a b
-    *   @ingroup    math
     */
     template<typename T>
     T min(T a, T b)
@@ -74,7 +78,6 @@ namespace Dewpsi {
     *   @param  b   A value
     *   @tparam T   Any type that supports the greater-than operator
     *   @return     @a a if it is greater than @a b, otherwise @a b
-    *   @ingroup    math
     */
     template<typename T>
     T max(T a, T b)
@@ -107,6 +110,16 @@ namespace Dewpsi {
 
         return result;
     }
+
+    /** Returns a power of two.
+    *   The function returns the result of \f$ 2^n \f$.
+    *   @param  n                   The exponent of 2
+    *   @param  sizeOfType          The size of a type
+    *   @return                     Two to the power of @a n
+    *   @throw  std::overflow_error If @a n is so large that the result of \f$ 2^n \f$
+    *                               causes an overflow
+    */
+    PD_CALL PDlong pow2(PDsizei n, const PDsizei sizeOfType);
 }
 
 #endif /* DEWPSI_MATH_H */

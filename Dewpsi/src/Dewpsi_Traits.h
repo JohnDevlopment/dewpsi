@@ -14,8 +14,12 @@ namespace Dewpsi {
     /// @addtogroup core_traits
     /// @{
 
-    //using FalseType = ::std::false_type;
-    //using TrueType  = ::std::true_type;
+    /** Trait class that identifies whether @c T is a signed type.
+    *   It inherits from either @c true_type or @c false_type depending on
+    *   whether @c T is a signed type or not.
+    */
+    template<typename T>
+    struct IsSigned : public ::std::is_signed<T> {};
 
     /// A metafunction that always returns void. Used to detect valid types. Copied from the stl.
     template<typename... Args>
