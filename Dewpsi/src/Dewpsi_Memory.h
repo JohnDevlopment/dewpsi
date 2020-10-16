@@ -1,21 +1,22 @@
 #ifndef DEWPSI_MEMORY_H
 #define DEWPSI_MEMORY_H
 
-/**
-*   @file   Dewpsi_Memory.h
-*   @brief  @doxfb
-*   Contains memory allocation/manipulation functions.
-*   @defgroup memory Memory
+/** @ref        core_memory
+*   @file       Dewpsi_Memory.h
+*   @defgroup   core_memory Memory
+*   @ingroup    core
 *   Memory allocation/manipulation functions.
-*   @ingroup core
 */
 
 #include <Dewpsi_Core.h>
 #include <memory>
+#include <new>
+
+#include "bits/Dewpsi_Bits_Allocator.h"
 
 namespace Dewpsi {
     /**
-    *   @addtogroup memory
+    *   @addtogroup core_memory
     *   @{
     */
 

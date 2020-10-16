@@ -10,10 +10,14 @@
 #include <Dewpsi_Math.h>
 #include <Dewpsi_Except.h>
 #include <Dewpsi_String.h>
-
 #include <DewpsiMath_Vec2.hpp>
 #include <DewpsiMath_Util.hpp>
 #include <ext/vec2_util.hpp>
+
+#include <cstdlib>
+
+#include <Dewpsi_Memory.h>
+#include <bits/Dewpsi_Bits_Allocator.h>
 
 using Dewpsi::StaticString;
 
@@ -24,12 +28,44 @@ extern "C" void quit();
 
 static Dewpsi::Application* App = nullptr;
 
+struct Entity {
+    char name[30];
+    int  id;
+
+    Entity() : id(0)
+    {
+        Dewpsi::String::MemSet(name, 0, 30);
+    }
+
+    ~Entity() {}
+};
+
+struct TestType1 {
+    typedef TestType1* pointer;
+};
+
+struct TestType2 {};
+
 int main (int argc, char const* argv[])
 {
     PD_PROFILE_BEGIN_SESSION("Startup", "results_startup.json");
 
     // initialize the logging system
     Dewpsi::Log::Init();
+
+
+    Dewpsi::PointerTraits<int*>::__ElementType a = 5; // int a = 5
+    Dewpsi::PointerTraits<Dewpsi::Scope<int>>::__ElementType b = 10;
+
+    PD_INFO("a = {}, b = {}", a, b);
+
+
+    return 0;
+
+
+
+
+
 
     Dewpsi::Scope<SandboxData> appData = Dewpsi::CreateScope<SandboxData>();
 

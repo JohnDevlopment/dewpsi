@@ -13,9 +13,17 @@
 #include <cstdint>
 #include <string>
 #include <limits>
+#include <initializer_list>
+#include <new>
+
+/// A signed integer type that represents the difference between pointers
+typedef ptrdiff_t PDptrdiff;
 
 /// An unsigned type used to represent the size of objects
 typedef size_t PDsizei;
+
+/// Used to specify the alignment of values
+enum class PDalignval : PDsizei {};
 
 /// A signed integer
 typedef int PDint;
@@ -93,6 +101,7 @@ typedef std::string PDstring;
 
 namespace Dewpsi {
     using ::std::numeric_limits;
+    using ::std::initializer_list;
 
     /** Provides information about the properties of arithmetic types (either integral
     *   or floating-point) in the specific platform for which the library compiles.
@@ -108,6 +117,10 @@ namespace Dewpsi {
     class NumericLimits : public numeric_limits<T> {};
     template<>
     class NumericLimits<PDuint> : public numeric_limits<unsigned int> {};
+
+    /// An alias of std::initializer_list.
+    template<typename T>
+    using InitList = initializer_list<T>;
 }
 
 /*Provides information about the properties of arithmetic types (either integral or floating-point) in the specific platform for which the library compiles.

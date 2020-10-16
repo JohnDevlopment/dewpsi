@@ -6,14 +6,24 @@
 
 #include <Dewpsi_Core.h>
 #include <Dewpsi_Math.h>
-#include <Dewpsi_Traits.h>
 #include <Dewpsi_Iterator.h>
 #include <Dewpsi_Except.h>
 #include <cassert>
 #include <initializer_list>
 #include <tuple>
 
+#include "bits/Dewpsi_Bits_Allocator.h" // includes traits
+
 namespace Dewpsi {
+    /*template<typename T, typename Alloc>
+    struct __VectorBase {
+        struct __VectorImpl {
+            __Pointer m_Begin;
+            __Pointer m_Finish;
+            __Pointer m_CapacityEnd;
+        };
+    };*/
+
     /** A vector container.
     *   @tparam T Type of the elements of @doxtype{Vector}
     */
@@ -153,6 +163,9 @@ namespace Dewpsi {
 
         /// Adds a new element to the end of the vector, after the last element.
         void PushBack(__ValueType&& src);
+
+        // TODO: add documentation to PopBack
+        void PopBack() noexcept = delete;
 
         /// Sets elements of @doxtype{Vector} according to a list.
         void SetData(const std::initializer_list<T>& il);

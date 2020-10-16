@@ -14,14 +14,18 @@ namespace Dewpsi {
     /// @addtogroup core_traits
     /// @{
 
-    /** Trait class that identifies whether @c T is a signed type.
-    *   It inherits from either @c true_type or @c false_type depending on
-    *   whether @c T is a signed type or not.
+    class __Undefined {};
+
+    /** Is void.
+    *   Trait class that identifies whether @c T is void.
+    *   @par Source
+    *   http://www.cplusplus.com/reference/type_traits/is_void/
     */
     template<typename T>
-    struct IsSigned : public ::std::is_signed<T> {};
+    struct IsVoid : public ::std::is_void<T> {};
 
-    /// A metafunction that always returns void. Used to detect valid types. Copied from the stl.
+    /// A metafunction that always returns void.
+    /// Used to detect valid types. Copied from the stl.
     template<typename... Args>
     using __void_t = void;
 
@@ -33,6 +37,58 @@ namespace Dewpsi {
     template<typename... Args>
     using void_t = void;
 #endif
+
+    /** Alias of std::integral_constant (see source)
+    *   @par Source
+    *   http://www.cplusplus.com/reference/type_traits/integral_constant/
+    */
+    template<typename Type, Type Constant>
+    using IntegralConstant = ::std::integral_constant<Type, Constant>;
+
+    /// Instantiation of IntegralConstant with a constant of type @c bool, equal to @c true
+    typedef IntegralConstant<bool, true> TrueType;
+
+    /// Instantiation of IntegralConstant with a constant of type @c bool, equal to @c false
+    typedef IntegralConstant<bool, false> FalseType;
+
+    // Type properties
+
+    /** Is signed integral type.
+    *   Trait class that identifies whether @c T is a signed type.
+    *   It inherits from either @c true_type or @c false_type depending on
+    *   whether @c T is a signed type or not.
+    */
+    template<typename T>
+    struct IsSigned : public ::std::is_signed<T> {};
+
+    /** Is same type.
+    *   Trait class that identifies whether @c T is the same type as @a U, including
+    *   whether they have the same const or volatile qualifications, if any.
+    *   @par Source
+    *   http://www.cplusplus.com/reference/type_traits/is_same/
+    */
+    template<typename T, typename U>
+    struct IsSame : public ::std::is_same<T, U> {};
+
+    /** Is empty.
+    *   Trait class that identifies whether @c T is an empty class or struct (but not union).
+    *   @par Source
+    *   http://www.cplusplus.com/reference/type_traits/is_empty/
+    */
+    template<typename T>
+    struct IsEmpty : public ::std::is_empty<T> {};
+
+    // Type Modifiers
+
+    /** Make unsigned.
+    *   Obtains the unsigned type corresponding to @c T.
+    *   @par Source
+    *   http://www.cplusplus.com/reference/type_traits/make_unsigned/
+    */
+    template<typename T>
+    struct MakeUnsigned : public ::std::make_unsigned<T> {};
+
+    // Misc
 
     /** Obtains @c T or @c F depending on whether @c Cond is either true or false.
     *   If @c Cond evaluates to @c true, then @doxtype{Conditional::type} is defined
@@ -48,34 +104,35 @@ namespace Dewpsi {
     */
     template<bool Cond, typename T, typename F> using Conditional = ::std::conditional<Cond, T, F>;
 
-#if 0
-    template<bool Cond, typename T, typename F>
-    struct Conditional {
-        typedef T type;
+    /** Use @c Op if it exists, otherwise resort to @c Default.
+    *   @tparam Default,Op Types
+    *   @tparam Args       Arguments to @c Op
+    *
+    *   @par Members
+    *   Name    | Comment
+    *   ------- | -------
+    *   type    | Type determined by the condition
+    *   value_t | @a TrueType if @c Op exists or @a FalseType if it doesn't
+    */
+    template<typename Default, typename AlwaysVoid,
+        template<typename...> class Op, typename... Args>
+    struct __Detector {
+        using type = Default;
+        using value_t = FalseType;
+    }; // Specialization for false
+
+    // Specialization for true
+    template<typename Default, template<typename...> class Op, typename... Args>
+    struct __Detector<Default, __void_t<Op<Args...>>, Op, Args...> {
+        using type = Op<Args...>;
+        using value_t = TrueType;
     };
 
-    // Partial specialization for false
-    template<typename T, typename F>
-    struct Conditional<false, T, F> {
-        typedef F type;
-    };
+    template<typename Default, template<typename...> class Op, typename... Args>
+    using __DetectOr = __Detector<Default, void, Op, Args...>;
 
-    template<typename...>
-    struct Or;
-
-    /// Boolean OR meta class.
-    template<>
-    struct Or<> : public false_type {};
-
-    template<typename B1>
-    struct Or<B1> : public B1 {};
-
-    template<typename B1, typename B2>
-    struct Or<B1, B2> : public Conditional<B1::value, B1, B2>::type {};
-
-    template<typename B1, typename B2, typename B3, typename... Bn>
-    struct Or<B1, B2, B3, Bn...> : public Conditional<B1::value, B1, Or<B2, B3, Bn...>>::type {};
-#endif
+    template<typename Default, template<typename...> class Op, typename... Args>
+    using __DetectedOrType = typename __DetectOr<Default, Op, Args...>::type;
 
     /// @}
 }

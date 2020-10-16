@@ -19,8 +19,9 @@
 
 #include <Dewpsi_Util.h>
 
+// C++ libraries
 #include <iostream>
-#include <new>
+#include <new> // new operator, nothrow
 #include <utility>
 #include <type_traits>
 #include <string>
@@ -31,8 +32,10 @@
 //#define _IMPORT_MY_GETOPT
 #include <my_getopt.h>
 
+// C libraries
 #include <csignal>
 #include <cstdint>
+#include <cstdlib>
 
 /// Convert an lvalue to an rvalue.
 /// @ingroup core

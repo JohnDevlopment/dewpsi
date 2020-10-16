@@ -214,6 +214,11 @@ namespace Dewpsi {
             *(beg++) = val;
     }
 
+    /** Call @a fn for each element within a range.
+    *   @param beg,end  The beginning and end of a range
+    *   @param fn       A function object or function pointer
+    *   @return         The function @a fn
+    */
     template<class _Iterator, class _Function>
     _Function ForEach(_Iterator beg, _Iterator end, _Function fn)
     {

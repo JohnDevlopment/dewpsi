@@ -4,7 +4,6 @@
 #include "Dewpsi_Core.h"
 #include "Dewpsi_Texture.h"
 #include "Dewpsi_OpenGL.h"
-#include "Dewpsi_Vector.h"
 
 namespace Dewpsi {
     /*struct OpenGLTextureAttributes {

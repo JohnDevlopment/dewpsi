@@ -241,7 +241,8 @@ TAB_SIZE               = 4
 ALIASES                = "doxfb=A header for the Dewpsi engine." \
                          "doxcout=@note This type can be passed to cout, cerr, and other output streams." \
                          "doxtype{1}=@c %\1" \
-                         "doxfunc{1}=@a %\1()"
+                         "doxfunc{1}=@a %\1()" \
+                         "doxheader{1}=Include \<<b>%\1</b>\> instead."
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -798,8 +799,7 @@ INPUT                  = src \
                          src/debug \
                          src/platform/sdl \
                          src/Renderer \
-                         src/bits/Dewpsi_Bits_IteratorBaseTypes.h \
-                         src/bits/Dewpsi_Bits_IteratorTraits.h
+                         src/bits
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

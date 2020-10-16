@@ -150,7 +150,8 @@ project "dewpsi"
         (srcdir .. "/events"),
         (srcdir .. "/ImGui"),
         (srcdir .. "/os"),
-        (srcdir .. "/Renderer")
+        (srcdir .. "/Renderer"),
+        (srcdir .. "/Utility")
     }
     links {
         "spdlog",
